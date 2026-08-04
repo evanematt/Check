@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Hto Loh? — Chore Wheel</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎡</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Nunito:ital,wght@0,700;0,800;0,900;1,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+
+    <header class="spirit-card" id="spiritCard">
+      <div class="spirit-emoji" id="spiritEmoji">🐱</div>
+      <div class="spirit-info">
+        <h1 class="spirit-title">Hto Loh?</h1>
+        <p class="spirit-mood" id="spiritMood">Loading the house spirit…</p>
+        <div class="spirit-bar-track">
+          <div class="spirit-bar-fill" id="spiritBarFill"></div>
+        </div>
+        <p class="spirit-pct" id="spiritPct">— % clean (last 7 days)</p>
+      </div>
+      <button class="icon-btn spirit-settings" id="mascotBtn" title="Change house spirit" aria-label="Change house spirit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </header>
+
+    <nav class="tabbar" id="tabbar">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="week">This Week</button>
+      <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
+      <button class="tab-btn" data-tab="manage">Manage</button>
+    </nav>
+
+    <main>
+      <!-- DASHBOARD -->
+      <section class="tab-panel active" id="panel-dashboard">
+        <div class="spin-wrap">
+          <button class="btn btn-primary btn-spin" id="spinOneBtn">
+            <span class="btn-emoji">🎡</span> Spin the Wheel
+          </button>
+          <button class="btn btn-secondary" id="spinWeekBtn">Spin for the Whole Week</button>
+        </div>
+
+        <div class="wheel-stage" id="wheelStage" hidden>
+          <div class="wheel-pointer">▼</div>
+          <div class="wheel-wrap">
+            <svg id="wheelSvg" viewBox="0 0 300 300" class="wheel-svg"></svg>
+          </div>
+          <div class="wheel-result" id="wheelResult" hidden></div>
+          <button class="btn btn-ghost" id="closeWheelBtn">Close</button>
+        </div>
+
+        <h2 class="section-title">Today's Tasks</h2>
+        <div id="todayTasks" class="task-groups"></div>
+      </section>
+
+      <!-- WEEK -->
+      <section class="tab-panel" id="panel-week">
+        <h2 class="section-title">This Week's Schedule</h2>
+        <div class="week-table-wrap">
+          <table class="week-table" id="weekTable"></table>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD -->
+      <section class="tab-panel" id="panel-leaderboard">
+        <h2 class="section-title">Leaderboard</h2>
+        <ol class="leaderboard" id="leaderboardList"></ol>
+        <h2 class="section-title">Badges</h2>
+        <div class="badges" id="badgesList"></div>
+      </section>
+
+      <!-- MANAGE -->
+      <section class="tab-panel" id="panel-manage">
+        <h2 class="section-title">Housemates</h2>
+        <ul class="manage-list" id="housemateList"></ul>
+        <form class="add-form" id="housemateForm">
+          <input type="text" id="housemateName" placeholder="Name" maxlength="20" required />
+          <select id="housemateEmoji"></select>
+          <button type="submit" class="btn btn-primary btn-small">Add</button>
+        </form>
+
+        <h2 class="section-title">Chores</h2>
+        <ul class="manage-list" id="choreList"></ul>
+        <form class="add-form add-form-chore" id="choreForm">
+          <input type="text" id="choreName" placeholder="Chore name" maxlength="30" required />
+          <select id="choreEmoji"></select>
+          <select id="choreDifficulty">
+            <option value="easy">Easy · 5pt</option>
+            <option value="medium" selected>Medium · 10pt</option>
+            <option value="hard">Hard · 20pt</option>
+          </select>
+          <select id="choreFrequency">
+            <option value="daily" selected>Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="one-time">One-time</option>
+          </select>
+          <button type="submit" class="btn btn-primary btn-small">Add</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
