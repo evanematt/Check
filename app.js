@@ -5,7 +5,18 @@
   const DIFF_POINTS = { easy: 5, medium: 10, hard: 20 };
   const DIFF_LABEL = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
   const FREQ_LABEL = { daily: 'Daily', weekly: 'Weekly', 'one-time': 'One-time' };
-  const WHEEL_COLORS = ['#F97316', '#FB923C', '#FDBA74', '#EA580C', '#2563EB', '#60A5FA', '#FCD34D', '#F59E0B'];
+  const WHEEL_COLORS = ['#63E6BE', '#FFD43D', '#FF6B9D', '#4D8EFF', '#9B5CFF', '#FF8C42', '#38D9C9', '#FF6B6B'];
+  const ACCENT_PALETTE = ['#FF6B6B', '#FFB020', '#34D399', '#4D8EFF', '#C77DFF', '#FF5CA8', '#38B6FF', '#FFD43D', '#2DD4C8', '#FF8A5C'];
+
+  function colorForId(id) {
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+    return ACCENT_PALETTE[hash % ACCENT_PALETTE.length];
+  }
+
+  function pillClass(kind) {
+    return { easy: 'pill-easy', medium: 'pill-medium', hard: 'pill-hard' }[kind] || 'pill-neutral';
+  }
   const MASCOT_ORDER = ['cat', 'plant', 'ghost'];
   const MASCOT_EMOJI = {
     cat: { happy: '😻', neutral: '😼', sad: '🙀' },
@@ -219,13 +230,15 @@
         .sort((a, b) => a.date.localeCompare(b.date));
       if (mine.length === 0) return;
 
+      const hmColor = colorForId(hm.id);
       const group = document.createElement('div');
-      group.className = 'task-group';
+      group.className = 'task-group glow-card';
+      group.style.setProperty('--glow-color', `${hmColor}26`);
 
       const header = document.createElement('div');
       header.className = 'task-group-header';
       header.innerHTML = `
-        <div class="avatar">${hm.emoji}</div>
+        <div class="avatar" style="--avatar-color:${hmColor}">${hm.emoji}</div>
         <div class="task-group-name">${escapeHtml(hm.name)}</div>
         <div class="task-group-points">${hm.points} pts</div>
       `;
@@ -237,13 +250,16 @@
         const overdue = a.date < today && a.status === 'pending';
         const row = document.createElement('div');
         row.className = 'task-row' + (overdue ? ' overdue' : '');
+        const metaPill = overdue
+          ? `<span class="pill pill-overdue">Overdue · ${dayLabel(a.date)}</span>`
+          : `<span class="pill ${pillClass(chore.difficulty)}">${FREQ_LABEL[chore.frequency]}</span>`;
         row.innerHTML = `
           <button class="task-check ${a.status === 'done' ? 'done' : ''}" data-assignment="${a.id}" aria-label="Mark ${escapeHtml(chore.name)} done">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>
           <div class="task-label">
             <div class="task-name ${a.status === 'done' ? 'done' : ''}">${chore.icon} ${escapeHtml(chore.name)}</div>
-            <div class="task-meta">${overdue ? 'Overdue · ' + dayLabel(a.date) : FREQ_LABEL[chore.frequency]}</div>
+            <div class="task-meta">${metaPill}</div>
           </div>
           <div class="task-points">+${DIFF_POINTS[chore.difficulty]}</div>
         `;
@@ -337,11 +353,13 @@
       sorted.forEach((hm, i) => {
         const streak = computeStreak(hm.id);
         hm.streak = streak;
+        const hmColor = colorForId(hm.id);
         const li = document.createElement('li');
-        li.className = 'leaderboard-row';
+        li.className = 'leaderboard-row glow-card';
+        li.style.setProperty('--glow-color', `${hmColor}22`);
         li.innerHTML = `
           <div class="leaderboard-rank">${i + 1}</div>
-          <div class="avatar">${hm.emoji}</div>
+          <div class="avatar" style="--avatar-color:${hmColor}">${hm.emoji}</div>
           <div class="leaderboard-name">${escapeHtml(hm.name)}${streak > 0 ? ` <span class="leaderboard-streak">🔥 ${streak}d</span>` : ''}</div>
           <div class="leaderboard-points">${hm.points} pts</div>
         `;
@@ -398,7 +416,7 @@
     hmList.innerHTML = state.housemates.length
       ? state.housemates.map(hm => `
         <li class="manage-row">
-          <div class="avatar">${hm.emoji}</div>
+          <div class="avatar" style="--avatar-color:${colorForId(hm.id)}">${hm.emoji}</div>
           <div class="manage-row-main">
             <div class="manage-row-title">${escapeHtml(hm.name)}</div>
             <div class="manage-row-sub">${hm.points} pts</div>
@@ -414,10 +432,13 @@
     chList.innerHTML = state.chores.length
       ? state.chores.map(c => `
         <li class="manage-row">
-          <div class="avatar">${c.icon}</div>
+          <div class="avatar" style="--avatar-color:${colorForId(c.id)}">${c.icon}</div>
           <div class="manage-row-main">
             <div class="manage-row-title">${escapeHtml(c.name)}</div>
-            <div class="manage-row-sub">${DIFF_LABEL[c.difficulty]} · ${DIFF_POINTS[c.difficulty]}pt · ${FREQ_LABEL[c.frequency]}</div>
+            <div class="manage-row-sub">
+              <span class="pill ${pillClass(c.difficulty)}">${DIFF_LABEL[c.difficulty]} · ${DIFF_POINTS[c.difficulty]}pt</span>
+              <span class="pill pill-neutral">${FREQ_LABEL[c.frequency]}</span>
+            </div>
           </div>
           <button class="delete-btn" data-remove-chore="${c.id}" aria-label="Remove ${escapeHtml(c.name)}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
@@ -456,6 +477,12 @@
     svg.innerHTML = '';
     const n = items.length;
     const cx = 150, cy = 150, r = 145;
+
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    bg.setAttribute('cx', cx); bg.setAttribute('cy', cy); bg.setAttribute('r', r);
+    bg.setAttribute('fill', '#16171D');
+    svg.appendChild(bg);
+
     items.forEach((item, i) => {
       const startAngle = (i / n) * 2 * Math.PI - Math.PI / 2;
       const endAngle = ((i + 1) / n) * 2 * Math.PI - Math.PI / 2;
@@ -465,23 +492,39 @@
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z`);
       path.setAttribute('fill', WHEEL_COLORS[i % WHEEL_COLORS.length]);
-      path.setAttribute('stroke', '#fff');
+      path.setAttribute('stroke', '#0A0A0D');
       path.setAttribute('stroke-width', '2');
       svg.appendChild(path);
 
       const midAngle = (startAngle + endAngle) / 2;
-      const lx = cx + (r * 0.62) * Math.cos(midAngle);
-      const ly = cy + (r * 0.62) * Math.sin(midAngle);
+      const lx = cx + (r * 0.6) * Math.cos(midAngle);
+      const ly = cy + (r * 0.6) * Math.sin(midAngle);
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('x', lx);
       text.setAttribute('y', ly);
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('dominant-baseline', 'middle');
-      text.setAttribute('font-size', n > 6 ? '10' : '13');
+      text.setAttribute('font-size', n > 6 ? '15' : '19');
       text.setAttribute('transform', `rotate(${(midAngle * 180 / Math.PI) + 90}, ${lx}, ${ly})`);
       text.textContent = item.icon;
       svg.appendChild(text);
+
+      // rim dot marker at each segment boundary
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('cx', x1);
+      dot.setAttribute('cy', y1);
+      dot.setAttribute('r', '4.5');
+      dot.setAttribute('fill', '#fff');
+      dot.setAttribute('opacity', '0.85');
+      svg.appendChild(dot);
     });
+
+    const hub = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    hub.setAttribute('cx', cx); hub.setAttribute('cy', cy); hub.setAttribute('r', '14');
+    hub.setAttribute('fill', '#fff');
+    hub.setAttribute('stroke', '#0A0A0D');
+    hub.setAttribute('stroke-width', '3');
+    svg.appendChild(hub);
   }
 
   function spinWheelTo(n, targetIndex, onDone) {
