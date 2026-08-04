@@ -3,10 +3,105 @@
 
   const STORAGE_KEY = 'htolohState_v1';
   const DIFF_POINTS = { easy: 5, medium: 10, hard: 20 };
-  const DIFF_LABEL = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
-  const FREQ_LABEL = { daily: 'Daily', weekly: 'Weekly', 'one-time': 'One-time' };
   const WHEEL_COLORS = ['#63E6BE', '#FFD43D', '#FF6B9D', '#4D8EFF', '#9B5CFF', '#FF8C42', '#38D9C9', '#FF6B6B'];
   const ACCENT_PALETTE = ['#FF6B6B', '#FFB020', '#34D399', '#4D8EFF', '#C77DFF', '#FF5CA8', '#38B6FF', '#FFD43D', '#2DD4C8', '#FF8A5C'];
+  const MASCOT_ORDER = ['cat', 'plant', 'ghost'];
+  const MASCOT_EMOJI = {
+    cat: { happy: '😻', neutral: '😼', sad: '🙀' },
+    plant: { happy: '🌸', neutral: '🌿', sad: '🥀' },
+    ghost: { happy: '👻', neutral: '😶', sad: '💀' },
+  };
+  const HOUSEMATE_EMOJI_CHOICES = ['🦊', '🐱', '🐶', '🐼', '🐰', '🦁', '🐸', '🐨', '🦄', '🐵', '🦉', '🐷', '🐧', '🐻'];
+  const CHORE_EMOJI_CHOICES = ['🍽️', '🗑️', '🧹', '🌿', '🚽', '👕', '🛏️', '🪟', '🍳', '🧺', '🚿', '🧽', '📦', '🐾'];
+
+  // ---------- i18n ----------
+  const I18N = {
+    en: {
+      locale: 'en-US',
+      tabDashboard: 'Dashboard', tabWeek: 'Week', tabLeaderboard: 'Ranks', tabManage: 'Manage',
+      spinOne: 'Spin the Wheel', spinWeek: 'Spin for the Whole Week', close: 'Close',
+      todaysTasks: "Today's Tasks", weekSchedule: "This Week's Schedule",
+      leaderboard: 'Leaderboard', badges: 'Badges', housemates: 'Housemates', chores: 'Chores',
+      namePlaceholder: 'Name', chorePlaceholder: 'Chore name', add: 'Add',
+      optEasy: 'Easy · 5pt', optMedium: 'Medium · 10pt', optHard: 'Hard · 20pt',
+      optDaily: 'Daily', optWeekly: 'Weekly', optOneTime: 'One-time',
+      diffLabel: { easy: 'Easy', medium: 'Medium', hard: 'Hard' },
+      freqLabel: { daily: 'Daily', weekly: 'Weekly', 'one-time': 'One-time' },
+      overdue: 'Overdue', pts: 'pts', championSuffix: 'Champion',
+      emptyHousemates: 'No housemates yet.', emptyChores: 'No chores yet.',
+      emptyTasksNoHousemates: 'Add some housemates in the Manage tab to get started! 🏠',
+      emptyTasksNone: 'No tasks yet — hit Spin the Wheel! 🎡',
+      emptyBadges: 'Complete chores to start earning badges! 🏅',
+      noChoresCompleted: 'No chores completed yet',
+      moralePctSuffix: 'clean (last 7 days)',
+      mascotName: { cat: 'the house cat', plant: 'the house plant', ghost: 'the house ghost' },
+      moodIntro: name => `Meet ${name}! Spin the wheel to get started.`,
+      moodHappy: name => `${cap(name)} is thriving — the house is sparkling! ✨`,
+      moodNeutral: name => `${cap(name)} is doing okay, but could use some help.`,
+      moodSad: name => `${cap(name)} is begging you to clean up! 🥺`,
+      toastAddHousemateFirst: 'Add a housemate first! 🙋',
+      toastAllAssigned: 'All chores are already assigned! 🎉',
+      toastNothingWeek: 'Nothing left to assign this week! 🎉',
+      toastWeekReady: n => `This week's schedule is ready! 🗓️ (${n} tasks assigned)`,
+      toastHousemateJoined: name => `${name} joined the house! 🎉`,
+      toastChoreAdded: name => `Added "${name}" to the chore list!`,
+      toastMascotChanged: name => `House spirit is now ${name}!`,
+      spinResult: (ci, cn, he, hn) => `🎉 ${ci} ${cn} → ${he} ${hn}!`,
+      choreNames: {
+        'wash-dishes': 'Wash Dishes', 'take-out-trash': 'Take Out Trash', 'vacuum': 'Vacuum',
+        'water-plants': 'Water Plants', 'clean-bathroom': 'Clean Bathroom', 'fold-laundry': 'Fold Laundry',
+      },
+      specialBadges: {
+        'wash-dishes': 'Pan King', 'take-out-trash': 'Trash Can Lord', 'vacuum': 'Vacuum Vanquisher',
+        'clean-bathroom': 'Porcelain Paladin', 'fold-laundry': 'Fabric Folder Supreme', 'water-plants': 'Green Thumb',
+      },
+    },
+    uk: {
+      locale: 'uk-UA',
+      tabDashboard: 'Панель', tabWeek: 'Тиждень', tabLeaderboard: 'Рейтинг', tabManage: 'Керування',
+      spinOne: 'Крутити колесо', spinWeek: 'Крутити на весь тиждень', close: 'Закрити',
+      todaysTasks: 'Завдання на сьогодні', weekSchedule: 'Розклад на тиждень',
+      leaderboard: 'Рейтинг', badges: 'Значки', housemates: 'Мешканці', chores: 'Завдання',
+      namePlaceholder: "Ім'я", chorePlaceholder: 'Назва завдання', add: 'Додати',
+      optEasy: 'Легко · 5б', optMedium: 'Середньо · 10б', optHard: 'Складно · 20б',
+      optDaily: 'Щодня', optWeekly: 'Щотижня', optOneTime: 'Одноразово',
+      diffLabel: { easy: 'Легко', medium: 'Середньо', hard: 'Складно' },
+      freqLabel: { daily: 'Щодня', weekly: 'Щотижня', 'one-time': 'Одноразово' },
+      overdue: 'Прострочено', pts: 'балів', championSuffix: 'Чемпіон',
+      emptyHousemates: 'Мешканців ще немає.', emptyChores: 'Завдань ще немає.',
+      emptyTasksNoHousemates: 'Додайте мешканців на вкладці «Керування», щоб почати! 🏠',
+      emptyTasksNone: 'Завдань ще немає — натисніть «Крутити колесо»! 🎡',
+      emptyBadges: 'Виконуйте завдання, щоб отримувати значки! 🏅',
+      noChoresCompleted: 'Ще жодного завдання не виконано',
+      moralePctSuffix: 'чистоти (останні 7 днів)',
+      mascotName: { cat: 'домашній кіт', plant: 'домашня рослина', ghost: 'домашній привид' },
+      moodIntro: name => `Знайомтесь із ${name}! Крутіть колесо, щоб почати.`,
+      moodHappy: name => `${cap(name)} процвітає — у домі аж блищить! ✨`,
+      moodNeutral: name => `${cap(name)} почувається непогано, але не завадить допомога.`,
+      moodSad: name => `${cap(name)} благає прибратися! 🥺`,
+      toastAddHousemateFirst: 'Спочатку додайте мешканця! 🙋',
+      toastAllAssigned: 'Усі завдання вже розподілено! 🎉',
+      toastNothingWeek: 'На цей тиждень більше нічого розподіляти! 🎉',
+      toastWeekReady: n => `Розклад на тиждень готовий! 🗓️ (завдань розподілено: ${n})`,
+      toastHousemateJoined: name => `${name} приєднався(лась) до дому! 🎉`,
+      toastChoreAdded: name => `Додано «${name}» до списку завдань!`,
+      toastMascotChanged: name => `Тепер дух дому — ${name}!`,
+      spinResult: (ci, cn, he, hn) => `🎉 ${ci} ${cn} → ${he} ${hn}!`,
+      choreNames: {
+        'wash-dishes': 'Мити посуд', 'take-out-trash': 'Виносити сміття', 'vacuum': 'Пилососити',
+        'water-plants': 'Поливати рослини', 'clean-bathroom': 'Прибирати ванну', 'fold-laundry': 'Складати білизну',
+      },
+      specialBadges: {
+        'wash-dishes': 'Король Каструль', 'take-out-trash': 'Володар Сміттєвого Бака', 'vacuum': 'Переможець Пилососа',
+        'clean-bathroom': 'Ванний Паладин', 'fold-laundry': 'Майстер Складання', 'water-plants': 'Зелений Палець',
+      },
+    },
+  };
+
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function lang() { return state.settings.lang || 'en'; }
+  function T() { return I18N[lang()]; }
+  function choreName(c) { return T().choreNames[c.id] || c.name; }
 
   function colorForId(id) {
     let hash = 0;
@@ -17,23 +112,6 @@
   function pillClass(kind) {
     return { easy: 'pill-easy', medium: 'pill-medium', hard: 'pill-hard' }[kind] || 'pill-neutral';
   }
-  const MASCOT_ORDER = ['cat', 'plant', 'ghost'];
-  const MASCOT_EMOJI = {
-    cat: { happy: '😻', neutral: '😼', sad: '🙀' },
-    plant: { happy: '🌸', neutral: '🌿', sad: '🥀' },
-    ghost: { happy: '👻', neutral: '😶', sad: '💀' },
-  };
-  const MASCOT_NAME = { cat: 'the house cat', plant: 'the house plant', ghost: 'the house ghost' };
-  const SPECIAL_BADGE_NAMES = {
-    'wash-dishes': 'Pan King',
-    'take-out-trash': 'Trash Can Lord',
-    'vacuum': 'Vacuum Vanquisher',
-    'clean-bathroom': 'Porcelain Paladin',
-    'fold-laundry': 'Fabric Folder Supreme',
-    'water-plants': 'Green Thumb',
-  };
-  const HOUSEMATE_EMOJI_CHOICES = ['🦊', '🐱', '🐶', '🐼', '🐰', '🦁', '🐸', '🐨', '🦄', '🐵', '🦉', '🐷', '🐧', '🐻'];
-  const CHORE_EMOJI_CHOICES = ['🍽️', '🗑️', '🧹', '🌿', '🚽', '👕', '🛏️', '🪟', '🍳', '🧺', '🚿', '🧽', '📦', '🐾'];
 
   // ---------- date helpers ----------
   function todayStr() {
@@ -54,7 +132,7 @@
   function dayLabel(str) {
     const [y, m, d] = str.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
-    return dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    return dt.toLocaleDateString(T().locale, { weekday: 'short', month: 'short', day: 'numeric' });
   }
   function uid(prefix) {
     return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
@@ -73,7 +151,7 @@
         { id: 'fold-laundry', name: 'Fold Laundry', icon: '👕', difficulty: 'medium', frequency: 'weekly' },
       ],
       assignments: [],
-      settings: { mascotType: 'cat', nextIdx: 0 },
+      settings: { mascotType: 'cat', nextIdx: 0, lang: 'en' },
     };
   }
 
@@ -85,7 +163,8 @@
       if (!raw) return defaultState();
       const parsed = JSON.parse(raw);
       if (!parsed.housemates || !parsed.chores || !parsed.assignments) return defaultState();
-      parsed.settings = parsed.settings || { mascotType: 'cat', nextIdx: 0 };
+      parsed.settings = parsed.settings || { mascotType: 'cat', nextIdx: 0, lang: 'en' };
+      if (!parsed.settings.lang) parsed.settings.lang = 'en';
       return parsed;
     } catch (e) {
       return defaultState();
@@ -185,27 +264,26 @@
     const barEl = document.getElementById('spiritBarFill');
     const pctEl = document.getElementById('spiritPct');
 
+    const mascotName = T().mascotName[type];
     let tier = 'neutral';
     let displayPct = pct === null ? 70 : pct;
     if (pct === null) {
-      moodEl.textContent = `Meet ${MASCOT_NAME[type]}! Spin the wheel to get started.`;
+      moodEl.textContent = T().moodIntro(mascotName);
     } else if (pct >= 90) {
       tier = 'happy';
-      moodEl.textContent = `${capitalize(MASCOT_NAME[type])} is thriving — the house is sparkling! ✨`;
+      moodEl.textContent = T().moodHappy(mascotName);
     } else if (pct >= 50) {
       tier = 'neutral';
-      moodEl.textContent = `${capitalize(MASCOT_NAME[type])} is doing okay, but could use some help.`;
+      moodEl.textContent = T().moodNeutral(mascotName);
     } else {
       tier = 'sad';
-      moodEl.textContent = `${capitalize(MASCOT_NAME[type])} is begging you to clean up! 🥺`;
+      moodEl.textContent = T().moodSad(mascotName);
     }
 
     emojiEl.textContent = MASCOT_EMOJI[type][tier];
     barEl.style.width = `${displayPct}%`;
-    pctEl.textContent = pct === null ? 'No chores completed yet' : `${pct}% clean (last 7 days)`;
+    pctEl.textContent = pct === null ? T().noChoresCompleted : `${pct}% ${T().moralePctSuffix}`;
   }
-
-  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
   // ---------- today tasks ----------
   function renderToday() {
@@ -214,14 +292,14 @@
     container.innerHTML = '';
 
     if (state.housemates.length === 0) {
-      container.innerHTML = '<p class="empty-state">Add some housemates in the Manage tab to get started! 🏠</p>';
+      container.innerHTML = `<p class="empty-state">${T().emptyTasksNoHousemates}</p>`;
       return;
     }
 
     const relevant = state.assignments.filter(a => a.date === today || (a.date < today && a.status === 'pending'));
 
     if (relevant.length === 0) {
-      container.innerHTML = '<p class="empty-state">No tasks yet — hit Spin the Wheel! 🎡</p>';
+      container.innerHTML = `<p class="empty-state">${T().emptyTasksNone}</p>`;
       return;
     }
 
@@ -240,25 +318,26 @@
       header.innerHTML = `
         <div class="avatar" style="--avatar-color:${hmColor}">${hm.emoji}</div>
         <div class="task-group-name">${escapeHtml(hm.name)}</div>
-        <div class="task-group-points">${hm.points} pts</div>
+        <div class="task-group-points">${hm.points} ${T().pts}</div>
       `;
       group.appendChild(header);
 
       mine.forEach(a => {
         const chore = state.chores.find(c => c.id === a.choreId);
         if (!chore) return;
+        const cName = choreName(chore);
         const overdue = a.date < today && a.status === 'pending';
         const row = document.createElement('div');
         row.className = 'task-row' + (overdue ? ' overdue' : '');
         const metaPill = overdue
-          ? `<span class="pill pill-overdue">Overdue · ${dayLabel(a.date)}</span>`
-          : `<span class="pill ${pillClass(chore.difficulty)}">${FREQ_LABEL[chore.frequency]}</span>`;
+          ? `<span class="pill pill-overdue">${T().overdue} · ${dayLabel(a.date)}</span>`
+          : `<span class="pill ${pillClass(chore.difficulty)}">${T().freqLabel[chore.frequency]}</span>`;
         row.innerHTML = `
-          <button class="task-check ${a.status === 'done' ? 'done' : ''}" data-assignment="${a.id}" aria-label="Mark ${escapeHtml(chore.name)} done">
+          <button class="task-check ${a.status === 'done' ? 'done' : ''}" data-assignment="${a.id}" aria-label="${escapeHtml(cName)}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </button>
           <div class="task-label">
-            <div class="task-name ${a.status === 'done' ? 'done' : ''}">${chore.icon} ${escapeHtml(chore.name)}</div>
+            <div class="task-name ${a.status === 'done' ? 'done' : ''}">${chore.icon} ${escapeHtml(cName)}</div>
             <div class="task-meta">${metaPill}</div>
           </div>
           <div class="task-points">+${DIFF_POINTS[chore.difficulty]}</div>
@@ -296,7 +375,7 @@
     const table = document.getElementById('weekTable');
     table.innerHTML = '';
     if (state.housemates.length === 0) {
-      table.innerHTML = '<tr><td class="empty-state">Add housemates first.</td></tr>';
+      table.innerHTML = `<tr><td class="empty-state">${T().emptyHousemates}</td></tr>`;
       return;
     }
     const today = todayStr();
@@ -304,7 +383,7 @@
 
     const thead = document.createElement('thead');
     const headRow = document.createElement('tr');
-    headRow.innerHTML = '<th>Housemate</th>' + days.map(d => `<th>${dayLabel(d)}</th>`).join('');
+    headRow.innerHTML = `<th>${T().housemates}</th>` + days.map(d => `<th>${dayLabel(d)}</th>`).join('');
     thead.appendChild(headRow);
     table.appendChild(thead);
 
@@ -347,7 +426,7 @@
     const list = document.getElementById('leaderboardList');
     list.innerHTML = '';
     if (state.housemates.length === 0) {
-      list.innerHTML = '<li class="empty-state">No housemates yet.</li>';
+      list.innerHTML = `<li class="empty-state">${T().emptyHousemates}</li>`;
     } else {
       const sorted = [...state.housemates].sort((a, b) => b.points - a.points);
       sorted.forEach((hm, i) => {
@@ -361,7 +440,7 @@
           <div class="leaderboard-rank">${i + 1}</div>
           <div class="avatar" style="--avatar-color:${hmColor}">${hm.emoji}</div>
           <div class="leaderboard-name">${escapeHtml(hm.name)}${streak > 0 ? ` <span class="leaderboard-streak">🔥 ${streak}d</span>` : ''}</div>
-          <div class="leaderboard-points">${hm.points} pts</div>
+          <div class="leaderboard-points">${hm.points} ${T().pts}</div>
         `;
         list.appendChild(li);
       });
@@ -388,7 +467,7 @@
       if (entries.length > 1 && entries[1][1] === topCount) return;
       const hm = state.housemates.find(h => h.id === topId);
       if (!hm) return;
-      const title = SPECIAL_BADGE_NAMES[c.id] || `${c.name} Champion`;
+      const title = T().specialBadges[c.id] || `${choreName(c)} ${T().championSuffix}`;
       badges.push({ emoji: c.icon, title, holder: `${hm.emoji} ${hm.name}`, count: topCount });
     });
     return badges;
@@ -398,7 +477,7 @@
     const container = document.getElementById('badgesList');
     const badges = computeBadges();
     if (badges.length === 0) {
-      container.innerHTML = '<p class="empty-state">Complete chores to start earning badges! 🏅</p>';
+      container.innerHTML = `<p class="empty-state">${T().emptyBadges}</p>`;
       return;
     }
     container.innerHTML = badges.map(b => `
@@ -419,14 +498,14 @@
           <div class="avatar" style="--avatar-color:${colorForId(hm.id)}">${hm.emoji}</div>
           <div class="manage-row-main">
             <div class="manage-row-title">${escapeHtml(hm.name)}</div>
-            <div class="manage-row-sub">${hm.points} pts</div>
+            <div class="manage-row-sub">${hm.points} ${T().pts}</div>
           </div>
           <button class="delete-btn" data-remove-housemate="${hm.id}" aria-label="Remove ${escapeHtml(hm.name)}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
           </button>
         </li>
       `).join('')
-      : '<li class="empty-state">No housemates yet.</li>';
+      : `<li class="empty-state">${T().emptyHousemates}</li>`;
 
     const chList = document.getElementById('choreList');
     chList.innerHTML = state.chores.length
@@ -434,18 +513,18 @@
         <li class="manage-row">
           <div class="avatar" style="--avatar-color:${colorForId(c.id)}">${c.icon}</div>
           <div class="manage-row-main">
-            <div class="manage-row-title">${escapeHtml(c.name)}</div>
+            <div class="manage-row-title">${escapeHtml(choreName(c))}</div>
             <div class="manage-row-sub">
-              <span class="pill ${pillClass(c.difficulty)}">${DIFF_LABEL[c.difficulty]} · ${DIFF_POINTS[c.difficulty]}pt</span>
-              <span class="pill pill-neutral">${FREQ_LABEL[c.frequency]}</span>
+              <span class="pill ${pillClass(c.difficulty)}">${T().diffLabel[c.difficulty]} · ${DIFF_POINTS[c.difficulty]}pt</span>
+              <span class="pill pill-neutral">${T().freqLabel[c.frequency]}</span>
             </div>
           </div>
-          <button class="delete-btn" data-remove-chore="${c.id}" aria-label="Remove ${escapeHtml(c.name)}">
+          <button class="delete-btn" data-remove-chore="${c.id}" aria-label="Remove ${escapeHtml(choreName(c))}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg>
           </button>
         </li>
       `).join('')
-      : '<li class="empty-state">No chores yet.</li>';
+      : `<li class="empty-state">${T().emptyChores}</li>`;
 
     hmList.querySelectorAll('[data-remove-housemate]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -555,11 +634,11 @@
 
   function spinOnce() {
     if (spinning) return;
-    if (state.housemates.length === 0) { toast('Add a housemate first! 🙋'); return; }
+    if (state.housemates.length === 0) { toast(T().toastAddHousemateFirst); return; }
     const today = todayStr();
     const windowEnd = addDays(today, 6);
     const pool = poolForDate(today, today, windowEnd);
-    if (pool.length === 0) { toast('All chores are already assigned! 🎉'); return; }
+    if (pool.length === 0) { toast(T().toastAllAssigned); return; }
 
     const housemate = pickHousemate(today);
     const choreIndex = weightedPickChore(pool, housemate);
@@ -579,7 +658,7 @@
       save();
       const resultEl = document.getElementById('wheelResult');
       resultEl.hidden = false;
-      resultEl.textContent = `🎉 ${chore.icon} ${chore.name} → ${housemate.emoji} ${housemate.name}!`;
+      resultEl.textContent = T().spinResult(chore.icon, choreName(chore), housemate.emoji, housemate.name);
       spinning = false;
       document.getElementById('spinOneBtn').disabled = false;
       document.getElementById('spinWeekBtn').disabled = false;
@@ -588,7 +667,7 @@
   }
 
   function spinWholeWeek() {
-    if (state.housemates.length === 0) { toast('Add a housemate first! 🙋'); return; }
+    if (state.housemates.length === 0) { toast(T().toastAddHousemateFirst); return; }
     const today = todayStr();
     const windowEnd = addDays(today, 6);
     let assignedCount = 0;
@@ -617,9 +696,9 @@
     save();
     renderAll();
     if (assignedCount === 0) {
-      toast('Nothing left to assign this week! 🎉');
+      toast(T().toastNothingWeek);
     } else {
-      toast(`This week's schedule is ready! 🗓️ (${assignedCount} tasks assigned)`);
+      toast(T().toastWeekReady(assignedCount));
       switchTab('week');
     }
   }
@@ -663,7 +742,14 @@
       state.settings.mascotType = MASCOT_ORDER[(idx + 1) % MASCOT_ORDER.length];
       save();
       renderSpirit();
-      toast(`House spirit is now ${MASCOT_NAME[state.settings.mascotType]}!`);
+      toast(T().toastMascotChanged(T().mascotName[state.settings.mascotType]));
+    });
+
+    document.getElementById('langBtn').addEventListener('click', () => {
+      state.settings.lang = lang() === 'en' ? 'uk' : 'en';
+      save();
+      applyStaticI18n();
+      renderAll();
     });
 
     document.getElementById('housemateForm').addEventListener('submit', e => {
@@ -676,7 +762,7 @@
       save();
       nameInput.value = '';
       renderAll();
-      toast(`${name} joined the house! 🎉`);
+      toast(T().toastHousemateJoined(name));
     });
 
     document.getElementById('choreForm').addEventListener('submit', e => {
@@ -697,10 +783,24 @@
       save();
       nameInput.value = '';
       renderAll();
-      toast(`Added "${name}" to the chore list!`);
+      toast(T().toastChoreAdded(name));
     });
 
+    applyStaticI18n();
     renderAll();
+  }
+
+  function applyStaticI18n() {
+    document.documentElement.lang = lang();
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (T()[key] !== undefined) el.textContent = T()[key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.dataset.i18nPlaceholder;
+      if (T()[key] !== undefined) el.placeholder = T()[key];
+    });
+    document.getElementById('langBtn').textContent = lang() === 'en' ? 'EN' : 'UA';
   }
 
   document.addEventListener('DOMContentLoaded', init);

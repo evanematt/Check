@@ -22,16 +22,19 @@
         </div>
         <p class="spirit-pct" id="spiritPct">— % clean (last 7 days)</p>
       </div>
-      <button class="icon-btn spirit-settings" id="mascotBtn" title="Change house spirit" aria-label="Change house spirit">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      </button>
+      <div class="spirit-actions">
+        <button class="icon-btn lang-btn" id="langBtn" title="Change language" aria-label="Change language">EN</button>
+        <button class="icon-btn" id="mascotBtn" title="Change house spirit" aria-label="Change house spirit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
     </header>
 
     <nav class="tabbar" id="tabbar">
-      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
-      <button class="tab-btn" data-tab="week">This Week</button>
-      <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
-      <button class="tab-btn" data-tab="manage">Manage</button>
+      <button class="tab-btn active" data-tab="dashboard" data-i18n="tabDashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="week" data-i18n="tabWeek">Week</button>
+      <button class="tab-btn" data-tab="leaderboard" data-i18n="tabLeaderboard">Ranks</button>
+      <button class="tab-btn" data-tab="manage" data-i18n="tabManage">Manage</button>
     </nav>
 
     <main>
@@ -39,9 +42,9 @@
       <section class="tab-panel active" id="panel-dashboard">
         <div class="spin-wrap">
           <button class="btn btn-primary btn-spin" id="spinOneBtn">
-            <span class="btn-emoji">🎡</span> Spin the Wheel
+            <span class="btn-emoji">🎡</span> <span data-i18n="spinOne">Spin the Wheel</span>
           </button>
-          <button class="btn btn-secondary" id="spinWeekBtn">Spin for the Whole Week</button>
+          <button class="btn btn-secondary" id="spinWeekBtn" data-i18n="spinWeek">Spin for the Whole Week</button>
         </div>
 
         <div class="wheel-stage" id="wheelStage" hidden>
@@ -50,16 +53,16 @@
             <svg id="wheelSvg" viewBox="0 0 300 300" class="wheel-svg"></svg>
           </div>
           <div class="wheel-result" id="wheelResult" hidden></div>
-          <button class="btn btn-ghost" id="closeWheelBtn">Close</button>
+          <button class="btn btn-ghost" id="closeWheelBtn" data-i18n="close">Close</button>
         </div>
 
-        <h2 class="section-title">Today's Tasks</h2>
+        <h2 class="section-title" data-i18n="todaysTasks">Today's Tasks</h2>
         <div id="todayTasks" class="task-groups"></div>
       </section>
 
       <!-- WEEK -->
       <section class="tab-panel" id="panel-week">
-        <h2 class="section-title">This Week's Schedule</h2>
+        <h2 class="section-title" data-i18n="weekSchedule">This Week's Schedule</h2>
         <div class="week-table-wrap">
           <table class="week-table" id="weekTable"></table>
         </div>
@@ -67,38 +70,38 @@
 
       <!-- LEADERBOARD -->
       <section class="tab-panel" id="panel-leaderboard">
-        <h2 class="section-title">Leaderboard</h2>
+        <h2 class="section-title" data-i18n="leaderboard">Leaderboard</h2>
         <ol class="leaderboard" id="leaderboardList"></ol>
-        <h2 class="section-title">Badges</h2>
+        <h2 class="section-title" data-i18n="badges">Badges</h2>
         <div class="badges" id="badgesList"></div>
       </section>
 
       <!-- MANAGE -->
       <section class="tab-panel" id="panel-manage">
-        <h2 class="section-title">Housemates</h2>
+        <h2 class="section-title" data-i18n="housemates">Housemates</h2>
         <ul class="manage-list" id="housemateList"></ul>
         <form class="add-form" id="housemateForm">
-          <input type="text" id="housemateName" placeholder="Name" maxlength="20" required />
+          <input type="text" id="housemateName" placeholder="Name" data-i18n-placeholder="namePlaceholder" maxlength="20" required />
           <select id="housemateEmoji"></select>
-          <button type="submit" class="btn btn-primary btn-small">Add</button>
+          <button type="submit" class="btn btn-primary btn-small" data-i18n="add">Add</button>
         </form>
 
-        <h2 class="section-title">Chores</h2>
+        <h2 class="section-title" data-i18n="chores">Chores</h2>
         <ul class="manage-list" id="choreList"></ul>
         <form class="add-form add-form-chore" id="choreForm">
-          <input type="text" id="choreName" placeholder="Chore name" maxlength="30" required />
+          <input type="text" id="choreName" placeholder="Chore name" data-i18n-placeholder="chorePlaceholder" maxlength="30" required />
           <select id="choreEmoji"></select>
           <select id="choreDifficulty">
-            <option value="easy">Easy · 5pt</option>
-            <option value="medium" selected>Medium · 10pt</option>
-            <option value="hard">Hard · 20pt</option>
+            <option value="easy" data-i18n="optEasy">Easy · 5pt</option>
+            <option value="medium" selected data-i18n="optMedium">Medium · 10pt</option>
+            <option value="hard" data-i18n="optHard">Hard · 20pt</option>
           </select>
           <select id="choreFrequency">
-            <option value="daily" selected>Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="one-time">One-time</option>
+            <option value="daily" selected data-i18n="optDaily">Daily</option>
+            <option value="weekly" data-i18n="optWeekly">Weekly</option>
+            <option value="one-time" data-i18n="optOneTime">One-time</option>
           </select>
-          <button type="submit" class="btn btn-primary btn-small">Add</button>
+          <button type="submit" class="btn btn-primary btn-small" data-i18n="add">Add</button>
         </form>
       </section>
     </main>
