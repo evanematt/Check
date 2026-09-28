@@ -132,24 +132,18 @@
       </div>
     </div>
     </div>
-      <div class="lower-third" id="lt" aria-live="polite"><span class="lt-num" id="ltNum"></span><span class="lt-title" id="ltTitle"></span></div>
       <div class="toast" id="toast"><span data-icon="checkCircle"></span><span id="toastText"></span></div>
     </div>
   </main>
 
   <footer class="controls" id="controls">
-    <div class="ctl-top">
-      <div class="ctl-buttons">
-        <button class="ctl-btn" id="playBtn" aria-label="Pause"></button>
-        <button class="ctl-btn" id="restartBtn" aria-label="Restart"></button>
-        <button class="ctl-btn speed" id="speedBtn">1×</button>
-      </div>
-      <div class="ctl-caption">
-        <div class="ctl-title" id="capTitle"></div>
-        <div class="ctl-desc" id="capDesc"></div>
-      </div>
+    <button class="ctl-btn" id="playBtn" aria-label="Pause"></button>
+    <button class="ctl-btn" id="restartBtn" aria-label="Restart"></button>
+    <div class="timeline" id="timeline" role="slider" tabindex="0" aria-label="Playback position" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+      <div class="tl-track"><div class="tl-fill" id="tlFill"></div></div>
     </div>
-    <nav class="chapters" id="chapters"></nav>
+    <span class="tl-time" id="tlTime">0:00 / 0:00</span>
+    <button class="ctl-btn speed" id="speedBtn" aria-label="Playback speed">1×</button>
   </footer>
 
   <script src="app.js"></script>

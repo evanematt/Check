@@ -1,26 +1,30 @@
 # Drawing Review — flow animation
 
 An animated, self-playing prototype of the Drawing Review workflow, rebuilt in HTML/CSS/JS from the
-Figma file (`Untitled`, node `114:388`). A scripted cursor walks through the whole flow; the controls
-bar lets you pause, change speed, restart, or jump to any chapter.
+Figma file (`Untitled`, node `114:388`). It plays as one continuous video (about 3 minutes, looping):
+a scripted cursor walks through the whole flow while a virtual camera zooms and pans to each moment.
+The player bar has play/pause, restart, a seekable timeline and playback speed.
 
 Open `index.html` through any static server (e.g. `python3 -m http.server`) and visit it in a browser.
-Add `?chapter=7` to start at a specific chapter. Keyboard: `Space` play/pause, `←` / `→` previous/next chapter.
+Keyboard: `Space` play/pause; with the timeline focused, `←` / `→` jump back or forward.
+URL options: `?scene=7` starts at the 7th scene, `?speed=2` plays faster.
 
-## Chapters
+## Flow
 
-1. **Launch workflow** — open Drawing Review from Workflows, attach the drawing, type and send the prompt.
-2. **Clarifying questions** — reasoning panel with questions, answer options and a custom response.
-3. **Plan & tasks** — the agent's task list completes step by step.
-4. **Drawing Review ready** — streamed answer with the Drawing Review artifact card.
-5. **Issues panel** — the header button on the right opens the issues panel on the left.
-6. **Issue actions** — action menu (Autodesk / Fieldwire / Bentley ProjectWise), accept, ignore, reopen.
-7. **Drawing with callouts** — the artifact opens; callouts follow the selected issue.
-8. **Filter issues** — discipline filter; the list, chips and drawing markers update together.
-9. **Download & history** — download as Excel/JSON, browse version history.
-10. **Issues ↔ Files** — switch artifact source, switch the panel between issues and files in context.
-11. **Split view** — two drawings side by side.
-12. **Layout combinations** — issues + artifact + chat, issues + artifact, artifact + chat, artifact only, issues + chat.
+The video runs through these scenes without cuts:
+
+- Launch Drawing Review from Workflows, attach the drawing, type and send the prompt.
+- The agent reasons and asks clarifying questions (answer options and a custom response).
+- The agent's plan and task list complete step by step.
+- The streamed answer with the Drawing Review artifact card.
+- The header button on the right opens the issues panel on the left.
+- Issue actions (Autodesk / Fieldwire / Bentley ProjectWise), accept, ignore, reopen.
+- The artifact opens; drawing callouts follow the selected issue.
+- Discipline filters update the list, chips and drawing markers together.
+- Download as Excel/JSON and browse version history.
+- Switch artifact source, and switch the panel between issues and files in context.
+- Split view with two drawings side by side.
+- Layout combinations: issues + artifact + chat, issues + artifact, artifact + chat, artifact only, issues + chat.
 
 ## Motion
 
@@ -35,7 +39,7 @@ Directed with the [LottieFiles motion-design skill](https://github.com/LottieFil
 - **Three layers.** Primary (camera, cursor, UI action); secondary (issue list cascade 45ms apart,
   menu items 22ms apart, drawing lift-in after the column opens, layout "kick"); ambient (slow drift
   while zoomed, edge vignette, background gradient).
-- **Arcs.** The cursor travels on curved paths. Each chapter dissolves in and gets a lower-third title.
+- **Arcs.** The cursor travels on curved paths. Scenes hand off directly; only a start or seek dissolves in.
 - **Controls.** Pause freezes every running animation. `prefers-reduced-motion` turns off camera
   moves and ambient drift.
 

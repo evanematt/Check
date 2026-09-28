@@ -1,7 +1,7 @@
 /* Drawing Review — animated flow prototype.
- * A 1920×1080 product mock driven by a scripted cursor. Each chapter first
- * snaps the UI to its starting state (setup), then animates the interaction,
- * so any chapter can be replayed on its own from the controls bar. */
+ * A 1920×1080 product mock driven by a scripted cursor, played as one
+ * continuous film. Each scene ends in the next scene's starting state; setup()
+ * only snaps the UI into place when playback starts or seeks to a scene. */
 (() => {
 'use strict';
 
@@ -182,7 +182,7 @@ $('#msgUser').textContent = PROMPT;
 hydrate(document);
 
 // ---------------------------------------------------------------- timing / cancellation
-let RUN = 0, paused = false, speed = 1;
+let RUN = 0, paused = false, speed = 1, clock = 0, flowing = false;
 class Cancel extends Error {}
 function wait(ms) {
   const id = RUN;
@@ -190,7 +190,7 @@ function wait(ms) {
     let last = performance.now(), acc = 0;
     const tick = (now) => {
       if (id !== RUN) return rej(new Cancel());
-      if (!paused) acc += (now - last) * speed;
+      if (!paused) { const d = (now - last) * speed; acc += d; clock += d; }
       last = now;
       if (acc >= ms) res(); else requestAnimationFrame(tick);
     };
@@ -615,6 +615,8 @@ async function typeText(setter, text) {
 
 // ---------------------------------------------------------------- setup
 function setup(state) {
+  if (flowing) return;
+  flowing = true;
   stage.classList.add('instant');
   closeMenus(true);
   clearHover();
@@ -630,7 +632,7 @@ function setup(state) {
   stage.classList.remove('instant');
   camSet({ x: 0, y: 0, z: 1 });
   frame.classList.remove('zoomed');
-  // cut: each chapter dissolves in from a slight push
+  // opening dissolve after a start or seek
   anim(rig, [{ opacity: 0, transform: 'scale(1.03)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 650, easing: EASE.enter });
 }
 const AFTER_ANSWER = { launched: true, sent: true, thinking: true, answered: true, answerFull: true };
@@ -865,6 +867,12 @@ const CHAPTERS = [
     await wait(500);
     await camera(PANEL_AND_DRAWING, { dur: 1000 });
     await wait(1200);
+    for (const k of [...S.filters]) {
+      await click(chipsEl.querySelector(`[data-k="${k}"] .x`));
+      S.filters = S.filters.filter((f) => f !== k); render();
+      await wait(350);
+    }
+    await wait(600);
   } },
 
   { title: 'Download & history', desc: 'The artifact can be downloaded as Excel or JSON, and its change history browsed by version.', async run() {
@@ -974,7 +982,7 @@ const CHAPTERS = [
 
   { title: 'Layout combinations', desc: 'Issues, artifact and chat can be combined freely.', async run() {
     setup({ ...AFTER_ANSWER, issues: true, artifact: true, marks: true });
-    const combo = async (text, fn) => { setDesc(text); await fn(); await wait(1700); };
+    const combo = async (text, fn) => { await fn(); toast(text, 1600); await wait(1700); };
     const toggle = async (el, change) => { await click(el); change(); render(); kick(); };
     await combo('Issues panel + artifact + chat.', async () => wait(400));
     await combo('Issues panel + artifact — chat closed.', () => toggle($('#btnChat'), () => { S.chat = false; }));
@@ -995,19 +1003,36 @@ const CHAPTERS = [
   } },
 ];
 
-// ---------------------------------------------------------------- controls
+// ---------------------------------------------------------------- player
+// One continuous film. Scene lengths (ms at 1×) place each scene on the timeline
+// so the scrubber can seek; seeking starts the scene from its opening state.
+const SCENE_MS = [25330, 15090, 8320, 10420, 10020, 14490, 15430, 18640, 12260, 18290, 11920, 17330];
+const TOTAL = SCENE_MS.reduce((a, b) => a + b, 0);
+const sceneStart = (i) => SCENE_MS.slice(0, i).reduce((a, b) => a + b, 0);
 let current = 0;
-const chapNav = $('#chapters');
-chapNav.innerHTML = CHAPTERS.map((c, i) => `<button class="chap" data-i="${i}"><b>${String(i + 1).padStart(2, '0')}</b>${c.title}</button>`).join('');
-chapNav.addEventListener('click', (e) => { const b = e.target.closest('.chap'); if (b) play(+b.dataset.i); });
-function setDesc(t) { $('#capDesc').textContent = t; }
-function updateControls() {
-  $('#capTitle').textContent = `${current + 1}. ${CHAPTERS[current].title}`;
-  setDesc(CHAPTERS[current].desc);
-  $$('.chap', chapNav).forEach((b, i) => { b.classList.toggle('active', i === current); b.classList.toggle('done', i < current); });
-  const a = $$('.chap', chapNav)[current];
-  if (a) chapNav.scrollTo({ left: a.offsetLeft - chapNav.clientWidth / 2 + a.offsetWidth / 2, behavior: 'smooth' });
+const bar = $('#timeline'), fill = $('#tlFill'), timeEl = $('#tlTime');
+const mmss = (ms) => { const t = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+(function tick() {
+  const t = Math.min(clock, TOTAL);
+  fill.style.transform = `scaleX(${t / TOTAL})`;
+  timeEl.textContent = `${mmss(t)} / ${mmss(TOTAL)}`;
+  bar.setAttribute('aria-valuenow', Math.round(t / 1000));
+  requestAnimationFrame(tick);
+})();
+bar.setAttribute('aria-valuemax', Math.round(TOTAL / 1000));
+function seekTo(ms) {
+  let i = 0;
+  while (i < SCENE_MS.length - 1 && sceneStart(i + 1) <= ms) i++;
+  play(i);
 }
+bar.addEventListener('click', (e) => {
+  const r = bar.getBoundingClientRect();
+  seekTo(((e.clientX - r.left) / r.width) * TOTAL);
+});
+bar.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') { e.preventDefault(); play(Math.min(current + 1, SCENE_MS.length - 1)); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); play(Math.max(current - 1, 0)); }
+});
 const playBtn = $('#playBtn');
 function syncPlayBtn() { playBtn.innerHTML = icon(paused ? 'play' : 'pause'); playBtn.setAttribute('aria-label', paused ? 'Play' : 'Pause'); }
 // pausing freezes every running CSS and Web Animation, not just the script
@@ -1029,32 +1054,21 @@ $('#speedBtn').addEventListener('click', (e) => {
   frame.style.setProperty('--spd', speed);
 });
 document.addEventListener('keydown', (e) => {
-  if (e.key === ' ') { e.preventDefault(); playBtn.click(); }
-  if (e.key === 'ArrowRight') play(Math.min(current + 1, CHAPTERS.length - 1));
-  if (e.key === 'ArrowLeft') play(Math.max(current - 1, 0));
+  if (e.key === ' ' && e.target === document.body) { e.preventDefault(); playBtn.click(); }
 });
-
-// lower-third chapter title, in screen space above the camera
-let ltTimer;
-function lowerThird(i) {
-  const lt = $('#lt');
-  $('#ltNum').textContent = String(i + 1).padStart(2, '0');
-  $('#ltTitle').textContent = CHAPTERS[i].title;
-  lt.classList.remove('show', 'hide'); void lt.offsetWidth; lt.classList.add('show');
-  clearTimeout(ltTimer);
-  ltTimer = setTimeout(() => lt.classList.add('hide'), 3400 / speed);
-}
 
 async function play(from) {
   setPaused(false);
   const id = ++RUN;
+  flowing = false;
   for (let i = from; i < CHAPTERS.length; i++) {
     current = i;
-    updateControls();
-    lowerThird(i);
+    clock = sceneStart(i);
     try { await CHAPTERS[i].run(); } catch (e) { if (e instanceof Cancel) return; throw e; }
+    if (new URLSearchParams(location.search).has('timing')) console.log('scene', i, Math.round(clock - sceneStart(i)));
     if (id !== RUN) return;
   }
+  if (new URLSearchParams(location.search).has('timing')) console.log('end');
   try { await wait(2200); } catch (e) { return; }
   if (id === RUN) play(0);
 }
@@ -1070,6 +1084,7 @@ new ResizeObserver(fit).observe(viewport);
 fit();
 
 syncPlayBtn();
-const start = new URLSearchParams(location.search).get('chapter');
-play(Math.max(0, Math.min(CHAPTERS.length - 1, (+start || 1) - 1)));
+const params = new URLSearchParams(location.search);
+if (params.has('speed')) speed = +params.get('speed') || 1;
+play(Math.max(0, Math.min(CHAPTERS.length - 1, (+params.get('scene') || 1) - 1)));
 })();
