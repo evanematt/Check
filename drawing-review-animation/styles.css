@@ -527,10 +527,16 @@ svg { display: block; }
 
 /* Cursor */
 .cursor { position: absolute; left: 0; top: 0; z-index: 40; pointer-events: none; transform: translate(960px, 600px); will-change: transform; }
-.cursor svg { filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); position: relative; z-index: 1; margin: -2px 0 0 -3px; }
+.cursor svg { filter: drop-shadow(0 2px 3px rgba(0,0,0,.25)); position: absolute; left: 0; top: 0; z-index: 1; opacity: 0; transform: scale(.85); transition: transform .18s cubic-bezier(.34, 1.56, .64, 1); }
+/* each shape is offset so its hotspot (arrow tip, fingertip, I-beam centre) sits on the pointer position */
+.cursor .c-arrow { margin: -2px 0 0 -3px; transform-origin: 3px 2px; }
+.cursor .c-hand { margin: -3px 0 0 -10.5px; transform-origin: 10.5px 3px; }
+.cursor .c-text { margin: -13px 0 0 -13px; }
+.cursor:not([data-mode]) .c-arrow, .cursor[data-mode="arrow"] .c-arrow,
+.cursor[data-mode="pointer"] .c-hand, .cursor[data-mode="text"] .c-text { opacity: 1; transform: none; }
 .cursor .ripple { position: absolute; left: -14px; top: -14px; width: 28px; height: 28px; border-radius: 50%; background: rgba(72,129,109,.35); transform: scale(0); opacity: 0; }
 .cursor.click .ripple { animation: ripple .5s ease-out; }
-.cursor.click svg { transform: scale(.88); transition: transform .1s; }
+.cursor.click svg { scale: .88; transition: scale .1s; }
 @keyframes ripple { 0% { transform: scale(.2); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
 
 /* ---------- Player bar ---------- */

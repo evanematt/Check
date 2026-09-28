@@ -573,11 +573,14 @@ function kick() {
 // ---------------------------------------------------------------- cursor
 let cur = { x: 1180, y: 620 }, hovered = null, curAnim = null;
 function clearHover() { $$('.stage .hover').forEach((e) => e.classList.remove('hover')); hovered = null; }
+// arrow over empty space, hand over anything clickable, I-beam over text fields
+function setCursor(mode) { cursorEl.dataset.mode = mode; }
 async function moveTo(el, { ox = 0.5, oy = 0.5, dx = 0, dy = 0, hover = el } = {}) {
   const b = el.nodeType ? box(el) : el;
   const x = b.x + b.w * ox + dx, y = b.y + b.h * oy + dy;
   const dist = Math.hypot(x - cur.x, y - cur.y);
   const dur = Math.min(950, Math.max(260, 180 + dist * 0.5));
+  if (dist > 24 && hovered) { hovered.classList.remove('hover'); hovered = null; setCursor('arrow'); }
   if (dist > 2) {
     // travel on a gentle arc, never a straight line
     const bend = Math.min(70, dist * 0.12) * (x >= cur.x ? -1 : 1);
@@ -595,6 +598,7 @@ async function moveTo(el, { ox = 0.5, oy = 0.5, dx = 0, dy = 0, hover = el } = {
   if (hovered) hovered.classList.remove('hover');
   hovered = hover && hover.nodeType ? hover : null;
   if (hovered) hovered.classList.add('hover');
+  setCursor(!hovered ? 'arrow' : hovered.closest('#cInput, .q-input') ? 'text' : 'pointer');
 }
 async function click(el, opts) {
   await moveTo(el, opts);
@@ -622,6 +626,7 @@ function setup(state) {
   stage.classList.add('instant');
   closeMenus(true);
   clearHover();
+  setCursor('arrow');
   clearTimeout(toastTimer);
   $('#toast').classList.remove('show');
   $('#cInput').classList.remove('focus');
