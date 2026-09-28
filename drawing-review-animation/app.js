@@ -135,7 +135,7 @@ const data = () => (S.dataset === 'sub' ? SUB : DR);
 
 // ---------------------------------------------------------------- dom
 const $ = (s, r = document) => r.querySelector(s);
-const stage = $('#stage'), viewport = $('#viewport'), overlay = $('#overlay'), cursorEl = $('#cursor');
+const stage = $('#stage'), frame = $('#frame'), rig = $('#rig'), viewport = $('#viewport'), overlay = $('#overlay'), cursorEl = $('#cursor');
 const chatCol = $('#chatCol'), issuesCol = $('#issuesCol'), artifactCol = $('#artifactCol');
 const issueList = $('#issueList'), chipsEl = $('#chips');
 const answerEl = $('#answer');
@@ -182,7 +182,7 @@ $('#msgUser').textContent = PROMPT;
 hydrate(document);
 
 // ---------------------------------------------------------------- timing / cancellation
-let RUN = 0, paused = false, speed = 1, stageScale = 1;
+let RUN = 0, paused = false, speed = 1;
 class Cancel extends Error {}
 function wait(ms) {
   const id = RUN;
@@ -212,20 +212,20 @@ const BODY_W = 1868, SIDE_W = 458;
 
 function render() {
   const inst = stage.classList.contains('instant');
-  const anim = (cond, el, cls) => { if (!inst && cond) enter(el, cls); };
+  const enterIf = (cond, el, cls) => { if (!inst && cond) enter(el, cls); };
 
   // chat
   chatCol.classList.toggle('launched', S.launched);
   chatCol.classList.toggle('sent', S.sent);
   chatCol.classList.toggle('is-thinking', S.thinking && !S.answered);
   chatCol.classList.toggle('answered', S.answered);
-  anim(S.sent && !Prev.sent, $('#msgFile'));
-  anim(S.sent && !Prev.sent, $('#msgUser'));
-  anim(S.thinking && !Prev.thinking, $('#thinking'));
-  anim(S.answered && !Prev.answered, $('.meta', answerEl));
+  enterIf(S.sent && !Prev.sent, $('#msgFile'));
+  enterIf(S.sent && !Prev.sent, $('#msgUser'));
+  enterIf(S.thinking && !Prev.thinking, $('#thinking'));
+  enterIf(S.answered && !Prev.answered, $('.meta', answerEl));
   answerEl.classList.toggle('full', S.answerFull);
   $('#composer').classList.toggle('attached', S.attached);
-  anim(S.attached && !Prev.attached, $('#attach'));
+  enterIf(S.attached && !Prev.attached, $('#attach'));
   $('#typed').textContent = S.typed;
   $('#cInput').classList.toggle('has-text', !!S.typed);
   $('#send').classList.toggle('ready', !!S.typed);
@@ -255,6 +255,19 @@ function render() {
   const chat = S.chat || !S.artifact;
   const cw = !chat ? 0 : S.artifact ? SIDE_W : BODY_W - iw;
   const aw = S.artifact ? BODY_W - iw - cw : 0;
+  if (!inst && S.issues && !Prev.issues) {
+    // list cascades in behind the sliding panel (45ms stagger, follow-through after the panel)
+    $$('.issue-card', issueList).forEach((c, i) => anim(c, [{ opacity: 0, transform: 'translateX(-22px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 420, delay: 180 + i * 45, easing: EASE.enter, fill: 'backwards' }));
+  }
+  if (!inst && S.artifact && !Prev.artifact) {
+    anim($('.canvas', paneA), [{ opacity: 0, transform: 'translateY(28px) scale(.96)' }, { opacity: 1, transform: 'none' }],
+      { duration: 700, delay: 220, easing: EASE.enter, fill: 'backwards' });
+  }
+  if (!inst && S.split && !Prev.split) {
+    anim($('.canvas', paneB), [{ opacity: 0, transform: 'translateX(48px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 650, delay: 200, easing: EASE.enter, fill: 'backwards' });
+  }
   issuesCol.style.width = iw + 'px';
   artifactCol.style.width = aw + 'px';
   chatCol.style.width = cw + 'px';
@@ -440,8 +453,9 @@ function $$(s, r = document) { return [...r.querySelectorAll(s)]; }
 
 // ---------------------------------------------------------------- overlay: menus, toast
 function box(el) {
-  const sr = stage.getBoundingClientRect(), r = el.getBoundingClientRect();
-  return { x: (r.left - sr.left) / stageScale, y: (r.top - sr.top) / stageScale, w: r.width / stageScale, h: r.height / stageScale };
+  // stage coordinates, correct at any camera zoom (including mid-move)
+  const sr = stage.getBoundingClientRect(), r = el.getBoundingClientRect(), k = sr.width / 1920;
+  return { x: (r.left - sr.left) / k, y: (r.top - sr.top) / k, w: r.width / k, h: r.height / k };
 }
 function showMenu(anchor, items, { place = 'bottom-start', dx = 0, dy = 6, width } = {}) {
   const m = document.createElement('div');
@@ -464,6 +478,9 @@ function showMenu(anchor, items, { place = 'bottom-start', dx = 0, dy = 6, width
   if (place === 'right-start') { x = r.x + r.w + dx; y = r.y + dy; }
   m.style.left = x + 'px';
   m.style.top = y + 'px';
+  // items cascade in just behind the container (stagger stays under 200ms)
+  $$('.mi', m).forEach((el, i) => anim(el, [{ opacity: 0, transform: 'translateY(-5px)' }, { opacity: 1, transform: 'none' }],
+    { duration: 220, delay: 50 + i * 22, easing: EASE.ui, fill: 'backwards' }));
   return m;
 }
 const mi = (m, id) => m.querySelector(`[data-id="${id}"]`);
@@ -483,16 +500,94 @@ function toast(text, ms = 2200) {
   toastTimer = setTimeout(() => $('#toast').classList.remove('show'), ms / speed);
 }
 
+// ---------------------------------------------------------------- motion language
+// One personality for the whole film: calm, product-demo "Premium/Corporate".
+// Camera and panel moves share one signature curve; entrances decelerate,
+// small confirmations pop with a light overshoot.
+const EASE = {
+  camera: 'cubic-bezier(.4, 0, .2, 1)',     // signature curve: camera + on-screen moves
+  enter: 'cubic-bezier(.05, .7, .1, 1)',    // emphasized decelerate for entrances
+  exit: 'cubic-bezier(.3, 0, 1, 1)',        // accelerate for exits
+  ui: 'cubic-bezier(.2, 0, 0, 1)',          // snappy UI
+  pop: 'cubic-bezier(.34, 1.45, .64, 1)',   // small overshoot for badges, markers, checks
+  cursor: 'cubic-bezier(.45, .05, .2, 1)',
+};
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const anim = (el, frames, opts) => el.animate(frames, { ...opts, duration: opts.duration / speed, delay: (opts.delay || 0) / speed });
+
+// ---------------------------------------------------------------- camera
+// The camera is a translate+scale on the 1920×1080 stage inside a fixed frame,
+// like the zoom-and-pan of an edited screen recording.
+let cam = { x: 0, y: 0, z: 1 }, camAnim = null;
+const camT = (c) => `translate(${c.x}px, ${c.y}px) scale(${c.z})`;
+const camCenter = (c) => ({ x: (960 - c.x) / c.z, y: (540 - c.y) / c.z });
+function camFor(cx, cy, z) {
+  z = Math.max(1, z);
+  const x = Math.min(0, Math.max(1920 - 1920 * z, 960 - cx * z));
+  const y = Math.min(0, Math.max(1080 - 1080 * z, 540 - cy * z));
+  return { x, y, z };
+}
+function rectOf(targets, pad) {
+  const bs = (Array.isArray(targets) ? targets : [targets]).map((t) => (t.nodeType ? box(t) : t));
+  const x0 = Math.min(...bs.map((b) => b.x)) - pad, y0 = Math.min(...bs.map((b) => b.y)) - pad;
+  const x1 = Math.max(...bs.map((b) => b.x + b.w)) + pad, y1 = Math.max(...bs.map((b) => b.y + b.h)) + pad;
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+function camSet(to) {
+  if (camAnim) camAnim.cancel();
+  cam = to;
+  stage.style.transform = camT(to);
+}
+async function camera(target, { zoom, pad = 60, max = 2.2, dur = 1000, hold = true } = {}) {
+  let to = { x: 0, y: 0, z: 1 };
+  if (target !== 'full' && !reduceMotion) {
+    const r = rectOf(target, pad);
+    to = camFor(r.x + r.w / 2, r.y + r.h / 2, zoom || Math.min(max, 1920 / r.w, 1080 / r.h));
+  }
+  // start from wherever the camera is right now, even mid-move
+  const m = new DOMMatrix(getComputedStyle(stage).transform);
+  const from = { x: m.e, y: m.f, z: m.a || 1 };
+  const frames = [{ transform: camT(from) }];
+  const a = camCenter(from), b = camCenter(to);
+  // 1/3 rule: a long pan between two close-ups pulls out through a mid keyframe
+  if (from.z > 1.15 && to.z > 1.15 && Math.hypot(a.x - b.x, a.y - b.y) * Math.min(from.z, to.z) > 640) {
+    frames.push({ transform: camT(camFor((a.x + b.x) / 2, (a.y + b.y) / 2, Math.max(1, Math.min(from.z, to.z) * 0.7))), offset: 0.5 });
+    dur *= 1.25;
+  }
+  frames.push({ transform: camT(to) });
+  if (camAnim) camAnim.cancel();
+  cam = to;
+  stage.style.transform = camT(to);
+  camAnim = dur > 0 ? anim(stage, frames, { duration: dur, easing: EASE.camera }) : null;
+  frame.classList.toggle('zoomed', to.z > 1.05);
+  if (hold && dur > 0) await wait(dur);
+}
+// reaction beat: the whole frame breathes in once when the layout changes
+function kick() {
+  if (reduceMotion) return;
+  anim(rig, [{ transform: 'scale(1)' }, { transform: 'scale(1.016)' }, { transform: 'scale(1)' }], { duration: 560, easing: 'ease-in-out' });
+}
+
 // ---------------------------------------------------------------- cursor
-let cur = { x: 1180, y: 620 }, hovered = null;
+let cur = { x: 1180, y: 620 }, hovered = null, curAnim = null;
 function clearHover() { $$('.stage .hover').forEach((e) => e.classList.remove('hover')); hovered = null; }
 async function moveTo(el, { ox = 0.5, oy = 0.5, dx = 0, dy = 0, hover = el } = {}) {
   const b = el.nodeType ? box(el) : el;
   const x = b.x + b.w * ox + dx, y = b.y + b.h * oy + dy;
   const dist = Math.hypot(x - cur.x, y - cur.y);
-  const dur = Math.min(950, Math.max(240, 170 + dist * 0.5));
-  cursorEl.style.transition = `transform ${dur / speed}ms cubic-bezier(.45,.05,.2,1)`;
-  cursorEl.style.transform = `translate(${x}px, ${y}px)`;
+  const dur = Math.min(950, Math.max(260, 180 + dist * 0.5));
+  if (dist > 2) {
+    // travel on a gentle arc, never a straight line
+    const bend = Math.min(70, dist * 0.12) * (x >= cur.x ? -1 : 1);
+    const nx = -(y - cur.y) / dist, ny = (x - cur.x) / dist, pts = [];
+    for (let i = 0; i <= 12; i++) {
+      const t = i / 12, k = 4 * t * (1 - t) * bend;
+      pts.push({ transform: `translate(${cur.x + (x - cur.x) * t + nx * k}px, ${cur.y + (y - cur.y) * t + ny * k}px)` });
+    }
+    if (curAnim) curAnim.cancel();
+    cursorEl.style.transform = `translate(${x}px, ${y}px)`;
+    curAnim = anim(cursorEl, pts, { duration: dur, easing: EASE.cursor });
+  }
   cur = { x, y };
   await wait(dur);
   if (hovered) hovered.classList.remove('hover');
@@ -533,8 +628,15 @@ function setup(state) {
   render();
   void stage.offsetHeight;
   stage.classList.remove('instant');
+  camSet({ x: 0, y: 0, z: 1 });
+  frame.classList.remove('zoomed');
+  // cut: each chapter dissolves in from a slight push
+  anim(rig, [{ opacity: 0, transform: 'scale(1.03)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 650, easing: EASE.enter });
 }
 const AFTER_ANSWER = { launched: true, sent: true, thinking: true, answered: true, answerFull: true };
+// frames the issues panel and the drawing together (stage coordinates)
+const PANEL_AND_DRAWING = { x: 52, y: 96, w: 1410, h: 780 };
+const PANEL_TOP = { x: 52, y: 52, w: 880, h: 470 };
 
 // ---------------------------------------------------------------- chapters
 const CHAPTERS = [
@@ -542,6 +644,7 @@ const CHAPTERS = [
     setup({});
     await wait(700);
     const wf = $('#railWorkflows');
+    camera({ x: 0, y: 60, w: 520, h: 300 }, { dur: 1100, hold: false });
     await click(wf);
     anchorOn(wf);
     const m = showMenu(wf, [
@@ -550,18 +653,20 @@ const CHAPTERS = [
       { id: 'sc', icon: 'checkCircle', label: 'Spec Compliance' },
       { id: 'rfi', icon: 'pencil', label: 'RFI Drafting' },
     ], { place: 'right-start', dx: 10, dy: -6, width: 220 });
-    await wait(450);
+    await wait(500);
     await moveTo(mi(m, 'sc'));
     await wait(200);
     await click(mi(m, 'dr'));
     closeMenus();
     S.launched = true; render();
-    await wait(1300);
+    await camera($('.hero-workflow'), { pad: 170, max: 1.7, dur: 1300 });
+    await wait(800);
+    await camera($('#composerWrap'), { pad: 110, dur: 1100 });
     const plus = $('#cPlus');
     await click(plus);
     anchorOn(plus);
     const m2 = showMenu(plus, [{ id: 'up', icon: 'upload', label: 'Upload from computer' }, { id: 'drive', icon: 'folder', label: 'Add from Drive' }], { place: 'top-start', dy: 8, width: 230 });
-    await wait(350);
+    await wait(400);
     await click(mi(m2, 'drive'));
     closeMenus();
     S.attached = true; render();
@@ -573,16 +678,18 @@ const CHAPTERS = [
     await click($('#send'));
     $('#cInput').classList.remove('focus');
     S.typed = ''; S.attached = false; S.sent = true; render();
-    await wait(650);
+    await camera('full', { dur: 1100 });
     S.thinking = true; render();
-    await wait(1400);
+    await wait(1200);
   } },
 
   { title: 'Clarifying questions', desc: 'While reasoning, the agent opens a panel with questions, answer options and a field for a custom response.', async run() {
     setup({ launched: true, sent: true, thinking: true });
-    await wait(900);
+    await wait(500);
+    await camera([$('#thinking'), $('#msgUser')], { pad: 80, max: 1.8, dur: 1100 });
+    await wait(500);
     S.q = 1; render();
-    await wait(1100);
+    await camera([$('#qPanel'), $('#composer')], { pad: 50, dur: 1100 });
     const opts = () => $$('#qPanel .q-opt');
     await moveTo(opts()[3], { ox: 0.4 });
     await wait(350);
@@ -590,12 +697,14 @@ const CHAPTERS = [
     await wait(300);
     await click(opts()[0], { ox: 0.35 });
     opts()[0].classList.add('picked');
+    anim(opts()[0], [{ transform: 'scale(1)' }, { transform: 'scale(1.015)' }, { transform: 'scale(1)' }], { duration: 320, easing: EASE.pop });
     await wait(550);
     S.q = 2; render();
     await wait(900);
     await moveTo(opts()[0], { ox: 0.3 });
-    await wait(400);
+    await wait(300);
     const custom = $('#qPanel .q-input');
+    camera($('#qPanel .q-custom'), { zoom: 2.4, dur: 900, hold: false });
     await click(custom, { ox: 0.15 });
     custom.classList.add('focus');
     $('#qPanel .q-custom').classList.add('typing');
@@ -604,44 +713,55 @@ const CHAPTERS = [
     await click($('#qPanel .q-send'));
     await wait(250);
     S.q = 0; render();
-    await wait(1000);
+    await camera('full', { dur: 1000 });
+    await wait(500);
   } },
 
   { title: 'Plan & tasks', desc: 'The agent builds a plan and a task list to fulfil the request, checking tasks off as it goes.', async run() {
     setup({ launched: true, sent: true, thinking: true });
-    await wait(700);
+    await wait(600);
     S.tasks = 0; render();
+    await camera($('#tasksPanel'), { pad: 90, dur: 1100 });
     for (let k = 1; k <= 5; k++) {
-      await wait(k === 1 ? 1300 : 1000);
+      await wait(k === 1 ? 700 : 850);
       S.tasks = k; render();
+      // slow push-in as the plan progresses
+      camera($('#tasksPanel'), { pad: 90 - k * 10, dur: 900, hold: false });
     }
-    await wait(900);
+    await wait(1000);
     S.tasks = null; render();
-    await wait(700);
+    await camera('full', { dur: 1000 });
+    await wait(300);
   } },
 
   { title: 'Drawing Review ready', desc: 'The final response summarises the findings and links the Drawing Review artifact with all identified callouts.', async run() {
     setup({ launched: true, sent: true, thinking: true });
-    await wait(700);
+    await wait(500);
     S.answered = true; render();
-    await wait(350);
-    for (const w of $$('.stream .w', answerEl)) { w.classList.add('on'); await wait(24); }
-    await wait(250);
+    camera(answerEl, { pad: 70, max: 1.6, dur: 1200, hold: false });
+    await wait(450);
+    for (const w of $$('.stream .w', answerEl)) { w.classList.add('on'); await wait(22); }
+    await wait(200);
     answerEl.classList.add('card-in');
+    await camera($('#artCard'), { zoom: 2.1, dur: 1000 });
     await wait(500);
     S.answerFull = true; render();
     answerEl.classList.remove('card-in');
     enter($('#btnIssues'), 'pulse');
-    await wait(1600);
+    await camera($('#btnIssues'), { zoom: 2.6, dur: 1200 });
+    await wait(900);
   } },
 
   { title: 'Issues panel', desc: 'The header button on the right opens the issues panel, which slides in on the left.', async run() {
     setup(AFTER_ANSWER);
-    await wait(500);
+    await camera($('#btnIssues'), { zoom: 2.6, dur: 0 });
+    await wait(600);
     await click($('#btnIssues'));
     S.issues = true; render();
-    await wait(1300);
+    await camera('full', { dur: 1000 });
+    await wait(200);
     const issues = $$('.issue', issueList);
+    await camera([$('.ip-head'), ...$$('.issue-card', issueList)], { pad: 30, max: 1.9, dur: 1100 });
     await moveTo($('.i-desc', issues[0]), { ox: 0.5, hover: null });
     await wait(700);
     await click($('.issue-head', issues[1]), { ox: 0.35 });
@@ -654,8 +774,9 @@ const CHAPTERS = [
 
   { title: 'Issue actions', desc: 'Each finding can be accepted, ignored or pushed to Autodesk, Fieldwire or Bentley ProjectWise.', async run() {
     setup({ ...AFTER_ANSWER, issues: true });
-    await wait(500);
+    await wait(400);
     const it = issueList.children[0];
+    await camera([it, { x: 360, y: 150, w: 300, h: 200 }], { pad: 40, dur: 1100 });
     const more = $('.i-more', it);
     await click(more);
     anchorOn(more);
@@ -666,7 +787,7 @@ const CHAPTERS = [
       { id: 'fw', brand: 'fieldwire', label: 'Create issue in Fieldwire' },
       { id: 'pw', brand: 'bentley', label: 'Create issue in Bentley ProjectWise' },
     ], { place: 'bottom-start', dy: 6, width: 280 });
-    await wait(400);
+    await wait(450);
     await moveTo(mi(m, 'adsk'), { ox: 0.4 });
     await wait(300);
     await moveTo(mi(m, 'pw'), { ox: 0.4 });
@@ -674,33 +795,41 @@ const CHAPTERS = [
     await click(mi(m, 'fw'), { ox: 0.4 });
     closeMenus();
     toast('Issue created in Fieldwire · FW-1042');
-    await wait(1600);
+    await wait(1400);
+    await camera([$('.i-actions', it), $('.i-title', it)], { pad: 40, max: 2.5, dur: 1000 });
     await click($('.act-accept', it));
     S.status = { 0: 'accepted' }; render();
-    await wait(1500);
+    await wait(1400);
     await click($('.act-ignore', it));
     S.status = { 0: 'ignored' }; render();
-    await wait(1500);
+    await wait(1400);
     await click($('.act-reopen', it));
     S.status = {}; render();
-    await wait(900);
+    await wait(700);
+    await camera('full', { dur: 1000 });
   } },
 
   { title: 'Drawing with callouts', desc: 'Opening the artifact shows the drawing with marked callouts, synced to the issue selected in the panel.', async run() {
     setup({ ...AFTER_ANSWER, issues: true });
-    await wait(500);
+    await wait(300);
+    await camera($('#artCard'), { zoom: 2, dur: 1100 });
     await click($('#artCard'), { ox: 0.3 });
     S.artifact = true; render();
-    await wait(800);
+    await camera('full', { dur: 1100 });
     S.marks = true; render();
-    await wait(1700);
+    await wait(700);
+    await camera(PANEL_AND_DRAWING, { dur: 1000 });
     const heads = $$('.issue-head', issueList);
     await click(heads[1], { ox: 0.35 });
     S.expanded = 1; render();
-    await wait(1700);
+    await wait(1500);
     await click(heads[4], { ox: 0.35 });
     S.expanded = 4; render();
-    await wait(1700);
+    await wait(800);
+    // push into the callout for detail, then back
+    await camera([$('.callout', paneA), $('.marker.active', paneA)], { pad: 50, max: 2.2, dur: 1100 });
+    await wait(1400);
+    await camera(PANEL_AND_DRAWING, { dur: 1100 });
     await click(heads[0], { ox: 0.35 });
     S.expanded = 0; render();
     await wait(1100);
@@ -708,7 +837,8 @@ const CHAPTERS = [
 
   { title: 'Filter issues', desc: 'Findings can be filtered by discipline or severity; the list and the drawing markers update together.', async run() {
     setup({ ...AFTER_ANSWER, issues: true, artifact: true, marks: true });
-    await wait(500);
+    await wait(300);
+    await camera(PANEL_TOP, { dur: 1100 });
     const fb = $('#btnFilter');
     await click(fb);
     anchorOn(fb);
@@ -723,19 +853,24 @@ const CHAPTERS = [
       S.filters.push(k); render();
       await wait(300);
     }
-    await wait(400);
-    await click($('.canvas', paneA), { ox: 0.6, oy: 0.85, hover: null });
+    await wait(300);
+    await click($('.issues-inner'), { ox: 0.5, oy: 0.93, hover: null });
     closeMenus();
-    await wait(1800);
+    await camera(PANEL_AND_DRAWING, { dur: 1100 });
+    await wait(1200);
     const chip = chipsEl.querySelector('[data-k="General"] .x');
+    await camera(chipsEl, { zoom: 2.4, pad: 20, dur: 900 });
     await click(chip);
     S.filters = S.filters.filter((f) => f !== 'General'); render();
-    await wait(1800);
+    await wait(500);
+    await camera(PANEL_AND_DRAWING, { dur: 1000 });
+    await wait(1200);
   } },
 
   { title: 'Download & history', desc: 'The artifact can be downloaded as Excel or JSON, and its change history browsed by version.', async run() {
     setup({ ...AFTER_ANSWER, issues: true, artifact: true, marks: true });
-    await wait(500);
+    await wait(300);
+    await camera({ x: 300, y: 60, w: 720, h: 400 }, { dur: 1100 });
     const more = $('#btnMore');
     await click(more);
     anchorOn(more);
@@ -768,12 +903,14 @@ const CHAPTERS = [
     await click(mi(sub, 'v3'), { ox: 0.4 });
     closeMenus();
     toast('Viewing Version 3 · 01:35 PM');
-    await wait(1800);
+    await wait(1200);
+    await camera('full', { dur: 1000 });
   } },
 
   { title: 'Issues ↔ Files', desc: 'The selectors at the top of the panel switch the artifact source, or switch between found issues and files in context.', async run() {
     setup({ ...AFTER_ANSWER, issues: true, artifact: true, marks: true });
-    await wait(500);
+    await wait(300);
+    await camera({ x: 52, y: 52, w: 600, h: 360 }, { dur: 1100 });
     const aSel = $('#artifactSel');
     await click(aSel);
     anchorOn(aSel);
@@ -782,7 +919,9 @@ const CHAPTERS = [
     await click(mi(m, 'sub'), { ox: 0.4 });
     closeMenus();
     S.dataset = 'sub'; S.expanded = 0; render();
-    await wait(1900);
+    await camera(PANEL_AND_DRAWING, { dur: 1100 });
+    await wait(1200);
+    await camera({ x: 52, y: 52, w: 600, h: 360 }, { dur: 1000 });
     await click(aSel);
     anchorOn(aSel);
     m = showMenu(aSel, [{ id: 'dr', icon: 'drawing', label: 'Drawing Review.json' }, { id: 'sub', icon: 'drawing', label: 'Submittal Review.json', tick: true }], { place: 'bottom-end', width: 230 });
@@ -790,7 +929,7 @@ const CHAPTERS = [
     await click(mi(m, 'dr'), { ox: 0.4 });
     closeMenus();
     S.dataset = 'dr'; S.expanded = 0; render();
-    await wait(1300);
+    await wait(900);
     const mSel = $('#modeSel');
     await click(mSel);
     anchorOn(mSel);
@@ -799,11 +938,11 @@ const CHAPTERS = [
     await click(mi(m, 'files'), { ox: 0.3 });
     closeMenus();
     S.mode = 'files'; render();
-    await wait(1100);
+    await camera({ x: 52, y: 52, w: 480, h: 560 }, { dur: 1000 });
     await moveTo($('#treeSub'), { ox: 0.3 });
     await wait(500);
     await moveTo($('#treeDR'), { ox: 0.3 });
-    await wait(900);
+    await wait(700);
     await click(mSel);
     anchorOn(mSel);
     m = showMenu(mSel, [{ id: 'issues', icon: 'flag', label: 'Issues' }, { id: 'files', icon: 'file', label: 'Files' }], { width: 220 });
@@ -811,37 +950,46 @@ const CHAPTERS = [
     await click(mi(m, 'issues'), { ox: 0.3 });
     closeMenus();
     S.mode = 'issues'; render();
-    await wait(1000);
+    await wait(600);
+    await camera('full', { dur: 1000 });
   } },
 
   { title: 'Split view', desc: 'Split view shows two drawings at once, each with its own tabs and callouts.', async run() {
     setup({ ...AFTER_ANSWER, issues: true, artifact: true, marks: true });
-    await wait(500);
+    await wait(300);
+    await camera($('.split', paneA), { zoom: 2.4, dur: 1200 });
     await click($('.split', paneA));
     S.split = true; render();
-    await wait(2200);
+    await camera('full', { dur: 1100 });
+    await camera({ x: 200, y: 52, w: 1340, h: 900 }, { zoom: 1.2, dur: 1400 });
+    await wait(800);
     await click($$('.issue-head', issueList)[1], { ox: 0.35 });
     S.expanded = 1; render();
     await wait(2000);
     await click($('.pane-close', paneB));
     S.split = false; S.expanded = 0; render();
-    await wait(1100);
+    kick();
+    await camera('full', { dur: 1000 });
   } },
 
   { title: 'Layout combinations', desc: 'Issues, artifact and chat can be combined freely.', async run() {
     setup({ ...AFTER_ANSWER, issues: true, artifact: true, marks: true });
     const combo = async (text, fn) => { setDesc(text); await fn(); await wait(1700); };
+    const toggle = async (el, change) => { await click(el); change(); render(); kick(); };
     await combo('Issues panel + artifact + chat.', async () => wait(400));
-    await combo('Issues panel + artifact — chat closed.', async () => { await click($('#btnChat')); S.chat = false; render(); });
+    await combo('Issues panel + artifact — chat closed.', () => toggle($('#btnChat'), () => { S.chat = false; }));
     await combo('Artifact + chat — issues panel closed.', async () => {
-      await click($('#btnChat')); S.chat = true; render(); await wait(700);
-      await click($('#btnIssues')); S.issues = false; render();
+      await toggle($('#btnChat'), () => { S.chat = true; });
+      await wait(700);
+      await toggle($('#btnIssues'), () => { S.issues = false; });
     });
-    await combo('Artifact only — issues panel and chat closed.', async () => { await click($('#btnChat')); S.chat = false; render(); });
+    await combo('Artifact only — issues panel and chat closed.', () => toggle($('#btnChat'), () => { S.chat = false; }));
     await combo('Issues panel + chat — artifact closed.', async () => {
-      await click($('#btnIssues')); S.issues = true; render(); await wait(700);
-      await click($('#btnChat')); S.chat = true; render(); await wait(700);
-      await click($('.pane-close', paneA)); S.artifact = false; render();
+      await toggle($('#btnIssues'), () => { S.issues = true; });
+      await wait(700);
+      await toggle($('#btnChat'), () => { S.chat = true; });
+      await wait(700);
+      await toggle($('.pane-close', paneA), () => { S.artifact = false; });
     });
     await wait(800);
   } },
@@ -862,14 +1010,23 @@ function updateControls() {
 }
 const playBtn = $('#playBtn');
 function syncPlayBtn() { playBtn.innerHTML = icon(paused ? 'play' : 'pause'); playBtn.setAttribute('aria-label', paused ? 'Play' : 'Pause'); }
-playBtn.addEventListener('click', () => { paused = !paused; syncPlayBtn(); });
+// pausing freezes every running CSS and Web Animation, not just the script
+let frozen = [];
+function setPaused(p) {
+  if (p === paused) return;
+  paused = p;
+  if (p) { frozen = document.getAnimations().filter((a) => a.playState === 'running'); frozen.forEach((a) => a.pause()); }
+  else { frozen.forEach((a) => { if (a.playState === 'paused') a.play(); }); frozen = []; }
+  syncPlayBtn();
+}
+playBtn.addEventListener('click', () => setPaused(!paused));
 $('#restartBtn').innerHTML = icon('restart');
-$('#restartBtn').addEventListener('click', () => { paused = false; syncPlayBtn(); play(0); });
+$('#restartBtn').addEventListener('click', () => play(0));
 const SPEEDS = [1, 1.5, 2, 0.75];
 $('#speedBtn').addEventListener('click', (e) => {
   speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
   e.currentTarget.textContent = speed + '×';
-  stage.style.setProperty('--spd', speed);
+  frame.style.setProperty('--spd', speed);
 });
 document.addEventListener('keydown', (e) => {
   if (e.key === ' ') { e.preventDefault(); playBtn.click(); }
@@ -877,11 +1034,24 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') play(Math.max(current - 1, 0));
 });
 
+// lower-third chapter title, in screen space above the camera
+let ltTimer;
+function lowerThird(i) {
+  const lt = $('#lt');
+  $('#ltNum').textContent = String(i + 1).padStart(2, '0');
+  $('#ltTitle').textContent = CHAPTERS[i].title;
+  lt.classList.remove('show', 'hide'); void lt.offsetWidth; lt.classList.add('show');
+  clearTimeout(ltTimer);
+  ltTimer = setTimeout(() => lt.classList.add('hide'), 3400 / speed);
+}
+
 async function play(from) {
+  setPaused(false);
   const id = ++RUN;
   for (let i = from; i < CHAPTERS.length; i++) {
     current = i;
     updateControls();
+    lowerThird(i);
     try { await CHAPTERS[i].run(); } catch (e) { if (e instanceof Cancel) return; throw e; }
     if (id !== RUN) return;
   }
@@ -892,8 +1062,8 @@ async function play(from) {
 // ---------------------------------------------------------------- fit stage
 function fit() {
   const vw = viewport.clientWidth, vh = viewport.clientHeight, pad = vw < 700 ? 8 : 20;
-  stageScale = Math.max(0.1, Math.min((vw - pad * 2) / 1920, (vh - pad * 2) / 1080));
-  stage.style.transform = `translate(${(vw - 1920 * stageScale) / 2}px, ${(vh - 1080 * stageScale) / 2}px) scale(${stageScale})`;
+  const k = Math.max(0.1, Math.min((vw - pad * 2) / 1920, (vh - pad * 2) / 1080));
+  frame.style.transform = `translate(${(vw - 1920 * k) / 2}px, ${(vh - 1080 * k) / 2}px) scale(${k})`;
 }
 new ResizeObserver(fit).observe(viewport);
 [paneA, paneB].forEach((p) => new ResizeObserver(() => p.classList.toggle('narrow', p.offsetWidth < 640)).observe(p));
