@@ -453,7 +453,7 @@ function updatePane(pane, idx, inst, fitW) {
 }
 function $$(s, r = document) { return [...r.querySelectorAll(s)]; }
 
-// ---------------------------------------------------------------- overlay: menus, toast
+// ---------------------------------------------------------------- overlay: menus
 function box(el) {
   // stage coordinates, correct at any camera zoom (including mid-move)
   const sr = stage.getBoundingClientRect(), r = el.getBoundingClientRect(), k = sr.width / 1920;
@@ -494,13 +494,6 @@ function closeMenus(now) {
 }
 const anchorOn = (el) => { el.classList.add('on'); el.dataset.menuAnchor = '1'; };
 
-let toastTimer;
-function toast(text, ms = 2200) {
-  $('#toastText').textContent = text;
-  $('#toast').classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => $('#toast').classList.remove('show'), ms / speed);
-}
 
 // ---------------------------------------------------------------- motion language
 // One personality for the whole film: calm, product-demo "Premium/Corporate".
@@ -659,8 +652,6 @@ function setup(state) {
   clearHover();
   setCursor('arrow');
   cursorEl.classList.remove('typing');
-  clearTimeout(toastTimer);
-  $('#toast').classList.remove('show');
   $('#cInput').classList.remove('focus');
   $$('.stream .w.on').forEach((w) => w.classList.remove('on'));
   answerEl.classList.remove('card-in');
@@ -835,7 +826,6 @@ const CHAPTERS = [
     await wait(250);
     await click(mi(m, 'fw'), { ox: 0.4 });
     closeMenus();
-    toast('Issue created in Fieldwire · FW-1042');
     await wait(1400);
     await camera([$('.i-actions', it), $('.i-title', it)], { pad: 40, max: 2.5, dur: 1000 });
     await click($('.act-accept', it));
@@ -931,7 +921,6 @@ const CHAPTERS = [
     await wait(300);
     await click(mi(sub, 'xls'), { ox: 0.4 });
     closeMenus();
-    toast('Drawing Review.xlsx downloaded');
     await wait(1500);
     await click(more);
     anchorOn(more);
@@ -950,7 +939,6 @@ const CHAPTERS = [
     await wait(350);
     await click(mi(sub, 'v3'), { ox: 0.4 });
     closeMenus();
-    toast('Viewing Version 3 · 01:35 PM');
     await wait(1200);
     await camera('full', { dur: 1000 });
   } },

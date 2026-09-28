@@ -35,7 +35,7 @@ Directed with the [LottieFiles motion-design skill](https://github.com/LottieFil
   for layout changes. Long pans between two close-ups pull out through a mid keyframe (1/3 rule).
 - **One personality.** Calm product-demo motion: a single signature curve `cubic-bezier(.4,0,.2,1)`
   for camera and on-screen moves, emphasized decelerate `(.05,.7,.1,1)` for entrances, a light
-  overshoot only on small confirmations (badges, markers, checkmarks, toast).
+  overshoot only on small confirmations (badges, markers, checkmarks).
 - **Three layers.** Primary (camera, cursor, UI action); secondary (issue list cascade 45ms apart,
   menu items 22ms apart, drawing lift-in after the column opens, layout "kick"); ambient (slow drift
   while zoomed, edge vignette, background gradient).
