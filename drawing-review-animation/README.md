@@ -39,6 +39,10 @@ Directed with the [LottieFiles motion-design skill](https://github.com/LottieFil
 - **Three layers.** Primary (camera, cursor, UI action); secondary (issue list cascade 45ms apart,
   menu items 22ms apart, drawing lift-in after the column opens, layout "kick"); ambient (slow drift
   while zoomed, edge vignette, background gradient).
+- **Cursor.** macOS system cursors from the Figma "Cursors (Community)" file (`assets/cursors/`), with macOS
+  rules: arrow by default and inside menus, pointing hand over clickable content, I-beam over editable
+  fields and selectable text, open/closed hand over the draggable drawing, hidden while typing until the
+  next mouse move.
 - **Arcs.** The cursor travels on curved paths. Scenes hand off directly; only a start or seek dissolves in.
 - **Controls.** Pause freezes every running animation. `prefers-reduced-motion` turns off camera
   moves and ambient drift.

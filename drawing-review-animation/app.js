@@ -573,17 +573,29 @@ function kick() {
 // ---------------------------------------------------------------- cursor
 let cur = { x: 1180, y: 620 }, hovered = null, curAnim = null;
 function clearHover() { $$('.stage .hover').forEach((e) => e.classList.remove('hover')); hovered = null; }
-// arrow over empty space, hand over anything clickable, I-beam over text fields
+// macOS cursor rules: arrow by default and inside menus, pointing hand over clickable
+// content, I-beam over editable fields and selectable text, open/closed hand over the
+// draggable drawing. The pointer hides while typing and returns on the next move.
 function setCursor(mode) { cursorEl.dataset.mode = mode; }
-async function moveTo(el, { ox = 0.5, oy = 0.5, dx = 0, dy = 0, hover = el } = {}) {
+function cursorFor(el, target) {
+  const t = el && el.nodeType ? el : null;
+  if (t && t.closest('.menu')) return 'arrow';
+  if (t && t.closest('#cInput, .q-input')) return 'text';
+  if (t && t.closest('.paper')) return 'grab';
+  if (target) return 'pointer';
+  if (t && t.closest('.i-desc, .stream, .bubble, .hero p')) return 'text';
+  return 'arrow';
+}
+async function moveTo(el, { ox = 0.5, oy = 0.5, dx = 0, dy = 0, hover = el, cursor, straight = false, dur: fixedDur } = {}) {
   const b = el.nodeType ? box(el) : el;
   const x = b.x + b.w * ox + dx, y = b.y + b.h * oy + dy;
   const dist = Math.hypot(x - cur.x, y - cur.y);
-  const dur = Math.min(950, Math.max(260, 180 + dist * 0.5));
+  const dur = fixedDur || Math.min(950, Math.max(260, 180 + dist * 0.5));
+  cursorEl.classList.remove('typing');
   if (dist > 24 && hovered) { hovered.classList.remove('hover'); hovered = null; setCursor('arrow'); }
   if (dist > 2) {
     // travel on a gentle arc, never a straight line
-    const bend = Math.min(70, dist * 0.12) * (x >= cur.x ? -1 : 1);
+    const bend = straight ? 0 : Math.min(70, dist * 0.12) * (x >= cur.x ? -1 : 1);
     const nx = -(y - cur.y) / dist, ny = (x - cur.x) / dist, pts = [];
     for (let i = 0; i <= 12; i++) {
       const t = i / 12, k = 4 * t * (1 - t) * bend;
@@ -598,7 +610,7 @@ async function moveTo(el, { ox = 0.5, oy = 0.5, dx = 0, dy = 0, hover = el } = {
   if (hovered) hovered.classList.remove('hover');
   hovered = hover && hover.nodeType ? hover : null;
   if (hovered) hovered.classList.add('hover');
-  setCursor(!hovered ? 'arrow' : hovered.closest('#cInput, .q-input') ? 'text' : 'pointer');
+  setCursor(cursor || cursorFor(el, hovered));
 }
 async function click(el, opts) {
   await moveTo(el, opts);
@@ -611,12 +623,31 @@ async function click(el, opts) {
   await wait(90);
 }
 async function typeText(setter, text) {
+  cursorEl.classList.add('typing');
   let s = '';
   for (const ch of text) {
     s += ch;
     setter(s);
     await wait(ch === ' ' ? 40 : 18 + Math.random() * 26);
   }
+}
+
+// press, drag and release on the drawing: the page follows the closed hand
+async function dragDrawing(pane, dx, dy) {
+  const paper = $('.paper', pane), c = box($('.canvas', pane));
+  await moveTo({ x: c.x + c.w * 0.58, y: c.y + c.h * 0.6, w: 0, h: 0 }, { hover: null, cursor: 'grab' });
+  await wait(300);
+  setCursor('grabbed');
+  await wait(180);
+  const z = +paper.style.getPropertyValue('--z') || 1, dur = 900;
+  paper.style.transition = `transform ${dur / speed}ms ${EASE.cursor}`;
+  paper.style.setProperty('--cx', +paper.style.getPropertyValue('--cx') - dx / z);
+  paper.style.setProperty('--cy', +paper.style.getPropertyValue('--cy') - dy / z);
+  await moveTo({ x: cur.x + dx, y: cur.y + dy, w: 0, h: 0 }, { hover: null, cursor: 'grabbed', straight: true, dur });
+  await wait(150);
+  setCursor('grab');
+  paper.style.transition = '';
+  await wait(400);
 }
 
 // ---------------------------------------------------------------- setup
@@ -627,6 +658,7 @@ function setup(state) {
   closeMenus(true);
   clearHover();
   setCursor('arrow');
+  cursorEl.classList.remove('typing');
   clearTimeout(toastTimer);
   $('#toast').classList.remove('show');
   $('#cInput').classList.remove('focus');
@@ -828,6 +860,7 @@ const CHAPTERS = [
     S.marks = true; render();
     await wait(700);
     await camera(PANEL_AND_DRAWING, { dur: 1000 });
+    await dragDrawing(paneA, -170, -70);
     const heads = $$('.issue-head', issueList);
     await click(heads[1], { ox: 0.35 });
     S.expanded = 1; render();
