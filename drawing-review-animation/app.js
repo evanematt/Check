@@ -49,16 +49,16 @@ const ICONS = {
   layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
   alert: '<path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.2M12 17h.01"/>',
   artifactFolder: '<rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9h17"/>',
-  autodesk: '<svg viewBox="0 0 24 24"><path d="M2.5 19.5 14 4.5h7.5L10 19.5z" fill="#1b1b1b"/><path d="M14 4.5h7.5v15h-3.8z" fill="#1b1b1b" opacity=".35"/></svg>',
-  fieldwire: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#f7b500"/><path d="M7.5 8h9M7.5 12h6M7.5 8v8.5" stroke="#1b1b1b" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>',
-  bentley: '<svg viewBox="0 0 24 24"><path d="M3.5 6.5c7 0 10 11 17 11M3.5 17.5c7 0 10-11 17-11" stroke="#1b1b1b" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>',
+  autodesk: '<img src="assets/logo-autodesk.png" alt="Autodesk">',
+  fieldwire: '<img src="assets/logo-fieldwire.png" alt="Fieldwire">',
+  bentley: '<img src="assets/logo-bentley.png" alt="Bentley">',
   play: '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>',
   pause: '<svg viewBox="0 0 24 24"><rect x="6" y="4.5" width="4" height="15" rx="1" fill="currentColor"/><rect x="14" y="4.5" width="4" height="15" rx="1" fill="currentColor"/></svg>',
   restart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.8-6.3L3.5 8.3"/><path d="M3.5 3.5v4.8h4.8"/></svg>',
 };
 const icon = (n) => {
   const v = ICONS[n] || '';
-  return v.startsWith('<svg') ? v
+  return v.startsWith('<svg') || v.startsWith('<img') ? v
     : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${v}</svg>`;
 };
 const hydrate = (root) => root.querySelectorAll('[data-icon]').forEach((el) => {
