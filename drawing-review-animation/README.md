@@ -49,3 +49,19 @@ Directed with the [LottieFiles motion-design skill](https://github.com/LottieFil
 - Fonts: the design uses Switzer / Geist Mono; the page uses Switzer if installed, else Inter, plus Geist Mono (Google Fonts).
 - `assets/drawing.png` is the drawing sheet exported from the Figma file. Icons are inline SVG approximations.
 - Issue content beyond the four issues in the design (egress corridor, door label, submittal set) is illustrative.
+
+## Exporting the video
+
+`tools/capture.js` renders the film deterministically, frame by frame, at 3840×2160 (1920×1080 at 2× pixel ratio).
+A virtual clock drives the script's waits and timers, every CSS / Web Animation is paused and stepped by one
+frame, and `Math.random` is seeded, so parallel workers produce identical timelines.
+
+```sh
+python3 -m http.server 8765 &                       # serve this folder
+node tools/capture.js frames 0 1800 &               # workers render frame ranges in parallel
+node tools/capture.js frames 1800 3600 &
+node tools/capture.js frames 3600 end
+ffmpeg -framerate 30 -i frames/%06d.jpg -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -movflags +faststart drawing-review.mp4
+```
+
+Needs Playwright (with Chromium) and an ffmpeg build with libx264.

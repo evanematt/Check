@@ -558,3 +558,8 @@ svg { display: block; }
   .shimmer { animation: none; color: var(--subtle); }
   .frame.zoomed .rig, #viewport::before { animation: none; }
 }
+
+/* Video export: the frame fills the viewport edge to edge, no player bar */
+html.capture .controls { display: none; }
+html.capture .frame { border-radius: 0; box-shadow: none; }
+html.capture #viewport::before { display: none; }

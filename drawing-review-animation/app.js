@@ -187,8 +187,10 @@ class Cancel extends Error {}
 function wait(ms) {
   const id = RUN;
   return new Promise((res, rej) => {
-    let last = performance.now(), acc = 0;
-    const tick = (now) => {
+    let last = window.__CAPTURE__ ? window.__vnow : performance.now(), acc = 0;
+    const tick = (t) => {
+      // capture mode (video export) runs on a virtual clock stepped one frame at a time
+      const now = window.__CAPTURE__ ? window.__vnow : t;
       if (id !== RUN) return rej(new Cancel());
       if (!paused) { const d = (now - last) * speed; acc += d; clock += d; }
       last = now;
@@ -1069,13 +1071,14 @@ async function play(from) {
     if (id !== RUN) return;
   }
   if (new URLSearchParams(location.search).has('timing')) console.log('end');
+  window.__ended = true;
   try { await wait(2200); } catch (e) { return; }
   if (id === RUN) play(0);
 }
 
 // ---------------------------------------------------------------- fit stage
 function fit() {
-  const vw = viewport.clientWidth, vh = viewport.clientHeight, pad = vw < 700 ? 8 : 20;
+  const vw = viewport.clientWidth, vh = viewport.clientHeight, pad = window.__CAPTURE__ ? 0 : vw < 700 ? 8 : 20;
   const k = Math.max(0.1, Math.min((vw - pad * 2) / 1920, (vh - pad * 2) / 1080));
   frame.style.transform = `translate(${(vw - 1920 * k) / 2}px, ${(vh - 1080 * k) / 2}px) scale(${k})`;
 }
