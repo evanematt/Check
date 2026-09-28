@@ -1022,7 +1022,8 @@ const CHAPTERS = [
 
   { title: 'Layout combinations', desc: 'Issues, artifact and chat can be combined freely.', async run() {
     setup({ ...AFTER_ANSWER, issues: true, artifact: true, marks: true });
-    const combo = async (text, fn) => { await fn(); toast(text, 1600); await wait(1700); };
+    // each step shows one layout; the label only documents it (nothing is shown on screen)
+    const combo = async (label, fn) => { await fn(); await wait(1700); };
     const toggle = async (el, change) => { await click(el); change(); render(); kick(); };
     await combo('Issues panel + artifact + chat.', async () => wait(400));
     await combo('Issues panel + artifact — chat closed.', () => toggle($('#btnChat'), () => { S.chat = false; }));
