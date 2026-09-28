@@ -34,9 +34,29 @@ const init = () => {
   const ctx = await b.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 2, ignoreHTTPSErrors: true });
   const p = await ctx.newPage();
   p.on('pageerror', (e) => console.log('PAGEERR', e.message));
+  // serve Google Fonts from a local cache so every worker renders identical type
+  const cacheDir = `${__dirname}/.font-cache`; fs.mkdirSync(cacheDir, { recursive: true });
+  await p.route(/fonts\.(googleapis|gstatic)\.com/, async (route) => {
+    const key = `${cacheDir}/${Buffer.from(route.request().url()).toString('base64url').slice(-120)}`;
+    if (!fs.existsSync(key)) {
+      let res;
+      for (let i = 0; i < 5 && !res; i++) { try { res = await route.fetch(); } catch (e) { await new Promise((r) => setTimeout(r, 1000)); } }
+      if (!res) return route.abort();
+      fs.writeFileSync(key + '.type', res.headers()['content-type'] || '');
+      fs.writeFileSync(key + '.tmp', await res.body()); fs.renameSync(key + '.tmp', key);
+    }
+    route.fulfill({ body: fs.readFileSync(key), contentType: fs.readFileSync(key + '.type', 'utf8'), headers: { 'access-control-allow-origin': '*' } });
+  });
   await p.addInitScript(init);
   await p.goto('http://localhost:8765/', { waitUntil: 'networkidle' });
-  await p.evaluate(() => document.fonts.ready);
+  // load every face up front: the browser fetches a weight only when first used,
+  // which would swap fonts mid-video and differ between parallel workers
+  await p.evaluate(async () => {
+    const faces = ['400 14px Inter', '500 14px Inter', '600 14px Inter', '400 14px "Geist Mono"', '500 14px "Geist Mono"'];
+    const loaded = await Promise.all(faces.map((f) => document.fonts.load(f)));
+    await document.fonts.ready;
+    if (loaded.some((l) => !l.length)) throw new Error('font failed to load');
+  });
   let f = 0, endAt = Infinity; const t0 = Date.now();
   for (; f < to; f++) {
     await p.evaluate((dt) => window.__step(dt), DT);
