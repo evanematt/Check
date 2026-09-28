@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Drawing Review Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="viewport">
+    <div id="stage" class="stage">
+      <!-- App rail -->
+      <aside class="rail">
+        <div class="rail-logo" data-icon="logo"></div>
+        <button class="rail-btn" data-icon="plus" aria-label="New session"></button>
+        <button class="rail-btn" data-icon="folder" aria-label="Drive"></button>
+        <button class="rail-btn" id="railWorkflows" data-icon="workflow" aria-label="Workflows"></button>
+        <div class="rail-avatar" data-icon="avatar"></div>
+      </aside>
+
+      <div class="app">
+        <header class="topbar" id="topbar">
+          <div class="crumbs">
+            <button class="home-pill"><span data-icon="home"></span>Home<span data-icon="updown" class="dim"></span></button>
+            <span class="sep">/</span>
+            <span class="crumb" id="crumb1">New session</span>
+            <span class="sep" id="crumbSep2">/</span>
+            <span class="crumb" id="crumb2"></span>
+          </div>
+          <div class="top-actions">
+            <button class="icon-btn" id="btnIssues" data-icon="panelLeft" aria-label="Issues panel"></button>
+            <button class="icon-btn" id="btnChat" data-icon="panelRight" aria-label="Chat panel"></button>
+            <button class="icon-btn" data-icon="dots" aria-label="More"></button>
+            <button class="ghost-btn"><span data-icon="share"></span>Share</button>
+          </div>
+        </header>
+
+        <div class="body" id="body">
+          <!-- Issues / Files panel -->
+          <section class="col" id="issuesCol">
+            <div class="issues-inner">
+              <div class="ip-head">
+                <button class="sel-btn" id="modeSel"><span id="modeLabel">Issues</span><span data-icon="updown" class="dim"></span></button>
+                <button class="file-pill" id="artifactSel"><span data-icon="drawing"></span><span id="artifactSelLabel">Drawing Review.json</span><span data-icon="updown" class="dim"></span></button>
+              </div>
+              <div class="ip-search">
+                <div class="search"><span data-icon="search" class="dim"></span><span class="ph">Search issues...</span></div>
+                <button class="sq-btn issues-only" id="btnSort" data-icon="sort"></button>
+                <button class="sq-btn issues-only" id="btnFilter"><span data-icon="filter"></span><span class="count" id="filterCount"></span></button>
+                <button class="sq-btn issues-only" id="btnMore" data-icon="dotsV"></button>
+              </div>
+              <div class="chips" id="chips"></div>
+              <div class="issue-list" id="issueList"></div>
+              <div class="files" id="filesView"></div>
+            </div>
+          </section>
+
+          <!-- Artifact -->
+          <section class="col" id="artifactCol">
+            <div class="panes" id="panes"></div>
+          </section>
+
+          <!-- Chat -->
+          <section class="col" id="chatCol">
+            <div class="chat-scroll">
+              <div class="thread" id="thread">
+                <div class="hero" id="hero">
+                  <div class="hero-generic">
+                    <h2>What should we review today?</h2>
+                    <p>Start a session or launch a workflow from the sidebar.</p>
+                  </div>
+                  <div class="hero-workflow">
+                    <div class="hero-tile" data-icon="drawing"></div>
+                    <h2>Drawing Review</h2>
+                    <p>Attach a drawing set and describe what to check. The agent reviews every sheet and returns an issues artifact with callouts.</p>
+                    <div class="hero-tags"><span>IBC 2021</span><span>QA/QC standards</span><span>Callouts</span></div>
+                  </div>
+                </div>
+                <div class="msgs" id="msgs">
+                  <div class="file-card pop" id="msgFile">
+                    <div class="pdf-ico">PDF</div>
+                    <div><div class="fc-name">A-101_Floor-Plan_Level-2_R...</div><div class="fc-date">Sep 01, 2025</div></div>
+                  </div>
+                  <div class="bubble pop" id="msgUser"></div>
+                  <div class="thinking" id="thinking"><span data-icon="brain"></span><span class="shimmer">Thinking...</span></div>
+                  <div class="answer" id="answer">
+                    <div class="meta">Thought for 4m <i>•</i> 15 sources <i>•</i> 58 searches <span data-icon="chevDown"></span></div>
+                    <p class="stream" id="ans1"></p>
+                    <p class="stream" id="ans2"></p>
+                    <button class="art-card" id="artCard">
+                      <span class="ac-ico" data-icon="drawing"></span>
+                      <span class="ac-text"><b>Drawing Review</b><small>Level 2 — IBC + QA/QC <i>•</i> PDF</small></span>
+                      <span class="ac-more" data-icon="dotsV"></span>
+                    </button>
+                    <div class="msg-actions"><span data-icon="copy"></span><span data-icon="flag"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="composer-wrap" id="composerWrap">
+              <div class="float-panel q-panel" id="qPanel"></div>
+              <div class="float-panel tasks-panel" id="tasksPanel"></div>
+              <div class="composer" id="composer">
+                <div class="attach" id="attach">
+                  <div class="pdf-ico sm">PDF</div><span>A-101_Floor-Plan_Level-2_R...</span><span data-icon="x" class="dim"></span>
+                </div>
+                <div class="c-input" id="cInput"><span class="ph">Ask Nomic anything...</span><span class="typed" id="typed"></span><span class="caret"></span></div>
+                <div class="c-row">
+                  <button class="c-btn" id="cPlus" data-icon="plus"></button>
+                  <button class="c-link">Integrations/MCPs <span data-icon="chevDown"></span></button>
+                  <span class="wf-pill" id="wfPill" data-icon="workflow"></span>
+                  <span class="grow"></span>
+                  <button class="c-link">Sonnet 4.5 <span data-icon="chevDown"></span></button>
+                  <button class="send" id="send" data-icon="send"></button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="overlay" id="overlay"></div>
+      <div class="toast" id="toast"><span data-icon="checkCircle"></span><span id="toastText"></span></div>
+      <div class="cursor" id="cursor">
+        <svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 2.5v17.2l4.6-4.3 2.9 6.6 3-1.3-2.9-6.5h6.3z" fill="#1d211e" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <span class="ripple"></span>
+      </div>
+    </div>
+  </main>
+
+  <footer class="controls" id="controls">
+    <div class="ctl-top">
+      <div class="ctl-buttons">
+        <button class="ctl-btn" id="playBtn" aria-label="Pause"></button>
+        <button class="ctl-btn" id="restartBtn" aria-label="Restart"></button>
+        <button class="ctl-btn speed" id="speedBtn">1×</button>
+      </div>
+      <div class="ctl-caption">
+        <div class="ctl-title" id="capTitle"></div>
+        <div class="ctl-desc" id="capDesc"></div>
+      </div>
+    </div>
+    <nav class="chapters" id="chapters"></nav>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
