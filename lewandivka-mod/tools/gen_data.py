@@ -330,3 +330,16 @@ adv("cats", f"{M}:collar_chinazik", "challenge", "chromandivka")
 adv("almost_hit", "minecraft:wooden_shovel", "task", "cats")
 adv("victory", f"{M}:color_charge", "challenge", "cats")
 print("ok")
+
+# ------------------------------------------------------------------ рецепти
+w(f"{D}/recipes/kiosk.json", {"type": "minecraft:crafting_shaped", "category": "misc",
+                              "pattern": ["ISI", "PPP", "PPP"],
+                              "key": {"I": {"item": "minecraft:iron_ingot"}, "S": {"tag": "minecraft:signs"}, "P": {"tag": "minecraft:planks"}},
+                              "result": {"item": f"{M}:kiosk"}})
+w(f"{D}/recipes/cardboard_box.json", {"type": "minecraft:crafting_shaped", "category": "misc",
+                                      "pattern": ["PP", "PP"], "key": {"P": {"item": "minecraft:paper"}},
+                                      "result": {"item": f"{M}:cardboard_box"}})
+w(f"{D}/recipes/litter_box.json", {"type": "minecraft:crafting_shaped", "category": "misc",
+                                   "pattern": ["B B", "BSB"], "key": {"B": {"item": "minecraft:blue_dye"}, "S": {"item": "minecraft:sand"}},
+                                   "result": {"item": f"{M}:litter_box"}})
+print("recipes ok")
