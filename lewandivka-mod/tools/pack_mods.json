@@ -20,5 +20,5 @@
     {"slug": "immediatelyfast", "side": "client", "optional": true, "purpose": "Швидший UI/частинки"},
     {"slug": "particle-rain", "side": "client", "optional": true, "purpose": "Дощ і частинки (необов'язково)"}
   ],
-  "shader": {"slug": "makeup-ultra-fast-shader", "purpose": "Рекомендований шейдер (вимкнений у пресеті Performance)"}
+  "shader": {"slug": "makeup-ultra-fast", "query": "MakeUp Ultra Fast", "purpose": "Рекомендований шейдер (вимкнений у пресеті Performance)"}
 }

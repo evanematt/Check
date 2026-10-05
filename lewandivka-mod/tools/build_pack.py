@@ -84,13 +84,19 @@ def main(jar, out):
             if m.get("essential"):
                 raise
 
-    # Лише клієнтський шейдер.
+    # Лише клієнтський шейдер (шукаємо за назвою, бо slug може змінитись).
     shader = None
     try:
-        sv = pick(jget(f"project/{cfg['shader']['slug']}/version"))
-        if sv:
-            shader = (sv, next((x for x in sv["files"] if x.get("primary")), sv["files"][0]), jget(f"project/{cfg['shader']['slug']}"))
-            report.append(f"OK   shader {sv['version_number']}")
+        hits = jget("search", query=cfg["shader"]["query"], facets=[["project_type:shader"]], limit=5)["hits"]
+        hit = next((h for h in hits if "makeup" in h["slug"] and "ultra" in h["slug"]), hits[0] if hits else None)
+        if hit:
+            sv = pick(jget(f"project/{hit['slug']}/version"))
+            if sv:
+                cfg["shader"]["slug"] = hit["slug"]
+                shader = (sv, next((x for x in sv["files"] if x.get("primary")), sv["files"][0]), jget(f"project/{hit['slug']}"))
+                report.append(f"OK   shader {hit['slug']} {sv['version_number']}")
+        if not shader:
+            report.append("SKIP shader: не знайдено")
     except Exception as e:  # noqa: BLE001
         report.append(f"SKIP shader: {e}")
 
@@ -135,30 +141,46 @@ def main(jar, out):
     dl = os.path.join(work, "dl")
     os.makedirs(dl)
     for c in chosen:
-        dest = os.path.join(dl, c["f"]["filename"])
-        with open(dest, "wb") as fh:
-            fh.write(get(c["f"]["url"]))
-    shader_path = None
-    if shader:
-        shader_path = os.path.join(dl, shader[1]["filename"])
-        with open(shader_path, "wb") as fh:
-            fh.write(get(shader[1]["url"]))
+        if c["m"]["side"] == "both":
+            with open(os.path.join(dl, c["f"]["filename"]), "wb") as fh:
+                fh.write(get(c["f"]["url"]))
 
-    # --- TLauncher: готова папка mods (розпакувати в .minecraft)
+    # --- TLauncher: наш jar + інсталятор, що завантажує решту модів з Modrinth на комп'ютері гравця.
+    # (Не перепаковуємо чужі моди з обмежувальними ліцензіями — кожен качається з офіційного джерела.)
     tl = os.path.join(out, f"Lewandivka-TLauncher-{VERSION}.zip")
+    ps1 = r"""$ErrorActionPreference = 'Stop'
+$mc = Join-Path $env:APPDATA '.minecraft'
+$mods = Join-Path $mc 'mods'
+New-Item -ItemType Directory -Force $mods | Out-Null
+Get-ChildItem $mods -Filter 'lewandivka*.jar' -ErrorAction SilentlyContinue | Remove-Item -Force
+Copy-Item (Join-Path $PSScriptRoot 'mods\*.jar') $mods -Force
+$idx = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot 'modrinth.index.json') | ConvertFrom-Json
+foreach ($f in $idx.files) {
+  if ($f.env.client -eq 'unsupported') { continue }
+  $dest = Join-Path $mc ($f.path -replace '/', '\')
+  New-Item -ItemType Directory -Force (Split-Path $dest) | Out-Null
+  if (Test-Path $dest) { if ((Get-FileHash $dest -Algorithm SHA1).Hash -eq $f.hashes.sha1.ToUpper()) { Write-Host "ok   $($f.path)"; continue } }
+  Write-Host "load $($f.path)"
+  Invoke-WebRequest -Uri $f.downloads[0] -OutFile $dest -UseBasicParsing
+  if ((Get-FileHash $dest -Algorithm SHA1).Hash -ne $f.hashes.sha1.ToUpper()) { Remove-Item $dest; throw "Hash mismatch: $($f.path)" }
+}
+Write-Host ''
+Write-Host 'Gotovo! Zapusti profil Fabric 1.20.1 u TLauncher.'
+"""
+    bat = "@echo off\r\nchcp 65001 >nul\r\npowershell -NoProfile -ExecutionPolicy Bypass -File \"%~dp0install.ps1\"\r\npause\r\n"
     with zipfile.ZipFile(tl, "w", zipfile.ZIP_DEFLATED) as z:
         z.write(jar, f"mods/{jar_name}")
-        for c in chosen:
-            z.write(os.path.join(dl, c["f"]["filename"]), f"mods/{c['f']['filename']}")
-        if shader_path:
-            z.write(shader_path, f"shaderpacks/{os.path.basename(shader_path)}")
+        z.writestr("modrinth.index.json", json.dumps(index, ensure_ascii=False, indent=2))
+        z.writestr("install.ps1", "\ufeff" + ps1)
+        z.writestr("Install.bat", bat)
         z.writestr("config/iris.properties", open(os.path.join(HERE, "presets", "performance", "config", "iris.properties")).read())
-        z.writestr("ПРОЧИТАЙ.txt",
-                   "1. Встанови Fabric 1.20.1 у TLauncher (версія Fabric 1.20.1).\n"
-                   "2. Видали зі старої папки mods усе, що там було (особливо Forge-моди та старий lewandivka).\n"
-                   "3. Розпакуй цей архів у %appdata%\\.minecraft (папка mods має злитися).\n"
-                   "4. Запусти профіль Fabric 1.20.1.\n"
-                   "Шейдер за замовчуванням ВИМКНЕНИЙ (пресет Performance). Для Cinematic: Параметри -> Відеоналаштування -> Шейдери -> MakeUp UltraFast.\n")
+        z.writestr("README.txt",
+                   "1. У TLauncher вибери версію Fabric 1.20.1 і один раз запусти її (щоб поставилась).\n"
+                   "2. Розпакуй цей архів у будь-яку папку і двічі клацни Install.bat.\n"
+                   "   Він завантажить Fabric API та інші моди з Modrinth у %appdata%\\.minecraft\\mods і скопіює Lewandivka.\n"
+                   "3. Запусти профіль Fabric 1.20.1. Усі гравці мають зробити те саме.\n"
+                   "Шейдер за замовчуванням ВИМКНЕНИЙ (пресет Performance). Для Cinematic: Параметри -> Відеоналаштування -> Шейдери.\n"
+                   "Без інтернету або без Install.bat: поклади в mods lewandivka-*.jar та Fabric API (modrinth.com/mod/fabric-api).\n")
 
     # --- сервер: лише спільні моди + наш + лаунчер Fabric
     srv = os.path.join(out, f"Lewandivka-Server-{VERSION}.zip")
