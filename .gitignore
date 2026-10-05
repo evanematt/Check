@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+lewandivka-mod/.gradle/
+lewandivka-mod/build/
+lewandivka-mod/run/

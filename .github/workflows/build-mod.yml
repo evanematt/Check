@@ -1,0 +1,49 @@
+name: Build Lewandivka mod
+
+on:
+  push:
+    paths:
+      - 'lewandivka-mod/**'
+      - '.github/workflows/build-mod.yml'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish the jar as a GitHub release'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lewandivka-mod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        run: chmod +x gradlew && ./gradlew build --stacktrace
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: lewandivka-mod
+          path: lewandivka-mod/build/libs/lewandivka-*[0-9].jar
+      - name: Release
+        if: github.event_name == 'workflow_dispatch' && inputs.release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: lewandivka-build-${{ github.run_number }}
+          name: Левандівка мод (build ${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          files: lewandivka-mod/build/libs/lewandivka-*[0-9].jar
+          body: |
+            Мод «Левандівка: по той бік району» для Minecraft Java 1.20.1 (Fabric).
+            1. Встанови Fabric Loader для 1.20.1.
+            2. Закинь цей .jar у папку mods (Fabric API вже вшитий всередину).
