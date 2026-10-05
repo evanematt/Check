@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: 'Publish the jar as a GitHub release'
+        description: 'Publish artifacts as a GitHub release'
         type: boolean
         default: true
 
@@ -28,13 +28,24 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build
+      - name: Build and test
         run: chmod +x gradlew && ./gradlew build --stacktrace
-      - name: Upload jar
+      - name: Build modpack (mrpack, server, TLauncher)
+        run: |
+          JAR=$(ls build/libs/lewandivka-*[0-9].jar | head -n1)
+          python3 tools/build_pack.py "$JAR" dist || echo "pack build failed (see log)"
+          cp "$JAR" dist/ 2>/dev/null || (mkdir -p dist && cp "$JAR" dist/)
+          cat dist/pack_report.txt 2>/dev/null || true
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: lewandivka-mod
-          path: lewandivka-mod/build/libs/lewandivka-*[0-9].jar
+          name: lewandivka-dist
+          path: |
+            lewandivka-mod/dist/*.jar
+            lewandivka-mod/dist/*.mrpack
+            lewandivka-mod/dist/*.zip
+            lewandivka-mod/dist/*.md
+            lewandivka-mod/dist/*.txt
       - name: Release
         if: github.event_name == 'workflow_dispatch' && inputs.release
         uses: softprops/action-gh-release@v2
@@ -42,8 +53,15 @@ jobs:
           tag_name: lewandivka-build-${{ github.run_number }}
           name: Левандівка мод (build ${{ github.run_number }})
           target_commitish: ${{ github.sha }}
-          files: lewandivka-mod/build/libs/lewandivka-*[0-9].jar
+          files: |
+            lewandivka-mod/dist/*.jar
+            lewandivka-mod/dist/*.mrpack
+            lewandivka-mod/dist/*.zip
+            lewandivka-mod/dist/THIRD_PARTY.md
+            lewandivka-mod/dist/pack_report.txt
           body: |
-            Мод «Левандівка: по той бік району» для Minecraft Java 1.20.1 (Fabric).
-            1. Встанови Fabric Loader для 1.20.1.
-            2. Закинь цей .jar у папку mods (Fabric API вже вшитий всередину).
+            Левандівка: по той бік району (Minecraft Java 1.20.1, Fabric).
+            - `Lewandivka-TLauncher-*.zip` — для TLauncher: розпакувати в .minecraft (інструкція всередині).
+            - `Lewandivka-*.mrpack` — для Modrinth App / Prism.
+            - `Lewandivka-Server-*.zip` — виділений сервер.
+            - `lewandivka-*.jar` — лише мод (потрібен Fabric API окремо).

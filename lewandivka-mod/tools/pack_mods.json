@@ -1,0 +1,24 @@
+{
+  "minecraft": "1.20.1",
+  "fabric_loader": "0.16.10",
+  "fabric_installer": "1.0.1",
+  "fabric_api_prefer": "0.92.11+1.20.1",
+  "mods": [
+    {"slug": "fabric-api", "side": "both", "essential": true, "purpose": "Основа Fabric-модів"},
+    {"slug": "lithium", "side": "both", "prefer": "mc1.20.1-0.11.2", "purpose": "Оптимізація логіки гри"},
+    {"slug": "ferrite-core", "side": "both", "purpose": "Менше споживання пам'яті"},
+    {"slug": "sodium", "side": "client", "prefer": "mc1.20.1-0.5.13", "purpose": "Швидкий рендер"},
+    {"slug": "iris", "side": "client", "pair_with": "sodium", "purpose": "Підтримка шейдерів"},
+    {"slug": "indium", "side": "client", "purpose": "Сумісність Fabric Rendering API із Sodium"},
+    {"slug": "continuity", "side": "client", "purpose": "Зв'язне скло"},
+    {"slug": "lambdynamiclights", "side": "client", "purpose": "Динамічне світло від кристалів і грибів"},
+    {"slug": "visuality", "side": "client", "purpose": "Дрібні візуальні частинки"},
+    {"slug": "sound-physics-remastered", "side": "client", "purpose": "Реверб у гаражах"},
+    {"slug": "presence-footsteps", "side": "client", "purpose": "Звуки кроків"},
+    {"slug": "modmenu", "side": "client", "prefer": "7.2.2", "purpose": "Меню модів"},
+    {"slug": "moreculling", "side": "client", "purpose": "Відсікання невидимого"},
+    {"slug": "immediatelyfast", "side": "client", "optional": true, "purpose": "Швидший UI/частинки"},
+    {"slug": "particle-rain", "side": "client", "optional": true, "purpose": "Дощ і частинки (необов'язково)"}
+  ],
+  "shader": {"slug": "makeup-ultra-fast-shader", "purpose": "Рекомендований шейдер (вимкнений у пресеті Performance)"}
+}

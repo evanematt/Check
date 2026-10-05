@@ -109,10 +109,13 @@ public final class Bosses {
         LewState st = LewState.get(server);
         String next = Travel.nextObjective(st);
         server.getPlayerManager().broadcast(Text.literal(line).formatted(Formatting.GOLD, Formatting.BOLD), false);
-        server.getPlayerManager().broadcast(Text.literal("Кожен отримує: " + itemName + ". Компас тепер веде до: " + Sites.displayName(next) + ".")
+        server.getPlayerManager().broadcast(Text.literal("Нова здібність: " + itemName + ". Компас тепер веде до: " + Sites.displayName(next) + ".")
                 .formatted(Formatting.AQUA), false);
+        String ab = item.isOf(ModItems.DASH_SNEAKERS) ? ua.lewandivka.ability.Abilities.DASH
+                : item.isOf(ModItems.SPRING_INSOLES) ? ua.lewandivka.ability.Abilities.JUMP : ua.lewandivka.ability.Abilities.GLIDE;
         for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
-            Travel.give(p, item.copy());
+            st.grantAbility(p.getUuid(), ab);
+            ua.lewandivka.ability.Abilities.announce(p, ab);
             Travel.give(p, Sites.compassTo(world, next));
         }
     }

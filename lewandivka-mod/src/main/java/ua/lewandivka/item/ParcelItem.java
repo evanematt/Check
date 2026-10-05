@@ -25,6 +25,9 @@ public class ParcelItem extends Item {
 
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+        if (!world.isClient && world.getTime() % 20 == 0 && world.getServer() != null) {
+            ua.lewandivka.logic.LewState.get(world.getServer()).set("got_parcel");
+        }
         if (world.isClient || !(entity instanceof PlayerEntity player) || world.getTime() % 200 != 0 || world.random.nextFloat() > 0.4f) {
             return;
         }

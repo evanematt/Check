@@ -182,8 +182,14 @@ public final class City {
             return;
         }
         st.set("joined_" + p.getUuid());
+        st.set("joined_any");
+        Travel_give(p);
         p.teleport(p.getServer().getOverworld(), spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, 0, 0);
         p.sendMessage(Text.literal("Левандівка. Ти вдома. Коти чомусь пильно дивляться в порожню стіну…").formatted(Formatting.LIGHT_PURPLE), false);
+    }
+
+    private static void Travel_give(ServerPlayerEntity p) {
+        ua.lewandivka.logic.Travel.give(p, new net.minecraft.item.ItemStack(ua.lewandivka.registry.ModItems.DISTRICT_NOTEBOOK));
     }
 
     /** Коти зникають з дому, щойно ви вперше потрапили в Хромандівку. */

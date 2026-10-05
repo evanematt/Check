@@ -18,6 +18,12 @@ public final class GameEvents {
     public static void init() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             Scheduler.tick(server);
+            if (server.getTicks() % 20 == 0) {
+                ChromaSync.tick(server);
+            }
+            if (server.getTicks() % 600 == 0) {
+                QuestItems.ensure(server);
+            }
             if (server.getTicks() % 40 == 0) {
                 Hud.update(server);
             }
@@ -31,10 +37,15 @@ public final class GameEvents {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> Scheduler.clear());
         ServerLifecycleEvents.SERVER_STARTED.register(City::ensure);
         net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
-                server.execute(() -> City.onJoin(handler.player)));
+                server.execute(() -> {
+                    City.onJoin(handler.player);
+                    ua.lewandivka.ability.Abilities.syncOnJoin(handler.player);
+                    QuestItems.ensure(server);
+                }));
 
         // Загинув у Хромандівці — прокидаєшся в будинку-базі.
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            QuestItems.ensure(newPlayer.getServer());
             if (alive || !oldPlayer.getWorld().getRegistryKey().equals(ModWorldgen.CHROMA)) {
                 return;
             }

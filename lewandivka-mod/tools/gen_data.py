@@ -74,7 +74,7 @@ for b in ALL_BLOCKS:
     w(f"{A}/models/item/{b}.json", {"parent": parent})
 
 # ------------------------------------------------------------------ предмети
-ITEMS = ["chroma_pill", "district_token", "magic_kettle", "garage_parcel", "tram_compostor", "collar_chinazik", "collar_metadonna",
+ITEMS = ["district_notebook", "chroma_pill", "district_token", "magic_kettle", "garage_parcel", "tram_compostor", "collar_chinazik", "collar_metadonna",
          "color_charge", "sunflower_seeds", "dash_sneakers", "spring_insoles", "glider_ticket"]
 for i in ITEMS:
     w(f"{A}/models/item/{i}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:item/{i}"}})
@@ -85,6 +85,9 @@ for e in ("gopnik", "shade", "colorless", "borzhnyk"):
 
 # ------------------------------------------------------------------ мова
 names = {
+    "item.lewandivka.district_notebook": "Районний блокнот",
+    "key.lewandivka.dash": "Ривок",
+    "key.categories.lewandivka": "Левандівка",
     "item.lewandivka.chroma_pill": "Таблетка «Хрома»",
     "item.lewandivka.district_token": "Жетон району",
     "item.lewandivka.magic_kettle": "Магічний чайник",

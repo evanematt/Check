@@ -53,8 +53,9 @@ public final class Travel {
                 ready.add(sp);
             }
         }
-        int need = Math.min(3, server.getPlayerManager().getCurrentPlayerCount());
+        int need = ua.lewandivka.campaign.Campaign.partySize(server);
         int n = ready.size();
+        ChromaSync.update(server, Math.min(n, need), need);
         String line = switch (n) {
             case 1 -> "Ти бачиш кольорові тріщини в повітрі…";
             case 2 -> "Музика довкола звучить інакше…";
@@ -68,6 +69,7 @@ public final class Travel {
             return;
         }
         st.pillEaters.clear();
+        ChromaSync.finish();
         server.getPlayerManager().broadcast(Text.literal("…і двір падає в небо!").formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD), false);
         for (ServerPlayerEntity sp : ready) {
             sp.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, 60, 1));

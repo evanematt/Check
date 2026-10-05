@@ -17,6 +17,8 @@ public final class ModNetworking {
     public static final Identifier OPEN_CAT_MENU = Lewandivka.id("open_cat_menu");
     public static final Identifier CAT_COMMAND = Lewandivka.id("cat_command");
     public static final Identifier HUD = Lewandivka.id("hud");
+    public static final Identifier ABILITY = Lewandivka.id("ability");
+    public static final Identifier NOTEBOOK = Lewandivka.id("notebook");
 
     public static void initServer() {
         ServerPlayNetworking.registerGlobalReceiver(CAT_COMMAND, (server, player, handler, buf, responseSender) -> {

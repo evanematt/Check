@@ -22,13 +22,14 @@ public final class ModItems {
 
     public static final Item CHROMA_PILL = register("chroma_pill", new ChromaPillItem(new Item.Settings().maxCount(16).rarity(Rarity.EPIC)
             .food(new FoodComponent.Builder().hunger(1).saturationModifier(0.2f).alwaysEdible().snack().build())));
+    public static final Item DISTRICT_NOTEBOOK = register("district_notebook", new DistrictNotebookItem(new Item.Settings().maxCount(1)));
     public static final Item DISTRICT_TOKEN = register("district_token", new LoreItem(new Item.Settings(),
             "Жетон району. Валюта, яку поважає Шлагбаум."));
-    public static final Item MAGIC_KETTLE = register("magic_kettle", new LoreItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON),
-            "Той самий чайник, який Боржник «позичив» у Шлагбаума."));
+    public static final Item MAGIC_KETTLE = register("magic_kettle", new QuestLoreItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON),
+            "Той самий чайник, який Боржник «позичив» у Шлагбаума.", "got_kettle"));
     public static final Item GARAGE_PARCEL = register("garage_parcel", new ParcelItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON)));
-    public static final Item TRAM_COMPOSTOR = register("tram_compostor", new LoreItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON),
-            "Компостер з останнього трамваю. Кондуктор буде радий."));
+    public static final Item TRAM_COMPOSTOR = register("tram_compostor", new QuestLoreItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON),
+            "Компостер з останнього трамваю. Кондуктор буде радий.", "got_compostor"));
     public static final Item NOTE_BORZHNYK = register("note_borzhnyk", new QuestNoteItem(new Item.Settings().maxCount(1), QuestNoteItem.Quest.BORZHNYK));
     public static final Item NOTE_GARAGE = register("note_garage", new QuestNoteItem(new Item.Settings().maxCount(1), QuestNoteItem.Quest.GARAGE));
     public static final Item NOTE_TRAM = register("note_tram", new QuestNoteItem(new Item.Settings().maxCount(1), QuestNoteItem.Quest.TRAM));

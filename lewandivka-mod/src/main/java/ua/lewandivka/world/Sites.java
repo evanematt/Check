@@ -97,7 +97,11 @@ public final class Sites {
     /** Будуємо локації, коли хтось підходить ближче ніж на ~100 блоків. */
     public static void tickProximity(ServerWorld world) {
         LewState st = LewState.get(world.getServer());
+        BlockPos bs = st.point("base", "spawn");
         for (ServerPlayerEntity p : world.getPlayers()) {
+            if (bs != null && !st.has("base_left") && p.squaredDistanceTo(bs.getX(), bs.getY(), bs.getZ()) > 1600) {
+                st.set("base_left");
+            }
             for (Site s : ALL.values()) {
                 if (st.has("built_" + s.key())) {
                     continue;

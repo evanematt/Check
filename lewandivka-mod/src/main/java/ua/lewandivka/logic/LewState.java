@@ -35,6 +35,26 @@ public class LewState extends PersistentState {
     private final Map<String, UUID> bosses = new HashMap<>();
     @Nullable public UUID chinazik;
     @Nullable public UUID metadonna;
+    /** Версія формату збереження (для майбутніх міграцій). */
+    public static final int DATA_VERSION = 2;
+    private final Map<UUID, Set<String>> abilities = new HashMap<>();
+
+    public boolean hasAbility(UUID player, String ability) {
+        return abilities.getOrDefault(player, Set.of()).contains(ability);
+    }
+
+    public void grantAbility(UUID player, String ability) {
+        if (abilities.computeIfAbsent(player, k -> new HashSet<>()).add(ability)) {
+            markDirty();
+        }
+    }
+
+    public void revokeAbility(UUID player, String ability) {
+        Set<String> set = abilities.get(player);
+        if (set != null && set.remove(ability)) {
+            markDirty();
+        }
+    }
 
     // Тимчасове (не зберігається): хто і коли з'їв Хрому, хто вмикав перемикачі.
     public final Map<UUID, Long> pillEaters = new HashMap<>();
@@ -50,6 +70,12 @@ public class LewState extends PersistentState {
 
     public void set(String flag) {
         if (flags.add(flag)) {
+            markDirty();
+        }
+    }
+
+    public void unset(String flag) {
+        if (flags.remove(flag)) {
             markDirty();
         }
     }
@@ -130,7 +156,15 @@ public class LewState extends PersistentState {
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
+        nbt.putInt("DataVersion", DATA_VERSION);
         nbt.putBoolean("Arrived", arrived);
+        NbtCompound ab = new NbtCompound();
+        abilities.forEach((u, set) -> {
+            NbtList l = new NbtList();
+            set.forEach(a -> l.add(NbtString.of(a)));
+            ab.put(u.toString(), l);
+        });
+        nbt.put("Abilities", ab);
         NbtList f = new NbtList();
         for (String s : flags) {
             f.add(NbtString.of(s));
@@ -174,6 +208,14 @@ public class LewState extends PersistentState {
     public static LewState fromNbt(NbtCompound nbt) {
         LewState s = new LewState();
         s.arrived = nbt.getBoolean("Arrived");
+        NbtCompound ab = nbt.getCompound("Abilities");
+        for (String k : ab.getKeys()) {
+            Set<String> set = new HashSet<>();
+            for (NbtElement e : ab.getList(k, NbtElement.STRING_TYPE)) {
+                set.add(e.asString());
+            }
+            s.abilities.put(UUID.fromString(k), set);
+        }
         for (NbtElement e : nbt.getList("Flags", NbtElement.STRING_TYPE)) {
             s.flags.add(e.asString());
         }

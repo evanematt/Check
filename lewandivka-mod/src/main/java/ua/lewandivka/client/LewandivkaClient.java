@@ -1,6 +1,13 @@
 package ua.lewandivka.client;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.PacketByteBuf;
+import org.lwjgl.glfw.GLFW;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
@@ -27,6 +34,12 @@ public class LewandivkaClient implements ClientModInitializer {
         return Lewandivka.id("textures/entity/" + name + ".png");
     }
 
+    private static void sendAbility(String id) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeString(id);
+        ClientPlayNetworking.send(ModNetworking.ABILITY, buf);
+    }
+
     @Override
     public void onInitializeClient() {
         EntityModelLayerRegistry.registerModelLayer(CAT_LAYER, CatModelData::create);
@@ -49,6 +62,33 @@ public class LewandivkaClient implements ClientModInitializer {
 
         DimensionRenderingRegistry.registerSkyRenderer(ModWorldgen.CHROMA, new ChromaSkyRenderer());
         QuestHud.init();
+
+        KeyBinding dashKey = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.lewandivka.dash", GLFW.GLFW_KEY_V, "key.categories.lewandivka"));
+        boolean[] jumpWas = {false};
+        ClientTickEvents.END_CLIENT_TICK.register(mc -> {
+            if (mc.player == null) {
+                return;
+            }
+            while (dashKey.wasPressed()) {
+                sendAbility("dash");
+            }
+            boolean jump = mc.options.jumpKey.isPressed();
+            if (jump && !jumpWas[0] && !mc.player.isOnGround() && !mc.player.isTouchingWater() && !mc.player.getAbilities().flying) {
+                sendAbility("glide");
+            }
+            jumpWas[0] = jump;
+        });
+        ClientPlayNetworking.registerGlobalReceiver(ModNetworking.NOTEBOOK, (client, handler, buf, sender) -> {
+            String t = buf.readString();
+            String o = buf.readString();
+            String c = buf.readString();
+            int n = buf.readVarInt();
+            List<String> done = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                done.add(buf.readString());
+            }
+            client.execute(() -> client.setScreen(new NotebookScreen(t, o, c, done)));
+        });
 
         ClientPlayNetworking.registerGlobalReceiver(ModNetworking.OPEN_CAT_MENU, (client, handler, buf, responseSender) -> {
             int entityId = buf.readVarInt();

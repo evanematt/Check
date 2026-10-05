@@ -839,6 +839,15 @@ def make_items():
 
     out("item/chroma_pill.png", item(pill))
 
+    def notebook(img, d, r):
+        d.rectangle([3, 1, 12, 14], fill=(120, 84, 48, 255), outline=(60, 40, 24, 255))
+        d.rectangle([5, 3, 10, 6], fill=(233, 219, 176, 255))
+        d.line([(5, 8), (10, 8)], fill=(233, 219, 176, 255))
+        d.line([(5, 10), (9, 10)], fill=(233, 219, 176, 255))
+        d.line([(3, 1), (3, 14)], fill=(40, 28, 16, 255))
+
+    out("item/district_notebook.png", item(notebook))
+
     def token(img, d, r):
         d.ellipse([2, 2, 13, 13], fill=(200, 160, 50, 255), outline=(120, 90, 20, 255))
         d.ellipse([4, 4, 11, 11], outline=(240, 210, 100, 255))

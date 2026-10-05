@@ -28,7 +28,9 @@ public class Lewandivka implements ModInitializer {
         ModItems.init();
         ModWorldgen.init();
         ModVillagers.init();
+        ua.lewandivka.config.LewConfig.load();
         ModNetworking.initServer();
+        ua.lewandivka.ability.Abilities.init();
         GameEvents.init();
         ModCommands.init();
         LOG.info("Левандівка: по той бік району — завантажено");

@@ -31,7 +31,7 @@ public final class Hud {
         }
     }
 
-    private static String[] step(LewState st) {
+    public static String[] step(LewState st) {
         if (st.has("done_tower")) {
             return new String[]{"Кінець. Котів вигуляли!", "Портал вдома веде назад у Хромандівку — її секрети нікуди не ділись."};
         }
