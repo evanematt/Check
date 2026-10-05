@@ -1,0 +1,101 @@
+{
+  "has_precipitation": true,
+  "temperature": 0.7,
+  "downfall": 0.6,
+  "effects": {
+    "sky_color": 16740312,
+    "fog_color": 16763040,
+    "water_color": 4060640,
+    "water_fog_color": 2078896,
+    "grass_color": 3403976,
+    "foliage_color": 16743129,
+    "particle": {
+      "options": {
+        "type": "minecraft:end_rod"
+      },
+      "probability": 0.0015
+    }
+  },
+  "spawners": {
+    "monster": [
+      {
+        "type": "lewandivka:shade",
+        "weight": 60,
+        "minCount": 1,
+        "maxCount": 2
+      }
+    ],
+    "creature": [
+      {
+        "type": "minecraft:sheep",
+        "weight": 8,
+        "minCount": 2,
+        "maxCount": 3
+      },
+      {
+        "type": "minecraft:rabbit",
+        "weight": 4,
+        "minCount": 2,
+        "maxCount": 3
+      }
+    ],
+    "ambient": [],
+    "axolotls": [],
+    "underground_water_creature": [],
+    "water_creature": [],
+    "water_ambient": [],
+    "misc": []
+  },
+  "spawn_costs": {},
+  "carvers": {
+    "air": [
+      "minecraft:cave",
+      "minecraft:cave_extra_underground",
+      "minecraft:canyon"
+    ]
+  },
+  "features": [
+    [],
+    [],
+    [
+      "minecraft:amethyst_geode"
+    ],
+    [
+      "minecraft:monster_room"
+    ],
+    [],
+    [],
+    [
+      "minecraft:ore_dirt",
+      "minecraft:ore_gravel",
+      "minecraft:ore_coal_upper",
+      "minecraft:ore_coal_lower",
+      "minecraft:ore_iron_upper",
+      "minecraft:ore_iron_middle",
+      "minecraft:ore_iron_small",
+      "minecraft:ore_gold",
+      "minecraft:ore_redstone",
+      "minecraft:ore_diamond",
+      "minecraft:ore_lapis",
+      "minecraft:ore_copper"
+    ],
+    [
+      "minecraft:glow_lichen"
+    ],
+    [
+      "minecraft:spring_water"
+    ],
+    [
+      "minecraft:patch_grass_plain",
+      "minecraft:flower_default",
+      "minecraft:flower_meadow",
+      "lewandivka:rainbow_tree",
+      "lewandivka:giant_glowshroom_sparse",
+      "lewandivka:crystal_spike",
+      "lewandivka:floating_island"
+    ],
+    [
+      "minecraft:freeze_top_layer"
+    ]
+  ]
+}

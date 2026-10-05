@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/leaves",
+  "textures": {
+    "all": "lewandivka:block/rainbow_leaves"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:color_charge"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.victory.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.victory.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "trigger": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "lewandivka:cats"
+}

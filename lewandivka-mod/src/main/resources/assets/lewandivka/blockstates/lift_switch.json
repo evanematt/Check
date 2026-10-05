@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "lewandivka:block/lift_switch_off"
+    },
+    "active=true": {
+      "model": "lewandivka:block/lift_switch_on"
+    }
+  }
+}

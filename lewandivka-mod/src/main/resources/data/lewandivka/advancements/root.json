@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:chroma_pill"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.root.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.root.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false,
+    "background": "minecraft:textures/block/purple_concrete.png"
+  },
+  "criteria": {
+    "trigger": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

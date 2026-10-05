@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "lewandivka:block/door_lever_off"
+    },
+    "active=true": {
+      "model": "lewandivka:block/door_lever_on"
+    }
+  }
+}

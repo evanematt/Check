@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:chroma_portal"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.chromandivka.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.chromandivka.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "trigger": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "lewandivka:root"
+}

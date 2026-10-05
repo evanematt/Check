@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:collar_chinazik"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.cats.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.cats.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "trigger": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "lewandivka:chromandivka"
+}

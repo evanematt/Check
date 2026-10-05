@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "lewandivka:block/ticket_validator_off"
+  }
+}

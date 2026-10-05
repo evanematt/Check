@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "lewandivka:block/guard_door"
+    },
+    "open=true": {
+      "model": "lewandivka:block/guard_door_open"
+    }
+  }
+}

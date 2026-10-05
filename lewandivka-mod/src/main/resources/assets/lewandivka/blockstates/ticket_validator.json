@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "lewandivka:block/ticket_validator_off"
+    },
+    "active=true": {
+      "model": "lewandivka:block/ticket_validator_on"
+    }
+  }
+}

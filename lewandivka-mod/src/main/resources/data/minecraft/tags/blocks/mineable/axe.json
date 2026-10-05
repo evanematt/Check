@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "lewandivka:kiosk",
+    "lewandivka:glowshroom_cap",
+    "lewandivka:glowshroom_stem",
+    "lewandivka:cardboard_box"
+  ]
+}
