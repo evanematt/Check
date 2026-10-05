@@ -33,7 +33,7 @@ jobs:
       - name: Build modpack (mrpack, server, TLauncher)
         run: |
           JAR=$(ls build/libs/lewandivka-*[0-9].jar | head -n1)
-          python3 tools/build_pack.py "$JAR" dist || echo "pack build failed (see log)"
+          python3 tools/build_pack.py "$JAR" dist
           cp "$JAR" dist/ 2>/dev/null || (mkdir -p dist && cp "$JAR" dist/)
           cat dist/pack_report.txt 2>/dev/null || true
       - name: Upload artifacts
@@ -47,7 +47,7 @@ jobs:
             lewandivka-mod/dist/*.md
             lewandivka-mod/dist/*.txt
       - name: Release
-        if: github.event_name == 'workflow_dispatch' && inputs.release
+        if: github.event_name != 'workflow_dispatch' || inputs.release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: lewandivka-build-${{ github.run_number }}

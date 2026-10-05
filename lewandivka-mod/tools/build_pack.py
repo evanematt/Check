@@ -7,6 +7,7 @@
 несуттєвий мод, що не знайшовся для 1.20.1 або не пройшов перевірку сумісності, виключається (звіт у pack_report.txt).
 """
 import hashlib
+import re
 import json
 import os
 import shutil
@@ -43,6 +44,68 @@ def pick(vs, prefer=None):
             if prefer in v["version_number"]:
                 return v
     return stable[0] if stable else None
+
+
+def vtuple(v):
+    v = v.split("+")[0].split("-")[0]
+    out = []
+    for part in v.split("."):
+        m = re.match(r"\d+", part)
+        out.append(int(m.group()) if m else 0)
+    return tuple(out)
+
+
+def clause_ok(clause, ver):
+    clause = clause.strip()
+    if clause in ("*", ""):
+        return True
+    for op in (">=", "<=", ">", "<", "="):
+        if clause.startswith(op):
+            a, b = vtuple(ver), vtuple(clause[len(op):])
+            n = max(len(a), len(b))
+            a, b = a + (0,) * (n - len(a)), b + (0,) * (n - len(b))
+            return {">=": a >= b, "<=": a <= b, ">": a > b, "<": a < b, "=": a == b}[op]
+    if clause[0] in "~^":
+        return True
+    c = clause.replace("x", "0").replace("X", "0")
+    a, b = vtuple(ver), vtuple(c)
+    return a[: len(b)] == b if "x" in clause.lower() else a == b
+
+
+def range_ok(spec, ver):
+    specs = spec if isinstance(spec, list) else [spec]
+    return any(all(clause_ok(c, ver) for c in re.split(r"\s+", alt.strip()) if c) for s in specs for alt in str(s).split("||"))
+
+
+def validate(chosen, dl, our_jar, mc):
+    """Офлайн-перевірка залежностей: кожен потрібний мод присутній і його версія підходить (як зробив би Fabric Loader)."""
+    metas = []
+    for path in [os.path.join(dl, c["f"]["filename"]) for c in chosen] + [our_jar]:
+        with zipfile.ZipFile(path) as z:
+            metas.append((os.path.basename(path), json.loads(z.read("fabric.mod.json"), strict=False)))
+    ids = {}
+    for name, m in metas:
+        ids[m["id"]] = m["version"]
+        for pid in m.get("provides", []):
+            ids[pid] = m["version"]
+        for jj in m.get("jars", []):
+            pass
+    ids.update({"minecraft": mc, "java": "17", "fabricloader": "0.16.10"})
+    probs = []
+    for name, m in metas:
+        for dep, spec in (m.get("depends") or {}).items():
+            if dep not in ids:
+                # вкладені jar-и (jar-in-jar) теж дають моди
+                with zipfile.ZipFile(os.path.join(dl, name) if name != os.path.basename(our_jar) else our_jar) as z:
+                    nested = [n for n in z.namelist() if n.startswith("META-INF/jars/")]
+                if not any(dep in n for n in nested):
+                    probs.append(f"FAIL {m['id']} потребує '{dep}', якого немає")
+            elif dep not in ("minecraft", "java", "fabricloader") and not range_ok(spec, ids[dep]):
+                probs.append(f"FAIL {m['id']} потребує {dep} {spec}, а є {ids[dep]}")
+        for dep, spec in (m.get("breaks") or {}).items():
+            if dep in ids and range_ok(spec, ids[dep]):
+                probs.append(f"FAIL {m['id']} несумісний з {dep} {ids[dep]}")
+    return probs or ["VALIDATION OK: залежності всіх модів задоволені"]
 
 
 def main(jar, out):
@@ -141,9 +204,10 @@ def main(jar, out):
     dl = os.path.join(work, "dl")
     os.makedirs(dl)
     for c in chosen:
-        if c["m"]["side"] == "both":
-            with open(os.path.join(dl, c["f"]["filename"]), "wb") as fh:
-                fh.write(get(c["f"]["url"]))
+        with open(os.path.join(dl, c["f"]["filename"]), "wb") as fh:
+            fh.write(get(c["f"]["url"]))
+    problems = validate(chosen, dl, jar, mc)
+    report.extend(problems)
 
     # --- TLauncher: наш jar + інсталятор, що завантажує решту модів з Modrinth на комп'ютері гравця.
     # (Не перепаковуємо чужі моди з обмежувальними ліцензіями — кожен качається з офіційного джерела.)
@@ -153,8 +217,10 @@ $mc = Join-Path $env:APPDATA '.minecraft'
 $mods = Join-Path $mc 'mods'
 New-Item -ItemType Directory -Force $mods | Out-Null
 Get-ChildItem $mods -Filter 'lewandivka*.jar' -ErrorAction SilentlyContinue | Remove-Item -Force
-Copy-Item (Join-Path $PSScriptRoot 'mods\*.jar') $mods -Force
 $idx = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot 'modrinth.index.json') | ConvertFrom-Json
+$keep = @($idx.files | ForEach-Object { Split-Path $_.path -Leaf })
+Get-ChildItem $mods -Filter '*.jar' -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^(sodium|iris|indium|continuity|lambdynamiclights|visuality|sound-physics|presencefootsteps|modmenu|moreculling|immediatelyfast|particle-rain|particlerain|cloth-config|fabric-api|lithium|ferritecore)' -and $keep -notcontains $_.Name } | ForEach-Object { Write-Host "del  $($_.Name)"; Remove-Item $_.FullName -Force }
+Copy-Item (Join-Path $PSScriptRoot 'mods\*.jar') $mods -Force
 foreach ($f in $idx.files) {
   if ($f.env.client -eq 'unsupported') { continue }
   $dest = Join-Path $mc ($f.path -replace '/', '\')
@@ -219,6 +285,8 @@ Write-Host 'Gotovo! Zapusti profil Fabric 1.20.1 u TLauncher.'
     open(os.path.join(out, "pack_report.txt"), "w", encoding="utf-8").write("\n".join(report) + "\n")
     shutil.rmtree(work, ignore_errors=True)
     print("\n".join(report))
+    if any(r.startswith("FAIL") for r in report):
+        sys.exit(2)
 
 
 if __name__ == "__main__":
