@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "lewandivka:item/quest_note"
+    "layer0": "lewandivka:item/note_garage"
   }
 }

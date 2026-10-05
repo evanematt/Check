@@ -58,14 +58,20 @@ final class CityArch {
         b.fill(-9, 1, -9, 9, 18, 8, s(Blocks.AIR));
         // Садок з парканом і стежкою.
         for (int x = -9; x <= 9; x++) {
-            b.set(x, 1, -9, s(Blocks.SPRUCE_FENCE));
-            b.set(x, 1, 8, s(Blocks.SPRUCE_FENCE));
+            for (int z : new int[]{-9, 8}) {
+                boolean post = x % 3 == 0 || Math.abs(x) == 9;
+                b.set(x, 1, z, s(post ? Blocks.STONE_BRICK_WALL : Blocks.IRON_BARS));
+                b.set(x, 2, z, s(post ? Blocks.STONE_BRICK_WALL : Blocks.IRON_BARS));
+            }
         }
         for (int z = -9; z <= 8; z++) {
-            b.set(-9, 1, z, s(Blocks.SPRUCE_FENCE));
-            b.set(9, 1, z, s(Blocks.SPRUCE_FENCE));
+            for (int x : new int[]{-9, 9}) {
+                boolean post = z % 3 == 0 || z == -9 || z == 8;
+                b.set(x, 1, z, s(post ? Blocks.STONE_BRICK_WALL : Blocks.IRON_BARS));
+                b.set(x, 2, z, s(post ? Blocks.STONE_BRICK_WALL : Blocks.IRON_BARS));
+            }
         }
-        b.fill(-1, 1, -9, 1, 1, -9, s(Blocks.AIR));
+        b.fill(-1, 1, -9, 1, 2, -9, s(Blocks.AIR));
         b.fill(-1, 0, -9, 1, 0, -8, s(Blocks.DIRT_PATH));
         Block[] flowers = {Blocks.POPPY, Blocks.ALLIUM, Blocks.CORNFLOWER, Blocks.PINK_TULIP, Blocks.OXEYE_DAISY, Blocks.LILY_OF_THE_VALLEY};
         int fi = 0;
@@ -312,6 +318,15 @@ final class CityArch {
         b.set(x, 1, z, s(Blocks.STONE_BRICK_WALL));
         b.fill(x, 2, z, x, 4, z, s(Blocks.DARK_OAK_FENCE));
         b.set(x, 5, z, s(Blocks.LANTERN));
+    }
+
+    /** Дерев'яний електростовп з перекладиною і ліхтарем, як на старих вулицях. */
+    static void powerPole(Builder b, int x, int z) {
+        b.fill(x, 1, z, x, 8, z, log(Blocks.SPRUCE_LOG, Direction.Axis.Y));
+        b.fill(x - 1, 8, z, x + 1, 8, z, s(Blocks.SPRUCE_FENCE));
+        b.set(x, 9, z, s(Blocks.LIGHTNING_ROD));
+        b.set(x, 6, z + 1, s(Blocks.SPRUCE_FENCE));
+        b.set(x, 5, z + 1, hangingLantern());
     }
 
     static void bench(Builder b, int x, int z, Direction facing) {

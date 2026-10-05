@@ -58,7 +58,7 @@ public final class ModBlocks {
     public static final Block GREY_VOID = register("grey_void", new GreyVoidBlock(unbreakable(MapColor.GRAY)));
 
     private static AbstractBlock.Settings crystal(MapColor color) {
-        return AbstractBlock.Settings.create().mapColor(color).strength(1.5f).requiresTool()
+        return AbstractBlock.Settings.create().mapColor(color).strength(1.5f).requiresTool().nonOpaque()
                 .sounds(BlockSoundGroup.AMETHYST_BLOCK).luminance(s -> 12);
     }
 

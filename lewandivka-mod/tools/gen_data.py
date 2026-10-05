@@ -15,12 +15,16 @@ def w(path, obj):
 
 
 # ------------------------------------------------------------------ блоки
-SIMPLE_CUBES = ["crystal_rose", "crystal_aqua", "crystal_citrine", "glowshroom_cap", "glowshroom_stem", "chroma_portal",
+SIMPLE_CUBES = ["glowshroom_cap", "glowshroom_stem", "chroma_portal",
                 "boss_altar", "cardboard_box", "chroma_bars", "box_switch", "collector_door", "shelter_door", "grey_void", "tram_stop"]
 
 for b in SIMPLE_CUBES:
     w(f"{A}/blockstates/{b}.json", {"variants": {"": {"model": f"{M}:block/{b}"}}})
     w(f"{A}/models/block/{b}.json", {"parent": "minecraft:block/cube_all", "textures": {"all": f"{M}:block/{b}"}})
+
+for b in ["crystal_rose", "crystal_aqua", "crystal_citrine"]:
+    w(f"{A}/blockstates/{b}.json", {"variants": {"": {"model": f"{M}:block/{b}"}}})
+    w(f"{A}/models/block/{b}.json", {"parent": "minecraft:block/cross", "render_type": "cutout", "textures": {"cross": f"{M}:block/{b}"}})
 
 w(f"{A}/blockstates/rainbow_leaves.json", {"variants": {"": {"model": f"{M}:block/rainbow_leaves"}}})
 w(f"{A}/models/block/rainbow_leaves.json", {"parent": "minecraft:block/leaves", "textures": {"all": f"{M}:block/rainbow_leaves"}})
@@ -60,9 +64,12 @@ box_model("surprise", [5, 0, 5], [11, 4, 11], f"{M}:block/surprise", f"{M}:block
 box_model("tiny_box", [4, 0, 4], [12, 6, 12], f"{M}:block/tiny_box", f"{M}:block/tiny_box")
 box_model("door_mat", [0, 0, 0], [16, 1, 16], f"{M}:block/door_mat", f"{M}:block/door_mat")
 
-ALL_BLOCKS = SIMPLE_CUBES + ["rainbow_leaves", "lift_switch", "ticket_validator", "door_lever", "guard_door", "kiosk",
+ALL_BLOCKS = SIMPLE_CUBES + ["crystal_rose", "crystal_aqua", "crystal_citrine", "rainbow_leaves", "lift_switch", "ticket_validator", "door_lever", "guard_door", "kiosk",
                              "launch_pad", "litter_box", "surprise", "tiny_box", "door_mat"]
 for b in ALL_BLOCKS:
+    if b.startswith("crystal_"):
+        w(f"{A}/models/item/{b}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:block/{b}"}})
+        continue
     parent = f"{M}:block/{b}_off" if b in ("lift_switch", "ticket_validator", "door_lever") else f"{M}:block/{b}"
     w(f"{A}/models/item/{b}.json", {"parent": parent})
 
@@ -72,7 +79,7 @@ ITEMS = ["chroma_pill", "district_token", "magic_kettle", "garage_parcel", "tram
 for i in ITEMS:
     w(f"{A}/models/item/{i}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:item/{i}"}})
 for n in ("note_borzhnyk", "note_garage", "note_tram"):
-    w(f"{A}/models/item/{n}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:item/quest_note"}})
+    w(f"{A}/models/item/{n}.json", {"parent": "minecraft:item/generated", "textures": {"layer0": f"{M}:item/{n}"}})
 for e in ("gopnik", "shade", "colorless", "borzhnyk"):
     w(f"{A}/models/item/{e}_spawn_egg.json", {"parent": "minecraft:item/template_spawn_egg"})
 

@@ -72,5 +72,5 @@
 * `/lewandivka go | home | reset` — для оператора (тест і порятунок).
 
 ## Розробка
-* Текстури й геометрія котів генеруються скриптом `python3 tools/gen_textures.py`, JSON-дані — скриптом `python3 tools/gen_data.py`.
+* Текстури: `python3 tools/gen_textures.py`, потім `python3 tools/import_refs.py` (переносить малюнки з `tools/refs`). JSON-дані: `python3 tools/gen_data.py`.
 * Збірка: `./gradlew build`, готовий jar з'являється в `build/libs/`. Збирає GitHub Actions (`.github/workflows/build-mod.yml`).

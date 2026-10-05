@@ -1,6 +1,7 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cross",
+  "render_type": "cutout",
   "textures": {
-    "all": "lewandivka:block/crystal_rose"
+    "cross": "lewandivka:block/crystal_rose"
   }
 }

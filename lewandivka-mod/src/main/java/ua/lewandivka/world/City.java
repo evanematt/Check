@@ -45,10 +45,12 @@ public final class City {
         b.prepare(44, 32, 16, s(Blocks.DIRT));
         b.fill(-44, 0, -32, 44, 0, 32, s(Blocks.GRASS_BLOCK));
         // Вулиця з розміткою і тротуарами.
-        b.fill(-44, 0, -3, 44, 0, 3, s(Blocks.GRAY_CONCRETE));
-        for (int x = -44; x <= 44; x += 4) {
-            b.set(x, 0, 0, s(Blocks.WHITE_CONCRETE));
-            b.set(x + 1, 0, 0, s(Blocks.WHITE_CONCRETE));
+        net.minecraft.block.Block[] cobble = {Blocks.STONE_BRICKS, Blocks.CRACKED_STONE_BRICKS, Blocks.COBBLESTONE, Blocks.ANDESITE,
+                Blocks.STONE_BRICKS, Blocks.MOSSY_COBBLESTONE, Blocks.POLISHED_ANDESITE};
+        for (int x = -44; x <= 44; x++) {
+            for (int z = -3; z <= 3; z++) {
+                b.set(x, 0, z, s(cobble[w.random.nextInt(cobble.length)]));
+            }
         }
         b.fill(-44, 0, -5, 44, 0, -4, s(Blocks.SMOOTH_STONE));
         b.fill(-44, 0, 4, 44, 0, 5, s(Blocks.SMOOTH_STONE));
@@ -58,9 +60,9 @@ public final class City {
 
         net.minecraft.util.math.random.Random r = w.random;
         // Тротуарні дерева і ліхтарі.
-        for (int x = -40; x <= 40; x += 8) {
-            CityArch.streetLamp(b, x, -6);
-            CityArch.streetLamp(b, x + 4, 6);
+        for (int x = -40; x <= 40; x += 12) {
+            CityArch.powerPole(b, x, -6);
+            CityArch.streetLamp(b, x + 6, 6);
         }
         for (int x = -42; x <= 42; x += 16) {
             if (Math.abs(x) > 8) {

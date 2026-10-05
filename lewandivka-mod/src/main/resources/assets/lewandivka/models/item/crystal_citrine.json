@@ -1,3 +1,6 @@
 {
-  "parent": "lewandivka:block/crystal_citrine"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "lewandivka:block/crystal_citrine"
+  }
 }

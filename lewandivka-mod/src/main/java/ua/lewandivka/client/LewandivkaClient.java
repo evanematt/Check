@@ -44,7 +44,7 @@ public class LewandivkaClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.LADY_WHIRL, LadyWhirlRenderer::new);
 
         BlockRenderLayerMap.INSTANCE.putBlock(ModBlocks.RAINBOW_LEAVES, RenderLayer.getCutoutMipped());
-        BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(), ModBlocks.CHROMA_BARS, ModBlocks.GUARD_DOOR, ModBlocks.TINY_BOX,
+        BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(), ModBlocks.CHROMA_BARS, ModBlocks.GUARD_DOOR, ModBlocks.CRYSTAL_ROSE, ModBlocks.CRYSTAL_AQUA, ModBlocks.CRYSTAL_CITRINE, ModBlocks.TINY_BOX,
                 ModBlocks.SURPRISE, ModBlocks.LITTER_BOX, ModBlocks.LAUNCH_PAD, ModBlocks.DOOR_MAT);
 
         DimensionRenderingRegistry.registerSkyRenderer(ModWorldgen.CHROMA, new ChromaSkyRenderer());
