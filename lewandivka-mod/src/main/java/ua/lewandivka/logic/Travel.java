@@ -84,6 +84,7 @@ public final class Travel {
                 }
             }
             if (first) {
+                ua.lewandivka.world.City.removeHomeCats(server);
                 Scheduler.after(server, 40, () -> arrivalStory(server));
             }
         });

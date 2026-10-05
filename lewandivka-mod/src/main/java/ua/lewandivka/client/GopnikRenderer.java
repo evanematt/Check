@@ -9,18 +9,18 @@ import org.jetbrains.annotations.Nullable;
 
 /** Гопники, тіньові безквиткові (напівпрозорі) і безбарвники. */
 public class GopnikRenderer extends ZombieEntityRenderer {
-    private final Identifier texture;
+    private final Identifier[] textures;
     private final boolean translucent;
 
-    public GopnikRenderer(EntityRendererFactory.Context ctx, Identifier texture, boolean translucent) {
+    public GopnikRenderer(EntityRendererFactory.Context ctx, boolean translucent, Identifier... textures) {
         super(ctx);
-        this.texture = texture;
+        this.textures = textures;
         this.translucent = translucent;
     }
 
     @Override
     public Identifier getTexture(ZombieEntity entity) {
-        return texture;
+        return textures[Math.floorMod(entity.getUuid().hashCode(), textures.length)];
     }
 
     @Override

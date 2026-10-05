@@ -44,6 +44,13 @@ public final class DistrictQuests {
     }
 
     private static boolean borzhnyk(ServerWorld world, ServerPlayerEntity player) {
+        java.util.UUID cityB = LewState.get(world.getServer()).boss("city_borzhnyk");
+        if (cityB != null && world.getEntity(cityB) instanceof BorzhnykEntity existing && existing.isAlive()) {
+            existing.setGlowing(true);
+            player.sendMessage(Text.literal("Боржник ховається біля сірої панельки (тепер він світиться — від сорому). "
+                    + "Забери чайник: 3 смарагди в руку і ПКМ, або по-іншому.").formatted(Formatting.YELLOW), false);
+            return true;
+        }
         Random r = world.random;
         double a = r.nextDouble() * Math.PI * 2;
         int dist = 14 + r.nextInt(8);
@@ -65,6 +72,19 @@ public final class DistrictQuests {
         Direction f = player.getHorizontalFacing();
         BlockPos c = player.getBlockPos().offset(f, 18);
         BlockPos ground = surface(world, c.getX(), c.getZ()).down();
+        if (LewState.get(world.getServer()).point("city", "garage13") != null && world == world.getServer().getOverworld()) {
+            player.sendMessage(Text.literal("Гараж № 13 — лабіринт гаражів на краю району. Посилка в найдальшому куті, охорона не спить.")
+                    .formatted(Formatting.YELLOW), false);
+            return true;
+        }
+        buildGarage13(world, ground);
+        player.sendMessage(Text.literal("Попереду виріс Гараж № 13 — лабіринт гаражів. Вхід позначений ліхтарем. Посилка в найдальшому куті, "
+                + "охорона не спить. Посилка бурчить — тримайтесь разом!").formatted(Formatting.YELLOW), false);
+        return true;
+    }
+
+    /** Лабіринт гаражів з посилкою і охороною; ground — рівень підлоги в центрі. */
+    public static void buildGarage13(ServerWorld world, BlockPos ground) {
         Builder b = new Builder(world, ground);
         Random r = world.random;
         b.prepare(9, 9, 5, Blocks.STONE.getDefaultState());
@@ -138,9 +158,6 @@ public final class DistrictQuests {
         for (int i = 0; i < 3 && i < cells.size(); i++) {
             spawnGuard(world, ModEntities.GOPNIK, b.at(cells.get(i)[0] * 2 + 1 - 7, 1, cells.get(i)[1] * 2 + 1 - 7), false);
         }
-        player.sendMessage(Text.literal("Попереду виріс Гараж № 13 — лабіринт гаражів. Вхід позначений ліхтарем. Посилка в найдальшому куті, "
-                + "охорона не спить. Посилка бурчить — тримайтесь разом!").formatted(Formatting.YELLOW), false);
-        return true;
     }
 
     private static boolean tram(ServerWorld world, ServerPlayerEntity player) {

@@ -15,7 +15,25 @@ JAVA = os.path.join(os.path.dirname(__file__), "..", "src", "main", "java", "ua"
 TEX = os.path.join(ROOT, "textures")
 
 
+def outline(img):
+    px = img.load()
+    W, H = img.size
+    src = img.copy().load()
+    for y in range(H):
+        for x in range(W):
+            if src[x, y][3] == 0:
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < W and 0 <= ny < H and src[nx, ny][3] > 0:
+                        c = src[nx, ny]
+                        px[x, y] = (c[0] // 4, c[1] // 4, c[2] // 4, 255)
+                        break
+    return img
+
+
 def out(path, img):
+    if path.startswith("item/"):
+        img = outline(img)
     full = os.path.join(TEX, path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
     img.save(full)
@@ -246,9 +264,20 @@ def cat_texture(kind, sleep):
     fns = {"body": body_fn, "chest": chest_fn, "head": head_fn, "muzzle": muzzle_fn, "ear_l": ear_fn, "ear_r": ear_fn,
            "cheek_l": cheek_fn, "cheek_r": cheek_fn, "tail": tail_fn, "tail2": tail_fn,
            "leg_fl": leg_fn, "leg_fr": leg_fn, "leg_bl": leg_fn, "leg_br": leg_fn}
+    def shaded(fn):
+        def g(face, x, y, W, H):
+            c = fn(face, x, y, W, H)
+            if c is None:
+                return None
+            k = {"top": 1.12, "bottom": 0.72}.get(face, 1.06 - 0.28 * y / max(1, H - 1))
+            if face == "front" and fn is head_fn:
+                k = 1.0
+            return tuple(max(0, min(255, int(v * k))) for v in c[:3]) + (c[3] if len(c) > 3 else 255,)
+        return g
+
     for name, parent, pivot, cubes in CAT_PARTS:
         for (u, v), _, (w, h, d) in cubes:
-            paint_box(img, S, u, v, w, h, d, fns[name])
+            paint_box(img, S, u, v, w, h, d, shaded(fns[name]))
     out(f"entity/{kind}{'_sleep' if sleep else ''}.png", img)
 
 
@@ -359,10 +388,107 @@ def simple_skin(skin, hair, shirt, pants, shoes, eye=(30, 30, 30), extra=None, h
     return fn
 
 
+def suit_skin(name, skin, suit, stripe, hair, cap, eye, shoes=(238, 238, 238), zombie=False, alpha=255, glow_eyes=False, seed=1):
+    """Спортивка як на референсах: чорний костюм, три білі смуги, кепка, білі кросівки. Текстура 2x."""
+    S = 2
+    img = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    rnd = random.Random(seed)
+    sd = mixc(skin, (0, 0, 0), 0.25)
+
+    def A(c, a=None):
+        c = c[:3]
+        return c + ((a if a is not None else alpha),)
+
+    def shade(c, y, H):
+        return mixc(c, (0, 0, 0), 0.18 * y / max(1, H - 1))
+
+    def head(face, x, y, W, H):
+        top_c = cap if cap else hair
+        if face == "top":
+            return A(jitter(top_c, 5, rnd))
+        if face == "bottom":
+            return A(sd)
+        if face == "front":
+            if y <= 3:
+                return A(jitter(top_c, 5, rnd))
+            if y == 6 and (2 <= x <= 6 or 9 <= x <= 13):
+                return A(mixc(hair, (0, 0, 0), 0.3))
+            if y in (7, 8) and (3 <= x <= 6 or 9 <= x <= 12):
+                if zombie or glow_eyes:
+                    return eye[:3] + (255,)
+                if x in (5, 6, 9, 10):
+                    return A(eye) if y == 8 or x in (6, 9) else A((20, 20, 20))
+                return A((240, 240, 240))
+            if 7 <= x <= 8 and 8 <= y <= 10:
+                return A(sd)
+            if y == 12 and 5 <= x <= 10:
+                return A((96, 48, 48) if not zombie else (40, 20, 20))
+            if y >= 11 and rnd.random() < 0.18 and not zombie:
+                return A(mixc(skin, (40, 30, 20), 0.35))
+            return A(jitter(skin, 4, rnd))
+        if y <= 5 or face == "back" and y <= 9:
+            return A(jitter(top_c if y <= 3 or not cap else hair, 5, rnd))
+        if face in ("right", "left") and 7 <= y <= 9 and 6 <= x <= 8:
+            return A(sd)
+        return A(jitter(skin, 4, rnd))
+
+    def hat(face, x, y, W, H):
+        if not cap:
+            return None
+        if face == "top":
+            if 6 <= x <= 9 and 6 <= y <= 9:
+                return A((250, 250, 250))
+            return A(jitter(cap, 4, rnd))
+        if face == "bottom":
+            return None
+        if y <= 5:
+            if face == "front" and 6 <= x <= 9 and 2 <= y <= 3:
+                return A((250, 250, 250))
+            return A(jitter(cap, 4, rnd))
+        if face == "front" and y == 6:
+            return A(mixc(cap, (0, 0, 0), 0.5))
+        return None
+
+    def body(face, x, y, W, H):
+        if face == "front":
+            if 7 <= x <= 8:
+                return A((150, 150, 156))
+            if y <= 1:
+                return A(stripe)
+            if 2 <= x <= 4 and 4 <= y <= 5:
+                return A(stripe)
+        if face in ("top",) and 7 <= x <= 8:
+            return A(stripe)
+        return A(shade(jitter(suit, 4, rnd), y, H))
+
+    def limb(is_leg):
+        def f(face, x, y, W, H):
+            if face in ("right", "left") and x in (1, 3, 5) and y < (19 if is_leg else 17):
+                return A(stripe)
+            if is_leg:
+                if y >= 20 or face == "bottom":
+                    return A((150, 150, 150) if y == 23 or face == "bottom" else shoes)
+            else:
+                if y >= 18 or face == "bottom":
+                    return A(jitter(skin, 4, rnd))
+            return A(shade(jitter(suit, 4, rnd), y, H))
+        return f
+
+    for (u, v, w, h, d), fn in (((0, 0, 8, 8, 8), head), ((32, 0, 8, 8, 8), hat), ((16, 16, 8, 12, 4), body),
+                                ((40, 16, 4, 12, 4), limb(False)), ((0, 16, 4, 12, 4), limb(True))):
+        paint_box(img, S, u, v, w, h, d, fn)
+    out(f"entity/{name}.png", img)
+
+
 def make_humanoids():
-    human_skin("gopnik", tracksuit((28, 28, 34), (235, 235, 235), (150, 176, 128), (30, 30, 30), (26, 26, 30), (240, 240, 240)), 1)
-    human_skin("shade", tracksuit((48, 22, 72), (150, 80, 220), (70, 40, 100), (230, 140, 255, 255), (30, 12, 50), (90, 50, 140), translucent=175), 2)
-    human_skin("colorless", tracksuit((110, 110, 112), (200, 200, 200), (150, 150, 150), (245, 245, 245), (90, 90, 90), (180, 180, 180)), 3)
+    black, white = (24, 24, 28), (240, 240, 240)
+    suit_skin("gopnik", (198, 150, 112), black, white, (40, 30, 24), None, (90, 60, 30), seed=1)
+    suit_skin("gopnik_cap", (186, 136, 98), black, white, (30, 24, 20), (20, 20, 22), (60, 90, 120), seed=2)
+    suit_skin("gopnik_zombie", (96, 150, 80), black, white, (40, 70, 34), (20, 20, 22), (20, 30, 18), zombie=True, seed=3)
+    suit_skin("shade", (70, 40, 100), (46, 20, 70), (170, 90, 240), (30, 12, 50), (26, 10, 40), (235, 150, 255),
+              shoes=(120, 70, 180), alpha=180, glow_eyes=True, seed=4)
+    suit_skin("colorless", (156, 156, 156), (104, 104, 108), (205, 205, 205), (80, 80, 80), (70, 70, 72), (250, 250, 250),
+              shoes=(190, 190, 190), glow_eyes=True, seed=5)
 
     def borz_hat(face, x, y, W, H, rnd):
         if face == "top" or (face in ("right", "left", "back") and y <= 4):
@@ -687,23 +813,29 @@ def item(draw_fn, seed=0):
 
 def make_items():
     def pill(img, d, r):
-        # Капсула-веселка з бліком.
+        # Глянцева капсула по діагоналі: рожево-фіолетова половина і світла половина з бліком.
+        ax, ay, bx, by, rad = 4.0, 11.5, 11.5, 4.0, 3.2
         for i in range(16):
             for j in range(16):
-                dx, dy = i - 7.5, j - 7.5
-                rx, ry = (dx + dy) / 1.414, (dx - dy) / 1.414
-                if abs(ry) <= 3 and abs(rx) <= 6 - max(0, 3 - (3 - abs(ry))) * 0:
-                    if rx * rx / 36 + ry * ry / 9 <= 1.0 or abs(rx) <= 3:
-                        import colorsys
-                        hue = (rx + 6) / 12 * 0.85
-                        rr, gg, bb = colorsys.hsv_to_rgb(hue, 0.65, 1.0)
-                        c = (int(rr * 255), int(gg * 255), int(bb * 255), 255)
-                        if ry < -1.5:
-                            c = mixc(c, (255, 255, 255), 0.5)
-                        if abs(rx) < 0.5:
-                            c = (255, 255, 255, 255)
-                        img.putpixel((i, j), c)
-        d.point([(5, 6), (6, 5)], fill=(255, 255, 255, 255))
+                px, py = i + 0.5, j + 0.5
+                vx, vy = bx - ax, by - ay
+                t = max(0.0, min(1.0, ((px - ax) * vx + (py - ay) * vy) / (vx * vx + vy * vy)))
+                cx, cy = ax + vx * t, ay + vy * t
+                dist = math.hypot(px - cx, py - cy)
+                if dist > rad:
+                    continue
+                side = (px - cx) * (-vy) + (py - cy) * vx  # знак: вгорі-ліворуч чи внизу-праворуч від осі
+                if t < 0.5:
+                    base = (232, 70, 190) if side > 0 else (150, 40, 170)
+                else:
+                    base = (250, 240, 255) if side > 0 else (196, 170, 220)
+                if abs(t - 0.5) < 0.04:
+                    base = (90, 30, 110)
+                light = 1.0 - dist / rad * 0.35
+                c = tuple(min(255, int(v * light)) for v in base) + (255,)
+                img.putpixel((i, j), c)
+        d.point([(5, 9), (6, 8), (7, 7)], fill=(255, 220, 250, 255))
+        d.point([(10, 4)], fill=(255, 255, 255, 255))
 
     out("item/chroma_pill.png", item(pill))
 

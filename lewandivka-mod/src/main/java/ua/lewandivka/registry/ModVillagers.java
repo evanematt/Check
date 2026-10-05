@@ -40,7 +40,7 @@ public final class ModVillagers {
             f.add((entity, random) -> new TradeOffer(new ItemStack(Items.EMERALD, 2), new ItemStack(ModItems.NOTE_TRAM), 4, 2, 0.05f));
         });
         TradeOfferHelper.registerVillagerOffers(SHLAGBAUM, 4, f -> {
-            f.add((entity, random) -> new TradeOffer(new ItemStack(ModItems.TRAM_COMPOSTOR), new ItemStack(Items.EMERALD, 10), 4, 100, 0.05f));
+            f.add((entity, random) -> new TradeOffer(new ItemStack(ModItems.TRAM_COMPOSTOR), new ItemStack(ModItems.CHROMA_PILL, 3), 4, 100, 0.0f));
             f.add((entity, random) -> new TradeOffer(new ItemStack(Items.EMERALD), new ItemStack(ModItems.SUNFLOWER_SEEDS, 8), 12, 1, 0.05f));
         });
         TradeOfferHelper.registerVillagerOffers(SHLAGBAUM, 5, f -> {

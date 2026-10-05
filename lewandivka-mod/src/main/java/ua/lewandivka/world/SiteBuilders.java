@@ -63,6 +63,11 @@ final class SiteBuilders {
     // ---------------------------------------------------------------- база
 
     static void base(Builder b, LewState st) {
+        house(b, st, "base", true);
+    }
+
+    /** Наш будинок-панелька: у місті (chroma=false) і його двійник у Хромандівці. */
+    static void house(Builder b, LewState st, String key, boolean chroma) {
         b.prepare(10, 10, 16, s(Blocks.STONE));
         b.fill(-10, 0, -10, 10, 0, 10, s(Blocks.GRASS_BLOCK));
         b.fill(-1, 0, -10, 1, 0, -7, s(Blocks.DIRT_PATH));
@@ -110,7 +115,9 @@ final class SiteBuilders {
         b.set(-5, 1, 5, s(ModBlocks.CARDBOARD_BOX));
         b.set(-4, 1, 5, s(ModBlocks.CARDBOARD_BOX));
         b.set(-5, 2, 5, s(ModBlocks.CARDBOARD_BOX));
-        b.set(0, 1, 5, s(ModBlocks.CHROMA_PORTAL));
+        if (chroma) {
+            b.set(0, 1, 5, s(ModBlocks.CHROMA_PORTAL));
+        }
         // Другий поверх: три ліжка.
         int[] bedX = {-4, -2, 0};
         Block[] beds = {Blocks.RED_BED, Blocks.PINK_BED, Blocks.CYAN_BED};
@@ -127,7 +134,14 @@ final class SiteBuilders {
         b.set(-8, 1, 8, s(ModBlocks.LAUNCH_PAD));
 
         BlockPos chestPos = b.at(-5, 1, -3);
-        if (b.world.getBlockEntity(chestPos) instanceof ChestBlockEntity chest) {
+        if (b.world.getBlockEntity(chestPos) instanceof ChestBlockEntity chest && !chroma) {
+            chest.setStack(0, new ItemStack(Items.COOKED_COD, 16));
+            chest.setStack(1, new ItemStack(Items.BREAD, 16));
+            chest.setStack(2, new ItemStack(Items.IRON_SWORD));
+            chest.setStack(3, new ItemStack(Items.IRON_SWORD));
+            chest.setStack(4, new ItemStack(Items.IRON_SWORD));
+            chest.setStack(5, new ItemStack(Items.TORCH, 32));
+        } else if (b.world.getBlockEntity(chestPos) instanceof ChestBlockEntity chest) {
             chest.setStack(0, new ItemStack(ModItems.COLLAR_CHINAZIK));
             chest.setStack(1, new ItemStack(ModItems.COLLAR_METADONNA));
             ItemStack note = new ItemStack(Items.PAPER);
@@ -138,8 +152,8 @@ final class SiteBuilders {
             chest.setStack(6, new ItemStack(Items.TORCH, 32));
             chest.setStack(8, Travel.guideBook());
         }
-        st.setPoint("base", "spawn", b.at(0, 1, 0));
-        st.setPoint("base", "cat_home", b.at(2, 1, 2));
+        st.setPoint(key, "spawn", b.at(0, 1, 0));
+        st.setPoint(key, "cat_home", b.at(2, 1, 2));
     }
 
     // ---------------------------------------------------------------- гараж

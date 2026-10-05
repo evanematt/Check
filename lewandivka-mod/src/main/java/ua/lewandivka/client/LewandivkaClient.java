@@ -33,9 +33,9 @@ public class LewandivkaClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.CHINAZIK, ChromaCatRenderer::new);
         EntityRendererRegistry.register(ModEntities.METADONNA, ChromaCatRenderer::new);
 
-        EntityRendererRegistry.<ZombieEntity>register(ModEntities.GOPNIK, ctx -> new GopnikRenderer(ctx, tex("gopnik"), false));
-        EntityRendererRegistry.<ZombieEntity>register(ModEntities.SHADE, ctx -> new GopnikRenderer(ctx, tex("shade"), true));
-        EntityRendererRegistry.<ZombieEntity>register(ModEntities.COLORLESS, ctx -> new GopnikRenderer(ctx, tex("colorless"), false));
+        EntityRendererRegistry.<ZombieEntity>register(ModEntities.GOPNIK, ctx -> new GopnikRenderer(ctx, false, tex("gopnik"), tex("gopnik_zombie"), tex("gopnik_cap")));
+        EntityRendererRegistry.<ZombieEntity>register(ModEntities.SHADE, ctx -> new GopnikRenderer(ctx, true, tex("shade")));
+        EntityRendererRegistry.<ZombieEntity>register(ModEntities.COLORLESS, ctx -> new GopnikRenderer(ctx, false, tex("colorless")));
         EntityRendererRegistry.register(ModEntities.BORZHNYK, ctx -> new SkinnedBipedRenderer<>(ctx, tex("borzhnyk"), 1.0f));
         EntityRendererRegistry.register(ModEntities.GARAGE_KING, ctx -> new SkinnedBipedRenderer<>(ctx, tex("garage_king"), 2.2f));
         EntityRendererRegistry.register(ModEntities.CONDUCTOR, ctx -> new SkinnedBipedRenderer<>(ctx, tex("conductor"), 1.5f));
@@ -48,6 +48,7 @@ public class LewandivkaClient implements ClientModInitializer {
                 ModBlocks.SURPRISE, ModBlocks.LITTER_BOX, ModBlocks.LAUNCH_PAD, ModBlocks.DOOR_MAT);
 
         DimensionRenderingRegistry.registerSkyRenderer(ModWorldgen.CHROMA, new ChromaSkyRenderer());
+        QuestHud.init();
 
         ClientPlayNetworking.registerGlobalReceiver(ModNetworking.OPEN_CAT_MENU, (client, handler, buf, responseSender) -> {
             int entityId = buf.readVarInt();

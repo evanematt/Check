@@ -8,6 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.TypeFilter;
 import ua.lewandivka.entity.ChromaCatEntity;
 import ua.lewandivka.registry.ModWorldgen;
+import ua.lewandivka.world.City;
 import ua.lewandivka.world.Sites;
 
 import java.util.ArrayList;
@@ -17,6 +18,9 @@ public final class GameEvents {
     public static void init() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             Scheduler.tick(server);
+            if (server.getTicks() % 40 == 0) {
+                Hud.update(server);
+            }
             if (server.getTicks() % 20 == 0) {
                 ServerWorld chroma = server.getWorld(ModWorldgen.CHROMA);
                 if (chroma != null && !chroma.getPlayers().isEmpty()) {
@@ -25,6 +29,9 @@ public final class GameEvents {
             }
         });
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> Scheduler.clear());
+        ServerLifecycleEvents.SERVER_STARTED.register(City::ensure);
+        net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
+                server.execute(() -> City.onJoin(handler.player)));
 
         // Загинув у Хромандівці — прокидаєшся в будинку-базі.
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
