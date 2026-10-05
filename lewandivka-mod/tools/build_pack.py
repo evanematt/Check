@@ -79,27 +79,31 @@ def range_ok(spec, ver):
 
 def validate(chosen, dl, our_jar, mc):
     """Офлайн-перевірка залежностей: кожен потрібний мод присутній і його версія підходить (як зробив би Fabric Loader)."""
+    import io
     metas = []
+
+    def read_jar(zf, label):
+        metas.append((label, json.loads(zf.read("fabric.mod.json"), strict=False)))
+        for n in zf.namelist():  # вкладені jar-и (Fabric API, LambDynamicLights API тощо)
+            if n.startswith("META-INF/jars/") and n.endswith(".jar"):
+                with zipfile.ZipFile(io.BytesIO(zf.read(n))) as inner:
+                    if "fabric.mod.json" in inner.namelist():
+                        read_jar(inner, label + "!" + os.path.basename(n))
+
     for path in [os.path.join(dl, c["f"]["filename"]) for c in chosen] + [our_jar]:
         with zipfile.ZipFile(path) as z:
-            metas.append((os.path.basename(path), json.loads(z.read("fabric.mod.json"), strict=False)))
+            read_jar(z, os.path.basename(path))
     ids = {}
     for name, m in metas:
         ids[m["id"]] = m["version"]
         for pid in m.get("provides", []):
             ids[pid] = m["version"]
-        for jj in m.get("jars", []):
-            pass
     ids.update({"minecraft": mc, "java": "17", "fabricloader": "0.16.10"})
     probs = []
     for name, m in metas:
         for dep, spec in (m.get("depends") or {}).items():
             if dep not in ids:
-                # вкладені jar-и (jar-in-jar) теж дають моди
-                with zipfile.ZipFile(os.path.join(dl, name) if name != os.path.basename(our_jar) else our_jar) as z:
-                    nested = [n for n in z.namelist() if n.startswith("META-INF/jars/")]
-                if not any(dep in n for n in nested):
-                    probs.append(f"FAIL {m['id']} потребує '{dep}', якого немає")
+                probs.append(f"FAIL {m['id']} потребує '{dep}', якого немає")
             elif dep not in ("minecraft", "java", "fabricloader") and not range_ok(spec, ids[dep]):
                 probs.append(f"FAIL {m['id']} потребує {dep} {spec}, а є {ids[dep]}")
         for dep, spec in (m.get("breaks") or {}).items():
