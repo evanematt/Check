@@ -103,13 +103,13 @@ def validate(chosen, dl, our_jar, mc):
     for name, m in metas:
         for dep, spec in (m.get("depends") or {}).items():
             if dep not in ids:
-                probs.append(f"FAIL {m['id']} потребує '{dep}', якого немає")
+                probs.append((name.split("!")[0], f"FAIL {m['id']} потребує '{dep}', якого немає"))
             elif dep not in ("minecraft", "java", "fabricloader") and not range_ok(spec, ids[dep]):
-                probs.append(f"FAIL {m['id']} потребує {dep} {spec}, а є {ids[dep]}")
+                probs.append((name.split("!")[0], f"FAIL {m['id']} потребує {dep} {spec}, а є {ids[dep]}"))
         for dep, spec in (m.get("breaks") or {}).items():
             if dep in ids and range_ok(spec, ids[dep]):
-                probs.append(f"FAIL {m['id']} несумісний з {dep} {ids[dep]}")
-    return probs or ["VALIDATION OK: залежності всіх модів задоволені"]
+                probs.append((name.split("!")[0], f"FAIL {m['id']} несумісний з {dep} {ids[dep]}"))
+    return probs
 
 
 def main(jar, out):
@@ -140,11 +140,12 @@ def main(jar, out):
                 v = pick(vs, m.get("prefer"))
             if v is None:
                 raise RuntimeError("немає версії для " + mc)
+            ordered = [v] + [x for x in ([y for y in vs if y["version_type"] == "release"] + [y for y in vs if y["version_type"] != "release"]) if x["id"] != v["id"]]
             if slug == "sodium":
                 sodium_id = v["id"]
             f = next((x for x in v["files"] if x.get("primary")), v["files"][0])
             proj = jget(f"project/{slug}")
-            chosen.append({"m": m, "v": v, "f": f, "p": proj})
+            chosen.append({"m": m, "v": v, "f": f, "p": proj, "cands": ordered, "i": 0})
             report.append(f"OK   {slug} {v['version_number']}")
         except Exception as e:  # noqa: BLE001
             report.append(f"SKIP {slug}: {e}")
@@ -166,6 +167,47 @@ def main(jar, out):
             report.append("SKIP shader: не знайдено")
     except Exception as e:  # noqa: BLE001
         report.append(f"SKIP shader: {e}")
+
+    dl = os.path.join(work, "dl")
+    os.makedirs(dl)
+
+    def fetch(c):
+        path = os.path.join(dl, c["f"]["filename"])
+        if not os.path.exists(path):
+            with open(path, "wb") as fh:
+                fh.write(get(c["f"]["url"]))
+
+    final_probs = []
+    for _ in range(10):
+        for c in chosen:
+            fetch(c)
+        probs = validate(chosen, dl, jar, mc)
+        if not probs:
+            break
+        bad = {f for f, _ in probs}
+        changed = False
+        for c in list(chosen):
+            if c["f"]["filename"] in bad:
+                if c["m"].get("essential"):
+                    continue
+                c["i"] += 1
+                if c["i"] < len(c["cands"]):
+                    c["v"] = c["cands"][c["i"]]
+                    c["f"] = next((x for x in c["v"]["files"] if x.get("primary")), c["v"]["files"][0])
+                    report.append(f"RETRY {c['m']['slug']} -> {c['v']['version_number']}")
+                else:
+                    chosen.remove(c)
+                    report.append(f"DROP  {c['m']['slug']}: немає сумісної версії для цього набору")
+                changed = True
+        final_probs = probs
+        if not changed:
+            break
+    for c in chosen:
+        fetch(c)
+    final_probs = validate(chosen, dl, jar, mc)
+    report.extend(m for _, m in final_probs)
+    if not final_probs:
+        report.append("VALIDATION OK: залежності всіх модів задоволені")
 
     jar_name = os.path.basename(jar)
     files = []
@@ -203,15 +245,6 @@ def main(jar, out):
             for n in names:
                 full = os.path.join(root, n)
                 z.write(full, "overrides/" + os.path.relpath(full, os.path.join(HERE, "presets", "performance")))
-
-    # --- завантаження для серверного та TLauncher-архівів
-    dl = os.path.join(work, "dl")
-    os.makedirs(dl)
-    for c in chosen:
-        with open(os.path.join(dl, c["f"]["filename"]), "wb") as fh:
-            fh.write(get(c["f"]["url"]))
-    problems = validate(chosen, dl, jar, mc)
-    report.extend(problems)
 
     # --- TLauncher: наш jar + інсталятор, що завантажує решту модів з Modrinth на комп'ютері гравця.
     # (Не перепаковуємо чужі моди з обмежувальними ліцензіями — кожен качається з офіційного джерела.)
