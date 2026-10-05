@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.util.Identifier;
 import ua.lewandivka.Lewandivka;
 import ua.lewandivka.network.ModNetworking;
@@ -32,9 +33,9 @@ public class LewandivkaClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.CHINAZIK, ChromaCatRenderer::new);
         EntityRendererRegistry.register(ModEntities.METADONNA, ChromaCatRenderer::new);
 
-        EntityRendererRegistry.register(ModEntities.GOPNIK, ctx -> new GopnikRenderer(ctx, tex("gopnik"), false));
-        EntityRendererRegistry.register(ModEntities.SHADE, ctx -> new GopnikRenderer(ctx, tex("shade"), true));
-        EntityRendererRegistry.register(ModEntities.COLORLESS, ctx -> new GopnikRenderer(ctx, tex("colorless"), false));
+        EntityRendererRegistry.<ZombieEntity>register(ModEntities.GOPNIK, ctx -> new GopnikRenderer(ctx, tex("gopnik"), false));
+        EntityRendererRegistry.<ZombieEntity>register(ModEntities.SHADE, ctx -> new GopnikRenderer(ctx, tex("shade"), true));
+        EntityRendererRegistry.<ZombieEntity>register(ModEntities.COLORLESS, ctx -> new GopnikRenderer(ctx, tex("colorless"), false));
         EntityRendererRegistry.register(ModEntities.BORZHNYK, ctx -> new SkinnedBipedRenderer<>(ctx, tex("borzhnyk"), 1.0f));
         EntityRendererRegistry.register(ModEntities.GARAGE_KING, ctx -> new SkinnedBipedRenderer<>(ctx, tex("garage_king"), 2.2f));
         EntityRendererRegistry.register(ModEntities.CONDUCTOR, ctx -> new SkinnedBipedRenderer<>(ctx, tex("conductor"), 1.5f));

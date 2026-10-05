@@ -22,6 +22,7 @@ import org.joml.Matrix4f;
  * веселкове кільце, а вночі — зорі й місяць з велетенським котячим слідом.
  */
 public class ChromaSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
+    private static final float TAU = (float) (Math.PI * 2);
     private final float[][] stars = new float[700][4];
 
     public ChromaSkyRenderer() {
@@ -67,7 +68,7 @@ public class ChromaSkyRenderer implements DimensionRenderingRegistry.SkyRenderer
         MatrixStack ms = context.matrixStack();
         float tickDelta = context.tickDelta();
         float angle = world.getSkyAngle(tickDelta);
-        float day = MathHelper.clamp(MathHelper.cos(angle * MathHelper.TAU) * 2.0f + 0.5f, 0f, 1f);
+        float day = MathHelper.clamp(MathHelper.cos(angle * TAU) * 2.0f + 0.5f, 0f, 1f);
 
         float[] zenith = mix(0xFF5FC8, 0x1A0B3A, day);
         float[] mid = mix(0xFF9AD5, 0x2E1257, day);
@@ -92,7 +93,7 @@ public class ChromaSkyRenderer implements DimensionRenderingRegistry.SkyRenderer
             float y0 = rings[i][0], r0 = rings[i][1], y1 = rings[i + 1][0], r1 = rings[i + 1][1];
             float[] c0 = colors[(int) rings[i][2]], c1 = colors[(int) rings[i + 1][2]];
             for (int s = 0; s < seg; s++) {
-                float a0 = s * MathHelper.TAU / seg, a1 = (s + 1) * MathHelper.TAU / seg;
+                float a0 = s * TAU / seg, a1 = (s + 1) * TAU / seg;
                 v(bb, m, MathHelper.cos(a0) * r0, y0, MathHelper.sin(a0) * r0, c0, 1f);
                 v(bb, m, MathHelper.cos(a1) * r0, y0, MathHelper.sin(a1) * r0, c0, 1f);
                 v(bb, m, MathHelper.cos(a1) * r1, y1, MathHelper.sin(a1) * r1, c1, 1f);
@@ -125,7 +126,7 @@ public class ChromaSkyRenderer implements DimensionRenderingRegistry.SkyRenderer
         bb.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         int ringSeg = 64;
         for (int s = 0; s < ringSeg; s++) {
-            float a0 = s * MathHelper.TAU / ringSeg, a1 = (s + 1) * MathHelper.TAU / ringSeg;
+            float a0 = s * TAU / ringSeg, a1 = (s + 1) * TAU / ringSeg;
             int rgb = MathHelper.hsvToRgb(s / (float) ringSeg, 0.6f, 1f);
             float[] c = {((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f};
             float alpha = 0.28f + 0.2f * (1f - day);
