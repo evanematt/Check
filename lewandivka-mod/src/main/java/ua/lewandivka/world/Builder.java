@@ -4,7 +4,18 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.block.FenceBlock;
+import net.minecraft.block.PaneBlock;
+import net.minecraft.block.SlabBlock;
+import net.minecraft.block.StairsBlock;
+import net.minecraft.block.WallBlock;
+import net.minecraft.block.enums.BlockHalf;
+import net.minecraft.block.enums.SlabType;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Невеликий помічник для будування структур кодом (координати відносно origin). */
 public class Builder {
@@ -20,8 +31,35 @@ public class Builder {
         return origin.add(x, y, z);
     }
 
+    private final List<BlockPos> connect = new ArrayList<>();
+
     public void set(int x, int y, int z, BlockState s) {
-        world.setBlockState(at(x, y, z), s, Block.NOTIFY_LISTENERS);
+        BlockPos p = at(x, y, z);
+        world.setBlockState(p, s, Block.NOTIFY_LISTENERS);
+        Block b = s.getBlock();
+        if (b instanceof PaneBlock || b instanceof FenceBlock || b instanceof WallBlock || b instanceof StairsBlock) {
+            connect.add(p);
+        }
+    }
+
+    public void stairs(int x, int y, int z, Block block, Direction facing, boolean top) {
+        set(x, y, z, block.getDefaultState().with(StairsBlock.FACING, facing).with(StairsBlock.HALF, top ? BlockHalf.TOP : BlockHalf.BOTTOM));
+    }
+
+    public void slab(int x, int y, int z, Block block, boolean top) {
+        set(x, y, z, block.getDefaultState().with(SlabBlock.TYPE, top ? SlabType.TOP : SlabType.BOTTOM));
+    }
+
+    /** З'єднує огорожі, скло, сходи після будування. */
+    public void finish() {
+        for (BlockPos p : connect) {
+            BlockState s = world.getBlockState(p);
+            BlockState n = Block.postProcessState(s, world, p);
+            if (n != s) {
+                world.setBlockState(p, n, Block.NOTIFY_LISTENERS);
+            }
+        }
+        connect.clear();
     }
 
     public BlockState get(int x, int y, int z) {

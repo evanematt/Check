@@ -12,6 +12,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.Heightmap;
 import ua.lewandivka.entity.BorzhnykEntity;
 import ua.lewandivka.entity.ChromaCatEntity;
@@ -51,30 +52,55 @@ public final class City {
         }
         b.fill(-44, 0, -5, 44, 0, -4, s(Blocks.SMOOTH_STONE));
         b.fill(-44, 0, 4, 44, 0, 5, s(Blocks.SMOOTH_STONE));
-        for (int x = -40; x <= 40; x += 10) {
-            for (int z : new int[]{-5, 5}) {
-                b.fill(x, 1, z, x, 3, z, s(Blocks.DARK_OAK_FENCE));
-                b.set(x, 4, z, s(Blocks.LANTERN));
-            }
-        }
         for (int x = -44; x <= 44; x++) {
             b.set(x, 1, 2, Blocks.RAIL.getDefaultState().with(RailBlock.SHAPE, RailShape.EAST_WEST));
         }
 
-        // Наш будинок.
-        Builder home = new Builder(w, b.at(0, 0, 16));
-        SiteBuilders.house(home, st, "city", false);
-        b.fill(-1, 0, 6, 1, 0, 9, s(Blocks.DIRT_PATH));
+        net.minecraft.util.math.random.Random r = w.random;
+        // Тротуарні дерева і ліхтарі.
+        for (int x = -40; x <= 40; x += 8) {
+            CityArch.streetLamp(b, x, -6);
+            CityArch.streetLamp(b, x + 4, 6);
+        }
+        for (int x = -42; x <= 42; x += 16) {
+            if (Math.abs(x) > 8) {
+                CityArch.tree(b, x, -8, 5, Blocks.BIRCH_LOG, Blocks.BIRCH_LEAVES);
+            }
+        }
 
-        // Кіоск Пана Шлагбаума.
-        b.set(12, 1, -8, s(ModBlocks.KIOSK));
-        b.set(13, 1, -8, s(ModBlocks.KIOSK));
-        b.fill(11, 4, -9, 14, 4, -6, s(Blocks.RED_WOOL));
-        b.fill(11, 1, -6, 11, 3, -6, s(Blocks.OAK_FENCE));
-        b.fill(14, 1, -6, 14, 3, -6, s(Blocks.OAK_FENCE));
+        // Наш котедж (південь вулиці).
+        CityArch.cottage(new Builder(w, b.at(0, 0, 17)), st);
+
+        // Панельки: сіра (Боржник) на півночі, пастельна на півдні.
+        CityArch.panelBlock(new Builder(w, b.at(-28, 0, -19)), 5, Blocks.LIGHT_GRAY_CONCRETE, Blocks.WHITE_CONCRETE, 1, r);
+        CityArch.panelBlock(new Builder(w, b.at(-28, 0, 20)), 4, Blocks.PINK_TERRACOTTA, Blocks.WHITE_TERRACOTTA, -1, r);
+        BorzhnykEntity bz = ModEntities.BORZHNYK.create(w);
+        if (bz != null) {
+            BlockPos p = b.at(-28, 1, -11);
+            bz.refreshPositionAndAngles(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
+            bz.setCustomName(Text.literal("Боржник із третього під'їзду"));
+            w.spawnEntity(bz);
+            st.setBoss("city_borzhnyk", bz.getUuid());
+        }
+
+        // Кіоск Пана Шлагбаума і ринок.
+        b.fill(8, 0, -14, 22, 0, -7, s(Blocks.STONE_BRICKS));
+        b.fill(10, 1, -12, 12, 3, -10, s(Blocks.RED_TERRACOTTA));
+        b.fill(11, 1, -10, 11, 2, -10, s(Blocks.AIR));
+        b.set(11, 1, -10, s(ModBlocks.KIOSK));
+        b.set(10, 2, -10, s(Blocks.GLASS_PANE));
+        b.set(12, 2, -10, s(Blocks.GLASS_PANE));
+        for (int x = 9; x <= 13; x++) {
+            for (int z = -13; z <= -9; z++) {
+                b.set(x, 4, z, s(((x + z) & 1) == 0 ? Blocks.RED_WOOL : Blocks.WHITE_WOOL));
+            }
+        }
+        b.set(11, 5, -11, s(Blocks.LANTERN));
+        CityArch.stall(b, 15, -13, Blocks.YELLOW_WOOL, Blocks.WHITE_WOOL, Blocks.MELON);
+        CityArch.stall(b, 20, -13, Blocks.LIME_WOOL, Blocks.WHITE_WOOL, Blocks.PUMPKIN);
         VillagerEntity v = EntityType.VILLAGER.create(w);
         if (v != null) {
-            BlockPos p = b.at(12, 1, -6);
+            BlockPos p = b.at(11, 1, -8);
             v.refreshPositionAndAngles(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
             v.setVillagerData(v.getVillagerData().withProfession(ModVillagers.SHLAGBAUM).withLevel(1));
             v.setExperience(1);
@@ -85,33 +111,27 @@ public final class City {
             st.setBoss("shlagbaum", v.getUuid());
         }
 
-        // Сіра панелька, де ховається Боржник.
-        Builder blk = new Builder(w, b.at(-26, 0, -18));
-        blk.walls(-6, 1, -6, 6, 12, 6, s(Blocks.LIGHT_GRAY_CONCRETE));
-        blk.fill(-6, 13, -6, 6, 13, 6, s(Blocks.GRAY_CONCRETE));
-        for (int fy : new int[]{2, 6, 10}) {
-            for (int c : new int[]{-3, 0, 3}) {
-                blk.set(c, fy, 6, s(Blocks.GLASS));
-                blk.set(c, fy, -6, s(Blocks.GLASS));
-            }
+        // Парк з фонтаном навпроти дому.
+        b.fill(12, 0, 8, 40, 0, 30, s(Blocks.GRASS_BLOCK));
+        b.fill(25, 0, 8, 27, 0, 30, s(Blocks.GRAVEL));
+        b.fill(12, 0, 18, 40, 0, 20, s(Blocks.GRAVEL));
+        CityArch.fountain(b, 26, 19);
+        for (int[] t : new int[][]{{15, 11}, {37, 11}, {15, 27}, {37, 27}, {20, 24}, {32, 14}}) {
+            CityArch.tree(b, t[0], t[1], 5 + r.nextInt(2), Blocks.OAK_LOG, Blocks.OAK_LEAVES);
         }
-        for (int dx : new int[]{-3, 0, 3}) {
-            blk.fill(dx, 1, 6, dx, 2, 6, s(Blocks.AIR));
-        }
-        blk.set(3, 3, 7, s(Blocks.LANTERN));
-        BorzhnykEntity bz = ModEntities.BORZHNYK.create(w);
-        if (bz != null) {
-            BlockPos p = blk.at(3, 1, 8);
-            bz.refreshPositionAndAngles(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0, 0);
-            bz.setCustomName(Text.literal("Боржник із третього під'їзду"));
-            w.spawnEntity(bz);
-            st.setBoss("city_borzhnyk", bz.getUuid());
+        CityArch.tree(b, 33, 25, 6, Blocks.CHERRY_LOG, Blocks.CHERRY_LEAVES);
+        CityArch.tree(b, 19, 13, 6, Blocks.CHERRY_LOG, Blocks.CHERRY_LEAVES);
+        CityArch.bench(b, 22, 17, Direction.SOUTH);
+        CityArch.bench(b, 29, 21, Direction.NORTH);
+        CityArch.bench(b, 24, 23, Direction.EAST);
+        for (int x = 13; x <= 39; x += 2) {
+            b.set(x, 1, 9, s(x % 4 == 1 ? Blocks.PEONY : Blocks.ROSE_BUSH));
         }
 
         // Гараж № 13.
-        DistrictQuests.buildGarage13(w, b.at(28, 0, -20));
-        st.setPoint("city", "garage13", b.at(28, 1, -20));
-        for (int[] g : new int[][]{{18, -8}, {36, -8}}) {
+        DistrictQuests.buildGarage13(w, b.at(30, 0, -24));
+        st.setPoint("city", "garage13", b.at(30, 1, -24));
+        for (int[] g : new int[][]{{24, -12}, {34, -12}}) {
             GopnikEntity gp = ModEntities.GOPNIK.create(w);
             if (gp != null) {
                 BlockPos p = b.at(g[0], 1, g[1]);
@@ -121,13 +141,18 @@ public final class City {
             }
         }
 
-        // Трамвайна зупинка «Левандівка».
+        // Трамвайна зупинка «Левандівка» і трамвай на колії.
         b.fill(-24, 1, -5, -24, 3, -5, s(Blocks.YELLOW_CONCRETE));
         b.fill(-18, 1, -5, -18, 3, -5, s(Blocks.YELLOW_CONCRETE));
-        b.fill(-24, 4, -6, -18, 4, -4, s(Blocks.YELLOW_CONCRETE));
-        b.set(-21, 3, -5, s(Blocks.BELL));
-        b.fill(-23, 1, -6, -19, 1, -6, s(Blocks.SPRUCE_SLAB));
-        st.setPoint("city", "tram", b.at(-21, 1, -4));
+        b.fill(-25, 4, -6, -17, 4, -4, s(Blocks.YELLOW_CONCRETE));
+        b.fill(-23, 1, -5, -19, 3, -5, s(Blocks.GLASS_PANE));
+        b.set(-21, 3, -4, s(Blocks.BELL));
+        CityArch.bench(b, -22, -4, Direction.SOUTH);
+        st.setPoint("city", "tram", b.at(-21, 1, -3));
+        CityArch.tram(b, -12, 2);
+        CityArch.car(b, -38, -2, Blocks.BLUE_CONCRETE);
+        CityArch.car(b, 36, 1, Blocks.YELLOW_CONCRETE);
+        b.finish();
 
         // Коти вдома: сидять і дивляться в одну порожню стіну.
         BlockPos catHome = st.point("city", "cat_home");
