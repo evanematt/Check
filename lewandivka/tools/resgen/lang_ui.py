@@ -217,6 +217,10 @@ UI = {
     "message.lewandivka.shlahbaum.need_package": ("Пан Шлагбаум мовчки дивиться на ваші руки. Посилки немає.", "Mr. Shlahbaum silently looks at your hands. No package."),
     "message.lewandivka.welcome": ("Район вас не чекав. Але й не проти.", "The district did not expect you. It does not mind."),
     "bossbar.lewandivka.chroma": ("ХРОМА", "CHROMA"),
+    "cinematic.lewandivka.last_tram": ("ОСТАННІЙ ТРАМВАЙ", "THE LAST TRAM"),
+    "cinematic.lewandivka.transition": ("ПО ТОЙ БІК", "TO THE OTHER SIDE"),
+    "cinematic.lewandivka.ring_restored": ("КІЛЬЦЕ ЦІЛЕ", "THE RING IS WHOLE"),
+    "cinematic.lewandivka.rescue_ring": ("КІЛЬЦЕ ЛОВИТЬ ВАС", "THE RING CATCHES YOU"),
     "message.lewandivka.fall_recovered": ("Ви зірвалися. Контрольна точка поруч.", "You slipped. The checkpoint is near."),
     # ---- config
     "config.lewandivka.title": ("Налаштування Левандівки", "Lewandivka Settings"),

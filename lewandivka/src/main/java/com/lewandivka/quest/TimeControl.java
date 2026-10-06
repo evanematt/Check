@@ -40,11 +40,15 @@ public final class TimeControl {
         }
     }
 
+    /**
+     * The campaign dimensions share the clock of the overworld (derived worlds ignore writes to their own time), so the
+     * night is held on the overworld; Chromandivka has a fixed time of day and does not care.
+     */
     private static void apply(MinecraftServer server, String dimension) {
-        ServerWorld w = Dimensions.world(server, dimension);
-        if (w != null) {
-            long day = w.getTimeOfDay() / 24000L;
-            w.setTimeOfDay(day * 24000L + NIGHT);
+        if (Dimensions.world(server, dimension) != null) {
+            ServerWorld clock = server.getOverworld();
+            long day = clock.getTimeOfDay() / 24000L;
+            clock.setTimeOfDay(day * 24000L + NIGHT);
         }
     }
 }

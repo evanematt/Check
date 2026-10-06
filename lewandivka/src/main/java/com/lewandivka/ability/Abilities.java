@@ -78,6 +78,7 @@ public final class Abilities {
         p.addVelocity(dir.x * 1.45, p.isOnGround() ? 0.22 : 0.05, dir.z * 1.45);
         p.velocityModified = true;
         p.fallDistance = 0;
+        p.networkHandler.sendPacket(new net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket(p));
         p.getServerWorld().playSound(null, p.getBlockPos(), GameSounds.get("ability.dash"), SoundCategory.PLAYERS, 1.0f, 1.0f);
         Net.cooldown(p, Ability.DASH, Ability.DASH.cooldownTicks);
     }
@@ -96,6 +97,9 @@ public final class Abilities {
             return;
         }
         if (s.gliding || now < s.glideReadyAt || p.isOnGround()) {
+            if (!s.gliding) {
+                Net.glideStop(p);                      // refused: tell the client to stop simulating the glide
+            }
             return;
         }
         s.gliding = true;
