@@ -201,6 +201,44 @@ public class FakeEnv implements FlowEnv {
         given.merge(item, count, Integer::sum);
     }
 
+    public boolean night = true;
+    public boolean forcedNight;
+    public final Map<String, Double> resistance = new HashMap<>();
+    public final Map<String, Integer> nearCounts = new HashMap<>();
+    public final List<String> stationCalls = new ArrayList<>();
+    public final List<String> cinematics = new ArrayList<>();
+
+    @Override
+    public boolean night() {
+        return night;
+    }
+
+    @Override
+    public void forceNight(boolean on) {
+        forcedNight = on;
+    }
+
+    @Override
+    public int near(String tag, String marker, double radius) {
+        return nearCounts.getOrDefault(tag, 0);
+    }
+
+    @Override
+    public void resistance(String entity, double factor) {
+        resistance.put(entity, factor);
+    }
+
+    @Override
+    public boolean bossStation(String entity, String action, int index, UUID player) {
+        stationCalls.add(entity + ":" + action + ":" + index);
+        return true;
+    }
+
+    @Override
+    public void cinematic(String id) {
+        cinematics.add(id);
+    }
+
     @Override
     public void event(String id) {
         events.add(id);

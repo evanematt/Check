@@ -89,6 +89,30 @@ public interface FlowEnv {
     /** Gives an item to a player (or everybody in the party when null). */
     void give(UUID player, String item, int count);
 
+    // ------------------------------------------------------------------ time, queries and bosses
+    /** True while it is night (the last tram needs it). */
+    boolean night();
+
+    /** Holds the world at cinematic night and stops the day cycle (restores both when switched off). */
+    void forceNight(boolean on);
+
+    /** Number of living entities with the tag within {@code radius} of the marker. */
+    int near(String tag, String marker, double radius);
+
+    /** Damage factor of every living entity of this type in the structure (1 = normal, 0.15 = shielded). */
+    void resistance(String entity, double factor);
+
+    /**
+     * Forwards a station press to the boss that owns the mechanic (arena levers, collar stands, drains, composters,
+     * relays).
+     *
+     * @return true when the boss accepted it
+     */
+    boolean bossStation(String entity, String action, int index, UUID player);
+
+    /** Plays a named cinematic (letterbox, title, camera) for everybody in the structure. */
+    void cinematic(String id);
+
     // ------------------------------------------------------------------ campaign
     /** Reports a story event; the campaign director decides what it completes (see {@code Events}). */
     void event(String id);

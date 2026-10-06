@@ -1,8 +1,11 @@
 name: Lewandivka CI
 
 # Builds and tests the Fabric mod «Левандівка: по той бік району» (directory lewandivka/).
-# Everything that can be verified without Minecraft (core tests, static resource validation) runs first,
-# then the Loom build compiles and remaps the jar against Minecraft 1.20.1.
+#   1. core unit tests (pure Java, no Minecraft)
+#   2. Loom build: compiles and remaps the mod against Minecraft 1.20.1
+#   3. Fabric GameTests on a headless dedicated server (registries, both dimensions, structures, campaign)
+#   4. static resource validation
+# Logs of every run are attached to the pre-release "ci-latest" so they can be read without opening the Actions UI.
 on:
   push:
     branches: ['claude/determined-clarke-eigmli']
@@ -67,46 +70,27 @@ jobs:
         if: always()
         run: |
           python3 -m pip install --quiet pillow numpy
-          python3 tools/validate_resources.py
-
-      - name: Digest of problems
-        if: always()
-        run: |
-          for f in core-test compile gametest; do
-            if [ -f "../logs/$f.txt" ]; then
-              echo "=== $f ==="
-              grep -nE "error:|: error|FAILED|What went wrong|Caused by|Exception|\[ERROR\]|/ERROR\]|Failed to|Could not|Crash|crash|Test .* failed|passed|GameTest" "../logs/$f.txt" | grep -v "at org.gradle\|at java.base" | cut -c1-260 | head -70
-            fi
-          done
-          if [ -f build/junit.xml ]; then
-            echo "=== junit.xml ==="
-            python3 - <<'PY'
-          import re
-          s = open("build/junit.xml", encoding="utf-8").read()
-          print(re.findall(r"<testsuite[^>]*>", s)[:1])
-          for m in re.finditer(r'<testcase name="([^"]+)"[^>]*?(/>|>(.*?)</testcase>)', s, re.S):
-              body = m.group(3) or ""
-              print(("FAIL " if "<failure" in body or "<error" in body else "ok   ") + m.group(1), re.sub(r"\s+", " ", body)[:300])
-          PY
-          fi
-
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: reports
-          path: |
-            lewandivka/core/build/reports
-            lewandivka/build/reports
-            lewandivka/build/junit.xml
-            logs
-            lewandivka/build/gametest/logs
-            lewandivka/build/gametest/crash-reports
-          if-no-files-found: ignore
+          python3 tools/validate_resources.py 2>&1 | tee ../logs/validate.txt
 
       - name: Upload jar
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lewandivka-jar
-          path: |
-            lewandivka/build/libs/*.jar
+          path: lewandivka/build/libs/*.jar
+          if-no-files-found: ignore
+
+      - name: Publish logs to the pre-release ci-latest
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          rm -rf ci-out && mkdir -p ci-out
+          cp logs/*.txt ci-out/ 2>/dev/null || true
+          cp lewandivka/build/junit.xml ci-out/ 2>/dev/null || true
+          (cd lewandivka/build/gametest && tar czf "$GITHUB_WORKSPACE/ci-out/gametest-run.tgz" logs crash-reports 2>/dev/null) || true
+          cp lewandivka/build/libs/lewandivka-*[0-9].jar ci-out/lewandivka-ci.jar 2>/dev/null || true
+          echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }}" > ci-out/info.txt
+          gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
+          gh release upload ci-latest ci-out/* --clobber
