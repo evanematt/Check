@@ -1,6 +1,7 @@
 package com.lewandivka;
 
 import com.lewandivka.block.GameBlocks;
+import com.lewandivka.command.LewCommands;
 import com.lewandivka.config.LewandivkaConfig;
 import com.lewandivka.item.GameItems;
 import com.lewandivka.item.GameTab;
@@ -26,6 +27,7 @@ public final class LewandivkaMod implements ModInitializer {
         GameItems.register();
         GameTab.register();
         DimensionRegistry.register();
+        LewCommands.register();
         ServerLifecycleEvents.SERVER_STARTING.register(server -> Structures.warmUp());
         LOGGER.info("Левандівка: по той бік району is ready");
     }

@@ -1,0 +1,192 @@
+package com.lewandivka.command;
+
+import com.lewandivka.campaign.Campaign;
+import com.lewandivka.campaign.PartyService;
+import com.lewandivka.core.campaign.Ability;
+import com.lewandivka.core.campaign.CampaignStage;
+import com.lewandivka.core.campaign.PlayerProgress;
+import com.lewandivka.core.campaign.QuestStep;
+import com.lewandivka.core.campaign.WorldProgress;
+import com.lewandivka.world.dimension.Dimensions;
+import com.lewandivka.world.structure.StructureValidator;
+import com.lewandivka.world.structure.Structures;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.world.BlockView;
+
+import java.util.Locale;
+import java.util.stream.Collectors;
+
+/**
+ * {@code /lewandivka ...}: the admin and recovery commands of the campaign. Everything needs permission level 2 because
+ * it can change the story.
+ */
+public final class LewCommands {
+
+    private LewCommands() {
+    }
+
+    public static void register() {
+        CommandRegistrationCallback.EVENT.register(LewCommands::build);
+    }
+
+    private static void build(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess access, CommandManager.RegistrationEnvironment environment) {
+        LiteralArgumentBuilder<ServerCommandSource> root = CommandManager.literal("lewandivka").requires(s -> s.hasPermissionLevel(2));
+        root.then(CommandManager.literal("status").executes(c -> status(c.getSource())));
+        root.then(CommandManager.literal("setstage")
+                .then(CommandManager.argument("stage", StringArgumentType.word())
+                        .suggests((c, b) -> {
+                            for (CampaignStage s : CampaignStage.values()) {
+                                b.suggest(s.key());
+                            }
+                            return b.buildFuture();
+                        })
+                        .executes(c -> setStage(c.getSource(), StringArgumentType.getString(c, "stage")))));
+        root.then(CommandManager.literal("step")
+                .then(CommandManager.argument("step", StringArgumentType.word())
+                        .suggests((c, b) -> {
+                            for (QuestStep s : QuestStep.ordered()) {
+                                b.suggest(s.key());
+                            }
+                            return b.buildFuture();
+                        })
+                        .executes(c -> setStep(c.getSource(), StringArgumentType.getString(c, "step")))));
+        root.then(CommandManager.literal("party")
+                .then(CommandManager.literal("auto").executes(c -> party(c.getSource(), 0)))
+                .then(CommandManager.argument("size", IntegerArgumentType.integer(1, 3)).executes(c -> party(c.getSource(), IntegerArgumentType.getInteger(c, "size")))));
+        root.then(CommandManager.literal("ability")
+                .then(CommandManager.literal("grant").then(CommandManager.argument("player", EntityArgumentType.player())
+                        .then(CommandManager.argument("ability", StringArgumentType.word()).executes(c -> ability(c.getSource(), EntityArgumentType.getPlayer(c, "player"), StringArgumentType.getString(c, "ability"), true)))))
+                .then(CommandManager.literal("revoke").then(CommandManager.argument("player", EntityArgumentType.player())
+                        .then(CommandManager.argument("ability", StringArgumentType.word()).executes(c -> ability(c.getSource(), EntityArgumentType.getPlayer(c, "player"), StringArgumentType.getString(c, "ability"), false))))));
+        root.then(CommandManager.literal("teleport")
+                .then(CommandManager.argument("structure", StringArgumentType.word())
+                        .suggests((c, b) -> {
+                            for (Structures.Site s : Structures.sites()) {
+                                b.suggest(s.placement().id());
+                            }
+                            return b.buildFuture();
+                        })
+                        .executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure")))));
+        root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
+        dispatcher.register(root);
+    }
+
+    // ------------------------------------------------------------------ status and story
+
+    private static int status(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        WorldProgress w = Campaign.world(server);
+        StringBuilder sb = new StringBuilder();
+        sb.append("stage=").append(w.stage().key()).append(" step=").append(w.step().key())
+                .append(" counter=").append(w.stepCounter()).append('/').append(w.step().counterMax)
+                .append(" rings=").append(w.ringFragments()).append("/4")
+                .append(" portal=").append(w.portalActive())
+                .append(" bosses=").append(w.bosses())
+                .append(" party=").append(PartyService.override() == 0 ? "auto(" + PartyService.scale(server).size() + ")" : PartyService.override());
+        for (PlayerProgress p : Campaign.model(server).allPlayers()) {
+            sb.append("\n  ").append(p.lastName()).append(": abilities=")
+                    .append(p.abilities().stream().map(Ability::key).collect(Collectors.joining(",")))
+                    .append(" rep=").append(p.repPoints()).append(" secrets=").append(p.secrets().size()).append(" cats=").append(p.collectibles().size());
+        }
+        String text = sb.toString();
+        source.sendFeedback(() -> Text.literal(text), false);
+        return 1;
+    }
+
+    private static int setStage(ServerCommandSource source, String key) {
+        CampaignStage stage = CampaignStage.byKey(key);
+        if (stage == null) {
+            source.sendError(Text.literal("unknown stage " + key));
+            return 0;
+        }
+        QuestStep first = QuestStep.firstOf(stage);
+        Campaign.force(source.getServer(), first);
+        source.sendFeedback(() -> Text.literal("stage " + stage.key() + " (step " + first.key() + ")"), true);
+        return 1;
+    }
+
+    private static int setStep(ServerCommandSource source, String key) {
+        QuestStep step = QuestStep.byKey(key);
+        if (step == null) {
+            source.sendError(Text.literal("unknown step " + key));
+            return 0;
+        }
+        Campaign.force(source.getServer(), step);
+        source.sendFeedback(() -> Text.literal("step " + step.key()), true);
+        return 1;
+    }
+
+    private static int party(ServerCommandSource source, int size) {
+        PartyService.setOverride(size);
+        source.sendFeedback(() -> Text.literal(size == 0 ? "party size: automatic" : "party size fixed to " + size), true);
+        return 1;
+    }
+
+    private static int ability(ServerCommandSource source, ServerPlayerEntity player, String key, boolean grant) {
+        Ability a = Ability.byKey(key.toLowerCase(Locale.ROOT));
+        if (a == null) {
+            source.sendError(Text.literal("unknown ability " + key));
+            return 0;
+        }
+        PlayerProgress p = Campaign.player(player);
+        boolean changed = grant ? p.grant(a) : p.revoke(a);
+        Campaign.dirty(source.getServer());
+        source.sendFeedback(() -> Text.literal((grant ? "granted " : "revoked ") + a.key() + (changed ? "" : " (no change)")), true);
+        return 1;
+    }
+
+    // ------------------------------------------------------------------ development tools
+
+    private static int teleport(ServerCommandSource source, String structure) {
+        ServerPlayerEntity player = source.getPlayer();
+        Structures.Site site = Structures.site(structure);
+        if (player == null || site == null) {
+            source.sendError(Text.literal("unknown structure " + structure));
+            return 0;
+        }
+        ServerWorld world = Dimensions.world(source.getServer(), site.dimension());
+        if (world == null) {
+            source.sendError(Text.literal("dimension " + site.dimension() + " is not loaded"));
+            return 0;
+        }
+        String spot = "entrance";
+        Structures.Marker m = Structures.marker(structure + ":" + spot);
+        if (m == null) {
+            var list = Structures.markersOf(structure);
+            m = list.isEmpty() ? null : list.get(0);
+        }
+        double x = m != null ? m.x() + 0.5 : site.placement().x();
+        double y = m != null ? m.y() : site.placement().y();
+        double z = m != null ? m.z() + 0.5 : site.placement().z();
+        player.teleport(world, x, y, z, player.getYaw(), player.getPitch());
+        source.sendFeedback(() -> Text.literal("teleported to " + structure), true);
+        return 1;
+    }
+
+    private static int validate(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        StructureValidator.Report report = StructureValidator.validate(id -> {
+            ServerWorld w = Dimensions.world(server, id);
+            return (BlockView) w;
+        }, 40);
+        String text = "validate: " + (report.ok() ? "OK" : "PROBLEMS") + " - " + report.summary();
+        com.lewandivka.LewandivkaMod.LOGGER.info("[validate] {}", text);
+        for (String problem : report.problems()) {
+            com.lewandivka.LewandivkaMod.LOGGER.warn("[validate] {}", problem);
+        }
+        source.sendFeedback(() -> Text.literal(text), false);
+        return report.ok() ? 1 : 0;
+    }
+}

@@ -308,6 +308,9 @@ public final class RainbowGarageFlow implements Flow {
         if (env.record().flag("boss.door")) {
             env.gate("boss_door", true);
             env.gate("boss_door_inner", true);
+            if (!env.world().bossDefeated(BOSS)) {
+                env.spawnBoss(BOSS, "boss_spawn");            // does nothing while the boss is alive
+            }
         }
     }
 

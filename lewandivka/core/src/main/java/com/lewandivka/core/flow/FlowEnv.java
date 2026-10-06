@@ -72,7 +72,10 @@ public interface FlowEnv {
     /** Number of living entities that were spawned with a tag. */
     int alive(String tag);
 
-    /** Spawns a boss of the encounter at a marker. The boss entity starts its fight when a player gets close. */
+    /**
+     * Spawns a boss of the encounter at a marker unless one is alive already. The boss entity starts its fight when a
+     * player gets close.
+     */
     void spawnBoss(String entity, String marker);
 
     /** Removes a boss and everything it spawned (reset). */
@@ -85,6 +88,30 @@ public interface FlowEnv {
 
     /** Makes the entities with a tag walk towards a player (guards that heard a noise). */
     void attract(String tag, UUID target);
+
+    // ------------------------------------------------------------------ positions of players and npcs
+    /** Players within {@code radius} of a marker (for region markers: players inside the box, the radius adds a margin). */
+    List<UUID> playersAt(String marker, double radius);
+
+    /** Distance from a player to a marker, or a huge number when the player is elsewhere. */
+    double distance(UUID player, String marker);
+
+    /** Like {@link #soundAt(UUID, String)} with a volume (the purring that grows louder near the right box). */
+    void soundAt(UUID player, String soundId, float volume);
+
+    /** Makes a story npc (the cats) walk to a marker. Spawns nothing: the npc has to exist. */
+    void npcMove(String npc, String marker);
+
+    boolean npcAt(String npc, String marker, double radius);
+
+    /** Triggers an animation of a story npc ({@code eat}, {@code sit}, {@code point}, {@code scratch} ...). */
+    void npcAnim(String npc, String anim);
+
+    /** Sets the shown name of a story npc: "???" hides it, "" restores the real name. */
+    void npcName(String npc, String name);
+
+    /** Number of players within {@code radius} of a story npc. */
+    int playersNear(String npc, double radius);
 
     /** Gives an item to a player (or everybody in the party when null). */
     void give(UUID player, String item, int count);

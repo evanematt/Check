@@ -150,7 +150,9 @@ public class FakeEnv implements FlowEnv {
     @Override
     public void spawnBoss(String entity, String marker) {
         entity(entity);
-        bosses.add(entity);
+        if (!bosses.contains(entity)) {
+            bosses.add(entity);
+        }
     }
 
     @Override
@@ -248,6 +250,58 @@ public class FakeEnv implements FlowEnv {
     public void give(UUID player, String item, int count) {
         item(item);
         given.merge(item, count, Integer::sum);
+    }
+
+    public final Map<String, List<UUID>> playersAtMarker = new HashMap<>();
+    public final Map<String, Double> distances = new HashMap<>();
+    public final Map<String, String> npcPlace = new HashMap<>();
+    public final Map<String, String> npcNames = new HashMap<>();
+    public final Map<String, Integer> npcCrowd = new HashMap<>();
+    public final List<String> npcAnims = new ArrayList<>();
+    public final List<String> volumes = new ArrayList<>();
+
+    @Override
+    public List<UUID> playersAt(String marker, double radius) {
+        return playersAtMarker.getOrDefault(marker, List.of());
+    }
+
+    @Override
+    public double distance(UUID player, String marker) {
+        return distances.getOrDefault(marker, 1000.0);
+    }
+
+    @Override
+    public void soundAt(UUID player, String soundId, float volume) {
+        sound(soundId);
+        volumes.add(soundId + "@" + String.format(java.util.Locale.ROOT, "%.2f", volume));
+    }
+
+    @Override
+    public void npcMove(String npc, String marker) {
+        npcPlace.put(npc, marker);
+        log.add("move " + npc + " " + marker);
+    }
+
+    @Override
+    public boolean npcAt(String npc, String marker, double radius) {
+        return marker.equals(npcPlace.get(npc)) && !npcMoving.contains(npc);
+    }
+
+    public final java.util.Set<String> npcMoving = new java.util.HashSet<>();
+
+    @Override
+    public void npcAnim(String npc, String anim) {
+        npcAnims.add(npc + ":" + anim);
+    }
+
+    @Override
+    public void npcName(String npc, String name) {
+        npcNames.put(npc, name);
+    }
+
+    @Override
+    public int playersNear(String npc, double radius) {
+        return npcCrowd.getOrDefault(npc, 0);
     }
 
     public boolean night = true;

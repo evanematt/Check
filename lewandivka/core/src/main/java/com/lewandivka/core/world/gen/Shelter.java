@@ -189,6 +189,11 @@ public final class Shelter {
         for (int i = 0; i < cols.length; i++) {
             b.fill(cols[i][0], S + 1, cols[i][1], cols[i][0], S + 7, cols[i][1], Pal.CONCRETE_DARK);
             b.set(cols[i][0], S + 3, cols[i][1] + 1, Pal.note(43 + i % 4, Dir.SOUTH));
+            if (i < 4) {
+                // the fish for Chinazik's route lie in rubbish heaps at the feet of four columns
+                b.set(cols[i][0] + 1, S + 1, cols[i][1], Pal.stash());
+                b.marker("stash_fish_" + (i + 1), cols[i][0] + 1, S + 1, cols[i][1], "loot=fish");
+            }
         }
         lamps(b, 18, 49, 58, 59, S + 7, 8);
         // Chinazik's route: start, four food points and the old rug on the east side

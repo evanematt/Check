@@ -13,12 +13,12 @@ import com.lewandivka.core.registry.ModEntities;
 import com.lewandivka.core.registry.ModItems;
 import com.lewandivka.core.registry.ModSounds;
 import com.lewandivka.core.registry.SoundSpec;
-import com.lewandivka.core.structure.Blueprint;
-import com.lewandivka.core.structure.StructurePlacement;
+import com.lewandivka.core.world.WorldPlan;
 import com.lewandivka.util.Ids;
 import com.lewandivka.world.dimension.Dimensions;
 import com.lewandivka.world.dimension.Plans;
 import com.lewandivka.world.structure.StateResolver;
+import com.lewandivka.world.structure.StructureValidator;
 import com.lewandivka.world.structure.Structures;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.block.Block;
@@ -27,15 +27,14 @@ import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -121,62 +120,21 @@ public final class LewandivkaGameTests implements FabricGameTest {
     }
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 1200)
-    public void bothDimensionsGenerateTheirStructures(TestContext context) {
+    public void chunkPainterBuildsEveryStructureWhereTheBlueprintSaysAndTheSpawnIsSolid(TestContext context) {
         MinecraftServer server = context.getWorld().getServer();
-        int checked = 0;
-        int mismatches = 0;
-        List<String> examples = new ArrayList<>();
+        java.util.Map<String, BlockView> views = new java.util.HashMap<>();
         for (String dimension : List.of(Dimensions.DISTRICT_ID, Dimensions.CHROMA_ID)) {
-            ServerWorld world = Dimensions.world(server, dimension);
-            check(world != null, "dimension " + dimension + " is not loaded");
-            int[] spawn = Plans.byDimension(dimension).spawn();
-            world.getChunk(spawn[0] >> 4, spawn[2] >> 4);
-            BlockState below = world.getBlockState(new BlockPos(spawn[0], spawn[1] - 4, spawn[2]));
+            WorldPlan plan = Plans.byDimension(dimension);
+            PlanBlockView view = new PlanBlockView(plan, server.getRegistryManager());
+            views.put(dimension, view);
+            int[] spawn = plan.spawn();
+            BlockState below = view.getBlockState(new BlockPos(spawn[0], spawn[1] - 4, spawn[2]));
             check(!below.isAir(), dimension + ": nothing solid under the spawn point " + spawn[0] + "," + spawn[1] + "," + spawn[2]);
         }
-        for (Structures.Site site : Structures.sites()) {
-            StructurePlacement p = site.placement();
-            Blueprint bp = p.blueprint();
-            ServerWorld world = Dimensions.world(server, site.dimension());
-            Random rnd = new Random(p.id().hashCode());
-            int taken = 0;
-            for (int i = 0; i < 600 && taken < 40; i++) {
-                int x = rnd.nextInt(bp.sizeX());
-                int y = rnd.nextInt(bp.sizeY());
-                int z = rnd.nextInt(bp.sizeZ());
-                int raw = bp.rawAt(x, y, z);
-                if (raw == Blueprint.UNTOUCHED) {
-                    continue;
-                }
-                BlockPos pos = new BlockPos(p.x() + x, p.y() + y, p.z() + z);
-                if (coveredByAnother(site, pos)) {
-                    continue;
-                }
-                Block expected = StateResolver.parse(bp.paletteKey(raw)).getBlock();
-                Block actual = world.getBlockState(pos).getBlock();
-                taken++;
-                checked++;
-                if (expected != actual) {
-                    mismatches++;
-                    if (examples.size() < 8) {
-                        examples.add(p.id() + "@" + pos.toShortString() + " expected " + Registries.BLOCK.getId(expected) + " got " + Registries.BLOCK.getId(actual));
-                    }
-                }
-            }
-        }
-        check(checked > 500, "too few sampled cells: " + checked);
-        check(mismatches * 25 <= checked, mismatches + " of " + checked + " sampled structure cells differ: " + examples);
+        StructureValidator.Report report = StructureValidator.validate(views::get, 40);
+        check(report.sampled() > 500, "too few sampled cells: " + report.summary());
+        check(report.ok(), report.summary() + " " + report.problems());
         context.complete();
-    }
-
-    private static boolean coveredByAnother(Structures.Site site, BlockPos pos) {
-        for (Structures.Site other : Structures.sites()) {
-            if (other != site && other.dimension().equals(site.dimension())
-                    && other.placement().contains(pos.getX(), pos.getY(), pos.getZ())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // ------------------------------------------------------------------ campaign state

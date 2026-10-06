@@ -19,12 +19,12 @@ import java.util.EnumSet;
  * (which win over everything else). Every chunk is computed independently from the plan, so the world is identical
  * whatever order the chunks are generated in.
  */
-final class ChunkPainter {
+public final class ChunkPainter {
 
     private ChunkPainter() {
     }
 
-    static void paint(WorldPlan plan, Chunk chunk) {
+    public static void paint(WorldPlan plan, Chunk chunk) {
         ChunkPos cp = chunk.getPos();
         int x0 = cp.getStartX();
         int z0 = cp.getStartZ();

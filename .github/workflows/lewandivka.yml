@@ -66,6 +66,11 @@ jobs:
           echo "eula=true" > build/gametest/eula.txt
           ./gradlew runGametest --console=plain 2>&1 | tee ../logs/gametest.txt
 
+      - name: Dedicated server smoke test (fresh world, both dimensions, rcon)
+        if: always()
+        timeout-minutes: 20
+        run: bash tools/ci/smoke.sh ../logs/server.txt 2>&1 | tee ../logs/smoke.txt
+
       - name: Static resource validation
         if: always()
         run: |
@@ -87,7 +92,7 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
           rm -rf ci-out && mkdir -p ci-out
-          cp logs/*.txt ci-out/ 2>/dev/null || true
+          cp logs/*.txt logs/*.rcon ci-out/ 2>/dev/null || true
           cp lewandivka/build/junit.xml ci-out/ 2>/dev/null || true
           (cd lewandivka/build/gametest && tar czf "$GITHUB_WORKSPACE/ci-out/gametest-run.tgz" logs crash-reports 2>/dev/null) || true
           cp lewandivka/build/libs/lewandivka-*[0-9].jar ci-out/lewandivka-ci.jar 2>/dev/null || true
