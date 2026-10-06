@@ -2,7 +2,13 @@ package com.lewandivka.core.flow;
 
 import com.lewandivka.core.campaign.EncounterRecord;
 import com.lewandivka.core.campaign.WorldProgress;
+import com.lewandivka.core.registry.BlockSpec;
+import com.lewandivka.core.registry.ModBlocks;
+import com.lewandivka.core.registry.ModEntities;
+import com.lewandivka.core.registry.ModItems;
+import com.lewandivka.core.registry.ModSounds;
 import com.lewandivka.core.scale.PartyScale;
+import com.lewandivka.core.text.DialogueBook;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +45,42 @@ public class FakeEnv implements FlowEnv {
     public FakeEnv(String structure, int party) {
         this.structure = structure;
         this.party = PartyScale.of(party);
+    }
+
+    private static final java.util.Set<String> VANILLA_BLOCKS_OK = java.util.Set.of("minecraft:redstone_lamp", "minecraft:air");
+
+    /** Typos in ids must fail the flow tests, not the first playtest. */
+    private static void sound(String id) {
+        if (ModSounds.byId(id) == null) {
+            throw new IllegalArgumentException("unknown sound '" + id + "'");
+        }
+    }
+
+    private static void entity(String id) {
+        if (ModEntities.byId(id) == null && !id.equals("minecraft:pig")) {
+            throw new IllegalArgumentException("unknown entity '" + id + "'");
+        }
+    }
+
+    private static void item(String id) {
+        if (ModItems.byId(id) == null) {
+            throw new IllegalArgumentException("unknown item '" + id + "'");
+        }
+    }
+
+    private static void blockKey(String key) {
+        if (key.startsWith("lewandivka:")) {
+            int br = key.indexOf('[');
+            String id = key.substring("lewandivka:".length(), br < 0 ? key.length() : br);
+            BlockSpec spec = ModBlocks.byId(id);
+            if (spec == null) {
+                throw new IllegalArgumentException("unknown block '" + key + "'");
+            }
+            String problem = spec.check(br < 0 ? "" : key.substring(br + 1, key.length() - 1));
+            if (problem != null) {
+                throw new IllegalArgumentException("bad block key '" + key + "': " + problem);
+            }
+        }
     }
 
     public String station(String marker, String property) {
@@ -107,6 +149,7 @@ public class FakeEnv implements FlowEnv {
 
     @Override
     public void spawnBoss(String entity, String marker) {
+        entity(entity);
         bosses.add(entity);
     }
 
@@ -137,6 +180,7 @@ public class FakeEnv implements FlowEnv {
 
     @Override
     public void block(String marker, String blockKey) {
+        blockKey(blockKey);
         blocks.put(marker, blockKey);
     }
 
@@ -163,11 +207,13 @@ public class FakeEnv implements FlowEnv {
 
     @Override
     public void sound(String marker, String soundId) {
+        sound(soundId);
         sounds.add(soundId);
     }
 
     @Override
     public void soundAt(UUID player, String soundId) {
+        sound(soundId);
         sounds.add(soundId);
     }
 
@@ -178,11 +224,13 @@ public class FakeEnv implements FlowEnv {
 
     @Override
     public void spawn(String entity, String marker, int count, String tag) {
+        entity(entity);
         spawned.merge(tag + ":" + entity, count, Integer::sum);
     }
 
     @Override
     public void dropItem(String marker, String item, int count, String tag) {
+        item(item);
         spawned.merge(tag + ":item:" + item, count, Integer::sum);
     }
 
@@ -198,6 +246,7 @@ public class FakeEnv implements FlowEnv {
 
     @Override
     public void give(UUID player, String item, int count) {
+        item(item);
         given.merge(item, count, Integer::sum);
     }
 
@@ -260,6 +309,9 @@ public class FakeEnv implements FlowEnv {
 
     @Override
     public void dialogue(String scriptId) {
+        if (DialogueBook.get(scriptId) == null) {
+            throw new IllegalArgumentException("unknown dialogue '" + scriptId + "'");
+        }
         dialogues.add(scriptId);
     }
 }

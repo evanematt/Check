@@ -83,14 +83,19 @@ public class SpecBlock extends Block {
         if (spec.light > 0) {
             final String prop = spec.lightProp;
             final int level = spec.light;
-            s.luminance(state -> {
-                if (prop == null) {
-                    return level;
-                }
-                return state.getBlock() instanceof SpecBlock b && b.getBool(state, prop) ? level : 0;
-            });
+            // evaluated while the states are created, i.e. inside the Block constructor: only the state itself is usable
+            s.luminance(state -> prop == null || entryIsTrue(state, prop) ? level : 0);
         }
         return s;
+    }
+
+    private static boolean entryIsTrue(BlockState state, String name) {
+        for (Map.Entry<Property<?>, Comparable<?>> e : state.getEntries().entrySet()) {
+            if (e.getKey().getName().equals(name)) {
+                return Boolean.TRUE.equals(e.getValue());
+            }
+        }
+        return false;
     }
 
     private static BlockSoundGroup sound(String name) {
