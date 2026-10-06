@@ -21,6 +21,30 @@ public interface Flow {
      */
     boolean use(String marker, UUID player);
 
+    /**
+     * A player used a station while holding an item (a ticket on a validator, a collar on a stand, a battery on a
+     * socket, a water core on a drain). {@code item} is the catalog id of the held mod item, or an empty string.
+     */
+    default boolean useWith(String marker, UUID player, String item) {
+        return use(marker, player);
+    }
+
+    /** A boss of this encounter died. */
+    default void bossDefeated(String bossId) {
+    }
+
+    /** A tagged enemy of this encounter died (wave counting). */
+    default void enemyDied(String tag) {
+    }
+
+    /** A player entered the structure (late joiners get the current state of the flow). */
+    default void playerEntered(UUID player) {
+    }
+
+    /** A player stands on the marker region {@code marker} (cheap sensors: lifts, platforms, validators). */
+    default void occupied(String marker, UUID player) {
+    }
+
     /** Called every server tick while players are inside the structure; must be cheap. */
     void tick();
 

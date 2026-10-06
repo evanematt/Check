@@ -13,7 +13,7 @@ public record BossEvent(Type type, int a, int b, String text) {
 
     public enum Type {
         // generic
-        PHASE, SHIELD_ON, SHIELD_OFF, VULNERABLE_START, VULNERABLE_END, MESSAGE, ADDS, TELEGRAPH, ATTACK, DEFEATED,
+        PHASE, SHIELD_ON, SHIELD_OFF, VULNERABLE_START, VULNERABLE_END, MESSAGE, DIALOGUE, ADDS, TELEGRAPH, ATTACK, DEFEATED,
         // garage king
         CORE_OPEN, CORE_CLOSE, LIFTS, WHEEL, CAR, MALFUNCTION, REPAIRED,
         // collar collector

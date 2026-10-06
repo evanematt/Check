@@ -393,6 +393,7 @@
   "message.lewandivka.garage.power": "Power restored: %s of 3",
   "message.lewandivka.garage.wrong": "Wrong. The breakers reset.",
   "message.lewandivka.gate.closed": "The main gate has closed",
+  "message.lewandivka.head.exam": "The exam: everything you have learned.",
   "message.lewandivka.kettle.fill": "The kettle filled with water",
   "message.lewandivka.kettle.pink": "The water briefly turned pink",
   "message.lewandivka.kiosk.need_foundation": "The kiosk goes on the painted foundation",

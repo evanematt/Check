@@ -393,6 +393,7 @@
   "message.lewandivka.garage.power": "Живлення відновлено: %s з 3",
   "message.lewandivka.garage.wrong": "Не те. Автомати скинулися.",
   "message.lewandivka.gate.closed": "Головні ворота зачинилися",
+  "message.lewandivka.head.exam": "Екзамен: усе, чого ви навчилися.",
   "message.lewandivka.kettle.fill": "Чайник набрав води",
   "message.lewandivka.kettle.pink": "Вода на мить стала рожевою",
   "message.lewandivka.kiosk.need_foundation": "Кіоск ставлять на розмальований фундамент",

@@ -47,13 +47,15 @@ jobs:
       - name: Core unit tests (pure Java, no Minecraft)
         run: ./gradlew -p core test --console=plain --stacktrace
 
+      - name: Compile and remap the mod
+        if: always()
+        run: ./gradlew build --console=plain --stacktrace
+
       - name: Static resource validation
+        if: always()
         run: |
           python3 -m pip install --quiet pillow numpy
           python3 tools/validate_resources.py
-
-      - name: Compile and remap the mod
-        run: ./gradlew build --console=plain --stacktrace
 
       - name: Upload test reports
         if: always()

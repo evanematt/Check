@@ -238,7 +238,7 @@ public final class ColorlessHeadRules extends BossRules {
         flooded = List.of();
         nextAttack = now + 100;
         attackCounter = 0;
-        emit(BossEvent.of(Type.MESSAGE, "dialogue.lewandivka.head.start"));
+        emit(BossEvent.of(Type.DIALOGUE, "head_lore"));
     }
 
     @Override
@@ -247,7 +247,7 @@ public final class ColorlessHeadRules extends BossRules {
             case 1 -> {
                 nextDecay = now + party.deadlineTicks(120);
                 nextRegrow = now + party.deadlineTicks(500);
-                emit(BossEvent.of(Type.MESSAGE, "message.lewandivka.head.decay"));
+                emit(BossEvent.of(Type.MESSAGE, "message.lewandivka.platform.crumbling"));
             }
             case 2 -> {
                 for (int i = 0; i < PLATFORMS; i++) {
@@ -499,7 +499,7 @@ public final class ColorlessHeadRules extends BossRules {
         }
         emit(BossEvent.of(Type.STEAL_CHARGE));
         emit(BossEvent.of(Type.MONOCHROME, 1));
-        emit(BossEvent.of(Type.MESSAGE, "dialogue.lewandivka.head.better"));
+        emit(BossEvent.of(Type.DIALOGUE, "head_final"));
         int catsAt = fresh ? SILENCE_TICKS : 20;
         if (fresh) {
             schedule(now + catsAt, BossEvent.of(Type.CATS_ENTER));

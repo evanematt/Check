@@ -1,6 +1,7 @@
 package com.lewandivka.core.flow;
 
 import com.lewandivka.core.campaign.EncounterRecord;
+import com.lewandivka.core.campaign.WorldProgress;
 import com.lewandivka.core.scale.PartyScale;
 
 import java.util.ArrayList;
@@ -16,6 +17,10 @@ public class FakeEnv implements FlowEnv {
     public long now = 1000;
     public PartyScale party;
     public final EncounterRecord record = new EncounterRecord();
+    public final WorldProgress world = new WorldProgress();
+    public final List<UUID> inside = new ArrayList<>();
+    public final Map<String, Integer> inventory = new HashMap<>();
+    public final List<String> bosses = new ArrayList<>();
     public final Map<String, String> stations = new HashMap<>();
     public final Map<String, String> blocks = new HashMap<>();
     public final Map<String, Boolean> gates = new HashMap<>();
@@ -65,6 +70,63 @@ public class FakeEnv implements FlowEnv {
     @Override
     public EncounterRecord record() {
         return record;
+    }
+
+    @Override
+    public WorldProgress world() {
+        return world;
+    }
+
+    @Override
+    public List<UUID> players() {
+        return inside;
+    }
+
+    @Override
+    public int alive(String tag) {
+        int n = 0;
+        for (Map.Entry<String, Integer> e : spawned.entrySet()) {
+            if (e.getKey().startsWith(tag + ":")) {
+                n += e.getValue();
+            }
+        }
+        return n;
+    }
+
+    /** Kills one tagged enemy (the test plays the player's part). */
+    public boolean kill(String tag) {
+        for (Map.Entry<String, Integer> e : spawned.entrySet()) {
+            if (e.getKey().startsWith(tag + ":") && e.getValue() > 0) {
+                e.setValue(e.getValue() - 1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void spawnBoss(String entity, String marker) {
+        bosses.add(entity);
+    }
+
+    @Override
+    public void despawnBoss(String entity) {
+        bosses.remove(entity);
+    }
+
+    @Override
+    public boolean take(UUID player, String item, int count) {
+        int have = inventory.getOrDefault(item, 0);
+        if (have < count) {
+            return false;
+        }
+        inventory.put(item, have - count);
+        return true;
+    }
+
+    @Override
+    public boolean has(UUID player, String item) {
+        return inventory.getOrDefault(item, 0) > 0;
     }
 
     @Override

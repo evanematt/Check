@@ -1,8 +1,10 @@
 package com.lewandivka.core.flow;
 
 import com.lewandivka.core.campaign.EncounterRecord;
+import com.lewandivka.core.campaign.WorldProgress;
 import com.lewandivka.core.scale.PartyScale;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -23,6 +25,12 @@ public interface FlowEnv {
 
     /** Persistent state of this encounter (flags survive restarts). */
     EncounterRecord record();
+
+    /** Campaign-wide progress (counters and flags shared by all encounters, defeated bosses ...). */
+    WorldProgress world();
+
+    /** Players that are currently inside the structure. */
+    List<UUID> players();
 
     // ------------------------------------------------------------------ the world
     /** Sets a block-state property of the block at a point marker, e.g. {@code lit = true}, {@code powered = false}. */
@@ -60,6 +68,20 @@ public interface FlowEnv {
 
     /** Removes the entities spawned with a tag. */
     void despawn(String tag);
+
+    /** Number of living entities that were spawned with a tag. */
+    int alive(String tag);
+
+    /** Spawns a boss of the encounter at a marker. The boss entity starts its fight when a player gets close. */
+    void spawnBoss(String entity, String marker);
+
+    /** Removes a boss and everything it spawned (reset). */
+    void despawnBoss(String entity);
+
+    /** Removes items from a player (a battery put into a socket). @return false when the player does not carry them */
+    boolean take(UUID player, String item, int count);
+
+    boolean has(UUID player, String item);
 
     /** Makes the entities with a tag walk towards a player (guards that heard a noise). */
     void attract(String tag, UUID target);

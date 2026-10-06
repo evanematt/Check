@@ -192,7 +192,7 @@ class ColorlessHeadRulesTest {
         long finaleStart = t;
         assertTrue(log.stream().anyMatch(e -> e.type() == Type.STEAL_CHARGE));
         assertTrue(log.stream().anyMatch(e -> e.type() == Type.MONOCHROME && e.a() == 1));
-        assertTrue(log.stream().anyMatch(e -> e.type() == Type.MESSAGE && e.text().equals("dialogue.lewandivka.head.better")));
+        assertTrue(log.stream().anyMatch(e -> e.type() == Type.DIALOGUE && e.text().equals("head_final")));
         assertEquals(0.0, rules.damageFactor(t), "nobody can hurt the Head during the silence");
         assertFalse(rules.canDamage(a, t));
         List<BossEvent> after = new ArrayList<>();

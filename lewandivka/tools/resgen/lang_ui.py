@@ -134,6 +134,7 @@ UI = {
     "message.lewandivka.boss.core_closed": ("Щит повернувся", "The shield is back"),
     "message.lewandivka.boss.defeated": ("Бос переможений", "Boss defeated"),
     "message.lewandivka.boss.enrage": ("Бос розлютився", "The boss is enraged"),
+    "message.lewandivka.head.exam": ("Екзамен: усе, чого ви навчилися.", "The exam: everything you have learned."),
     "message.lewandivka.ring.fragment": ("Уламок кільця знайдено", "Ring fragment found"),
     "message.lewandivka.cat.name_hidden": ("???", "???"),
     "message.lewandivka.cat.retreat": ("Кіт відступив до безпечного місця", "The cat retreated to a safe spot"),
