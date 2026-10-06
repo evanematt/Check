@@ -1,5 +1,6 @@
 package com.lewandivka.client;
 
+import com.lewandivka.client.dev.AutoTest;
 import com.lewandivka.client.render.Renderers;
 import com.lewandivka.client.sky.SkyRenderers;
 import net.fabricmc.api.ClientModInitializer;
@@ -15,6 +16,7 @@ public final class LewandivkaClient implements ClientModInitializer {
         Hud.register();
         ClientNet.register();
         SkyRenderers.register();
+        AutoTest.register();
         ClientTickEvents.START_CLIENT_TICK.register(Keys::tick);
         ClientTickEvents.END_CLIENT_TICK.register(Effects::tick);
     }

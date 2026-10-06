@@ -53,6 +53,7 @@ public abstract class BossEntity extends LewMob {
     protected BossRules rules;
     protected final ServerBossBar bar;
     protected boolean fighting;
+    private boolean broken;
     protected PartyScale party = PartyScale.of(1);
     protected Vec3d home;
     private long lastSeen;
@@ -152,7 +153,7 @@ public abstract class BossEntity extends LewMob {
         List<ServerPlayerEntity> near = participants(32);
         if (!fighting) {
             for (ServerPlayerEntity p : near) {
-                if (p.squaredDistanceTo(this) < 22 * 22) {
+                if (!broken && p.squaredDistanceTo(this) < 22 * 22) {
                     startFight();
                     break;
                 }
@@ -171,8 +172,16 @@ public abstract class BossEntity extends LewMob {
             bar.addPlayer(p);
         }
         double hp = getHealth() / Math.max(1.0f, getMaxHealth());
-        for (BossEvent e : rules.tick(now, hp)) {
-            handle(e);
+        try {
+            for (BossEvent e : rules.tick(now, hp)) {
+                handle(e);
+            }
+        } catch (RuntimeException ex) {
+            // a boss that was summoned outside its arena (admin, test) must not take the server down
+            com.lewandivka.LewandivkaMod.LOGGER.error("Boss {} failed and was reset", spec.id, ex);
+            resetFight();
+            broken = true;
+            return;
         }
         if (age % 5 == 0) {
             bar.setPercent((float) hp);
