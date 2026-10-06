@@ -51,6 +51,14 @@ jobs:
         if: always()
         run: ./gradlew build --console=plain --stacktrace
 
+      - name: Fabric GameTests (headless dedicated server)
+        if: always()
+        timeout-minutes: 25
+        run: |
+          mkdir -p build/gametest
+          echo "eula=true" > build/gametest/eula.txt
+          ./gradlew runGametest --console=plain --stacktrace
+
       - name: Static resource validation
         if: always()
         run: |
@@ -65,6 +73,9 @@ jobs:
           path: |
             lewandivka/core/build/reports
             lewandivka/build/reports
+            lewandivka/build/junit.xml
+            lewandivka/build/gametest/logs
+            lewandivka/build/gametest/crash-reports
           if-no-files-found: ignore
 
       - name: Upload jar
