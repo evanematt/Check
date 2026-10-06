@@ -7,6 +7,9 @@ import com.lewandivka.core.campaign.CampaignStage;
 import com.lewandivka.core.campaign.PlayerProgress;
 import com.lewandivka.core.campaign.QuestStep;
 import com.lewandivka.core.campaign.WorldProgress;
+import com.lewandivka.flow.FlowHost;
+import com.lewandivka.quest.Dialogues;
+import com.lewandivka.quest.Travel;
 import com.lewandivka.world.dimension.Dimensions;
 import com.lewandivka.world.structure.StructureValidator;
 import com.lewandivka.world.structure.Structures;
@@ -80,7 +83,61 @@ public final class LewCommands {
                         })
                         .executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure")))));
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
+        root.then(CommandManager.literal("checkpoint").executes(c -> checkpoint(c.getSource())));
+        root.then(CommandManager.literal("reset")
+                .then(CommandManager.literal("encounter")
+                        .then(CommandManager.argument("name", StringArgumentType.word())
+                                .suggests((c, b) -> {
+                                    for (String n : FlowHost.structures()) {
+                                        b.suggest(n);
+                                    }
+                                    return b.buildFuture();
+                                })
+                                .executes(c -> resetEncounter(c.getSource(), StringArgumentType.getString(c, "name"), false))
+                                .then(CommandManager.literal("full").executes(c -> resetEncounter(c.getSource(), StringArgumentType.getString(c, "name"), true))))));
         dispatcher.register(root);
+        // clicked from the chat by the player who is in a dialogue: no permission needed, the dialogue validates the choice
+        dispatcher.register(CommandManager.literal("lewandivka_choice")
+                .then(CommandManager.argument("choice", StringArgumentType.word()).executes(c -> {
+                    ServerPlayerEntity p = c.getSource().getPlayer();
+                    return p != null && Dialogues.choose(p, StringArgumentType.getString(c, "choice")) ? 1 : 0;
+                })));
+    }
+
+    // ------------------------------------------------------------------ recovery
+
+    private static int checkpoint(ServerCommandSource source) {
+        ServerPlayerEntity player = source.getPlayer();
+        if (player == null) {
+            source.sendError(Text.literal("only a player can use this"));
+            return 0;
+        }
+        String structure = Structures.structureAt(Dimensions.idOf(player.getWorld()), player.getBlockPos());
+        if (structure == null) {
+            source.sendError(Text.literal("you are not inside a quest structure"));
+            return 0;
+        }
+        int cp = Campaign.world(source.getServer()).encounter(structure).checkpoint();
+        String id = structure + ":cp_" + Math.max(cp, 0);
+        if (!Structures.has(id)) {
+            id = structure + ":spawn";
+        }
+        if (!Structures.has(id) || !Travel.toMarker(player, id)) {
+            source.sendError(Text.literal("no checkpoint marker in " + structure));
+            return 0;
+        }
+        source.sendFeedback(() -> Text.translatable("command.lewandivka.checkpoint.teleported"), false);
+        return 1;
+    }
+
+    private static int resetEncounter(ServerCommandSource source, String name, boolean full) {
+        boolean ok = full ? FlowHost.resetAll(source.getServer(), name) : FlowHost.reset(source.getServer(), name);
+        if (!ok) {
+            source.sendError(Text.translatable("command.lewandivka.reset.unknown", name));
+            return 0;
+        }
+        source.sendFeedback(() -> Text.translatable("command.lewandivka.reset", name), true);
+        return 1;
     }
 
     // ------------------------------------------------------------------ status and story

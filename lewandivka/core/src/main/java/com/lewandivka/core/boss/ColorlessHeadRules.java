@@ -97,6 +97,11 @@ public final class ColorlessHeadRules extends BossRules {
 
     // ------------------------------------------------------------------ queries
 
+    /** Ticks until a charge overloads (for the hint message). */
+    public static int relayTicks() {
+        return ChargeRelay.DEFAULT_OVERLOAD_TICKS;
+    }
+
     public ChargeRelay relay() {
         return relay;
     }

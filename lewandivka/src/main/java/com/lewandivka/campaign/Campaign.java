@@ -97,7 +97,8 @@ public final class Campaign {
         announce(server, target, true);
     }
 
-    private static void announce(MinecraftServer server, QuestStep step, boolean forced) {
+    /** Tells every listener that the campaign entered a step (toast, sync, compass ...). */
+    public static void announce(MinecraftServer server, QuestStep step, boolean forced) {
         if (LewandivkaConfig.get().developerLogs) {
             LewandivkaMod.LOGGER.info("Campaign step -> {} (forced={})", step, forced);
         }
