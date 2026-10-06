@@ -68,3 +68,11 @@ tasks.register('dumpMarkers', JavaExec) {
     mainClass = 'com.lewandivka.core.tools.MarkerDump'
     maxHeapSize = '1g'
 }
+
+// Writes the registry/text catalogs as JSON to tools/data/spec (read by the Python resource generator)
+tasks.register('exportSpec', JavaExec) {
+    group = 'build'
+    description = 'Exports blocks, items, entities, sounds and story texts as JSON'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.SpecExport'
+}

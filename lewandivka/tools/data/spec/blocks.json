@@ -1,0 +1,1370 @@
+[
+  {
+    "id": "abandoned_kiosk",
+    "behaviour": "KIOSK",
+    "model": "ORIENTABLE",
+    "nameUk": "Закинутий кіоск",
+    "nameEn": "Abandoned Kiosk",
+    "light": 0,
+    "sound": "wood",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      }
+    ],
+    "visual": []
+  },
+  {
+    "id": "kiosk_foundation",
+    "behaviour": "DECOR",
+    "model": "CARPET",
+    "nameUk": "Фундамент кіоска",
+    "nameEn": "Kiosk Foundation",
+    "light": 0,
+    "sound": "stone",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "supply_stash",
+    "behaviour": "STASH",
+    "model": "SMALL",
+    "nameUk": "Схованка",
+    "nameEn": "Supply Stash",
+    "light": 0,
+    "sound": "wood",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "looted",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "looted"
+    ]
+  },
+  {
+    "id": "clue_prop",
+    "behaviour": "STATION",
+    "model": "SMALL",
+    "nameUk": "Підказка",
+    "nameEn": "Clue",
+    "light": 0,
+    "sound": "wool",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "kind",
+        "type": "INT",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      }
+    ],
+    "visual": [
+      "kind"
+    ]
+  },
+  {
+    "id": "lore_note",
+    "behaviour": "NOTE",
+    "model": "PLATE",
+    "nameUk": "Записка",
+    "nameEn": "Note",
+    "light": 0,
+    "sound": "wool",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "note",
+        "type": "INT",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31",
+          "32",
+          "33",
+          "34",
+          "35",
+          "36",
+          "37",
+          "38",
+          "39",
+          "40",
+          "41",
+          "42",
+          "43",
+          "44",
+          "45",
+          "46",
+          "47",
+          "48",
+          "49",
+          "50",
+          "51",
+          "52",
+          "53",
+          "54",
+          "55",
+          "56",
+          "57",
+          "58",
+          "59",
+          "60",
+          "61",
+          "62",
+          "63",
+          "64",
+          "65",
+          "66",
+          "67",
+          "68",
+          "69",
+          "70",
+          "71",
+          "72",
+          "73",
+          "74",
+          "75",
+          "76",
+          "77",
+          "78",
+          "79",
+          "80",
+          "81",
+          "82",
+          "83",
+          "84",
+          "85",
+          "86",
+          "87",
+          "88",
+          "89",
+          "90"
+        ]
+      },
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      }
+    ],
+    "visual": []
+  },
+  {
+    "id": "garage_plate",
+    "behaviour": "DECOR",
+    "model": "PLATE",
+    "nameUk": "Номер гаража",
+    "nameEn": "Garage Number Plate",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "plate",
+        "type": "INT",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20",
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29",
+          "30",
+          "31",
+          "32",
+          "33",
+          "34",
+          "35",
+          "36",
+          "37",
+          "38",
+          "39",
+          "40"
+        ]
+      },
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      }
+    ],
+    "visual": [
+      "plate"
+    ]
+  },
+  {
+    "id": "garage_power_panel",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Електрощиток",
+    "nameEn": "Power Panel",
+    "light": 7,
+    "lightProp": "lit",
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "kind",
+        "type": "ENUM",
+        "values": [
+          "breaker",
+          "console",
+          "switchbox"
+        ]
+      },
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      },
+      {
+        "name": "lit",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "kind",
+      "lit"
+    ]
+  },
+  {
+    "id": "heavy_lever",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Важіль",
+    "nameEn": "Heavy Lever",
+    "light": 4,
+    "lightProp": "powered",
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      },
+      {
+        "name": "powered",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "powered"
+    ]
+  },
+  {
+    "id": "ticket_validator",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Валідатор квитків",
+    "nameEn": "Ticket Validator",
+    "light": 8,
+    "lightProp": "active",
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      },
+      {
+        "name": "symbol",
+        "type": "ENUM",
+        "values": [
+          "none",
+          "cross",
+          "circle",
+          "triangle",
+          "square"
+        ]
+      },
+      {
+        "name": "active",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "symbol",
+      "active"
+    ]
+  },
+  {
+    "id": "artifact_pedestal",
+    "behaviour": "PEDESTAL",
+    "model": "PEDESTAL",
+    "nameUk": "Постамент артефакта",
+    "nameEn": "Artifact Pedestal",
+    "light": 9,
+    "lightProp": "filled",
+    "sound": "stone",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "kind",
+        "type": "ENUM",
+        "values": [
+          "kettle",
+          "package",
+          "composter",
+          "token"
+        ]
+      },
+      {
+        "name": "filled",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "kind",
+      "filled"
+    ]
+  },
+  {
+    "id": "kettle_block",
+    "behaviour": "KETTLE",
+    "model": "SMALL",
+    "nameUk": "Магічний чайник (на землі)",
+    "nameEn": "Magic Kettle (placed)",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": false,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "package_block",
+    "behaviour": "PACKAGE",
+    "model": "SMALL",
+    "nameUk": "Посилка (на землі)",
+    "nameEn": "Package (placed)",
+    "light": 0,
+    "sound": "wool",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": false,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "checkpoint_lamp",
+    "behaviour": "CHECKPOINT",
+    "model": "LAMP",
+    "nameUk": "Лампа-чекпоінт",
+    "nameEn": "Checkpoint Lamp",
+    "light": 13,
+    "lightProp": "lit",
+    "sound": "lantern",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "lit",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "lit"
+    ]
+  },
+  {
+    "id": "guard_door",
+    "behaviour": "GATE",
+    "model": "CUBE",
+    "nameUk": "Двері охорони",
+    "nameEn": "Guard Door",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "office_door",
+    "behaviour": "DECOR",
+    "model": "CUBE",
+    "nameUk": "Двері кабінету",
+    "nameEn": "Office Door",
+    "light": 0,
+    "sound": "wood",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "ticket_machine",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Автомат талонів",
+    "nameEn": "Ticket Machine",
+    "light": 5,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      }
+    ],
+    "visual": []
+  },
+  {
+    "id": "queue_display",
+    "behaviour": "DECOR",
+    "model": "PLATE",
+    "nameUk": "Табло черги",
+    "nameEn": "Queue Display",
+    "light": 8,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "digit",
+        "type": "INT",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9"
+        ]
+      }
+    ],
+    "visual": [
+      "digit"
+    ]
+  },
+  {
+    "id": "cardboard_box",
+    "behaviour": "STATION",
+    "model": "SMALL",
+    "nameUk": "Картонна коробка",
+    "nameEn": "Cardboard Box",
+    "light": 0,
+    "sound": "wool",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "small",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      },
+      {
+        "name": "opened",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "small",
+      "opened"
+    ]
+  },
+  {
+    "id": "old_rug",
+    "behaviour": "DECOR",
+    "model": "CARPET",
+    "nameUk": "Старий килимок",
+    "nameEn": "Old Rug",
+    "light": 0,
+    "sound": "wool",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "seed_bowl",
+    "behaviour": "STATION",
+    "model": "SMALL",
+    "nameUk": "Миска для сємок",
+    "nameEn": "Seed Bowl",
+    "light": 0,
+    "sound": "stone",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "stage",
+        "type": "INT",
+        "values": [
+          "0",
+          "1",
+          "2"
+        ]
+      }
+    ],
+    "visual": [
+      "stage"
+    ]
+  },
+  {
+    "id": "colored_portal",
+    "behaviour": "PORTAL",
+    "model": "PORTAL",
+    "nameUk": "Кольоровий портал",
+    "nameEn": "Colored Portal",
+    "light": 11,
+    "sound": "glass",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": true,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "axis",
+        "type": "ENUM",
+        "values": [
+          "x",
+          "z"
+        ]
+      }
+    ],
+    "visual": []
+  },
+  {
+    "id": "portal_frame",
+    "behaviour": "DECOR",
+    "model": "CUBE",
+    "nameUk": "Рама порталу",
+    "nameEn": "Portal Frame",
+    "light": 5,
+    "sound": "stone",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "chromatic_crystal",
+    "behaviour": "DECOR",
+    "model": "CUBE",
+    "nameUk": "Хроматичний кристал",
+    "nameEn": "Chromatic Crystal",
+    "light": 10,
+    "sound": "amethyst",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": true,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "color",
+        "type": "ENUM",
+        "values": [
+          "cyan",
+          "green",
+          "orange",
+          "pink",
+          "violet",
+          "yellow"
+        ]
+      }
+    ],
+    "visual": [
+      "color"
+    ]
+  },
+  {
+    "id": "crystal_cluster",
+    "behaviour": "DECOR",
+    "model": "CLUSTER",
+    "nameUk": "Друза кристалів",
+    "nameEn": "Crystal Cluster",
+    "light": 6,
+    "sound": "amethyst",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": true,
+    "inTab": true,
+    "props": [
+      {
+        "name": "color",
+        "type": "ENUM",
+        "values": [
+          "cyan",
+          "green",
+          "orange",
+          "pink",
+          "violet",
+          "yellow"
+        ]
+      },
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "up",
+          "down",
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      }
+    ],
+    "visual": [
+      "color"
+    ]
+  },
+  {
+    "id": "glowshroom_cap",
+    "behaviour": "DECOR",
+    "model": "CUBE",
+    "nameUk": "Капелюх світлогриба",
+    "nameEn": "Glowshroom Cap",
+    "light": 12,
+    "sound": "wood",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "color",
+        "type": "ENUM",
+        "values": [
+          "cyan",
+          "orange",
+          "pink",
+          "violet"
+        ]
+      }
+    ],
+    "visual": [
+      "color"
+    ]
+  },
+  {
+    "id": "glowshroom_stem",
+    "behaviour": "DECOR",
+    "model": "COLUMN",
+    "nameUk": "Ніжка світлогриба",
+    "nameEn": "Glowshroom Stem",
+    "light": 0,
+    "sound": "wood",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "rainbow_leaves",
+    "behaviour": "DECOR",
+    "model": "CUBE",
+    "nameUk": "Веселкове листя",
+    "nameEn": "Rainbow Leaves",
+    "light": 0,
+    "sound": "grass",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": true,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "waterfall",
+    "behaviour": "FLOW",
+    "model": "ANIMATED",
+    "nameUk": "Водоспад",
+    "nameEn": "Waterfall",
+    "light": 3,
+    "sound": "glass",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": true,
+    "cutout": false,
+    "inTab": false,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "waterfall_up",
+    "behaviour": "FLOW",
+    "model": "ANIMATED",
+    "nameUk": "Водоспад угору",
+    "nameEn": "Rising Waterfall",
+    "light": 5,
+    "sound": "glass",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": true,
+    "cutout": false,
+    "inTab": false,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "garage_lift",
+    "behaviour": "DECOR",
+    "model": "CUBE",
+    "nameUk": "Підйомник гаража",
+    "nameEn": "Garage Lift",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "paint_tap",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Кран із фарбою",
+    "nameEn": "Paint Tap",
+    "light": 8,
+    "lightProp": "lit",
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "color",
+        "type": "ENUM",
+        "values": [
+          "red",
+          "yellow",
+          "blue",
+          "release"
+        ]
+      },
+      {
+        "name": "lit",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "color",
+      "lit"
+    ]
+  },
+  {
+    "id": "battery_socket",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Гніздо батареї",
+    "nameEn": "Battery Socket",
+    "light": 7,
+    "lightProp": "filled",
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      },
+      {
+        "name": "filled",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "filled"
+    ]
+  },
+  {
+    "id": "press_head",
+    "behaviour": "DECOR",
+    "model": "CUBE",
+    "nameUk": "Голова преса",
+    "nameEn": "Press Head",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "colored_grate",
+    "behaviour": "GATE",
+    "model": "CUBE",
+    "nameUk": "Кольорова решітка",
+    "nameEn": "Colored Grate",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": true,
+    "inTab": true,
+    "props": [
+      {
+        "name": "color",
+        "type": "ENUM",
+        "values": [
+          "orange",
+          "green",
+          "purple"
+        ]
+      }
+    ],
+    "visual": [
+      "color"
+    ]
+  },
+  {
+    "id": "spring_pad",
+    "behaviour": "SPRING",
+    "model": "PAD",
+    "nameUk": "Пружинна плита",
+    "nameEn": "Spring Pad",
+    "light": 0,
+    "sound": "slime",
+    "unbreakable": true,
+    "passable": true,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "up",
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      }
+    ],
+    "visual": []
+  },
+  {
+    "id": "spring_hatch",
+    "behaviour": "SPRING",
+    "model": "CUBE",
+    "nameUk": "Пружинний люк",
+    "nameEn": "Spring Hatch",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "shelter_door",
+    "behaviour": "GATE",
+    "model": "CUBE",
+    "nameUk": "Двері укриття",
+    "nameEn": "Shelter Door",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "collector_door",
+    "behaviour": "GATE",
+    "model": "CUBE",
+    "nameUk": "Двері Колекціонера",
+    "nameEn": "Collector Door",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "collar_stand",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Підставка для нашийника",
+    "nameEn": "Collar Stand",
+    "light": 0,
+    "sound": "wood",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      },
+      {
+        "name": "filled",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "filled"
+    ]
+  },
+  {
+    "id": "dash_door",
+    "behaviour": "DASH_GATE",
+    "model": "CUBE",
+    "nameUk": "Двері ривка",
+    "nameEn": "Dash Door",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  },
+  {
+    "id": "pump_control",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Пульт насоса",
+    "nameEn": "Pump Control",
+    "light": 7,
+    "lightProp": "on",
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      },
+      {
+        "name": "on",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "on"
+    ]
+  },
+  {
+    "id": "water_drain",
+    "behaviour": "STATION",
+    "model": "CUBE",
+    "nameUk": "Зливний люк",
+    "nameEn": "Water Drain",
+    "light": 0,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "open",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "open"
+    ]
+  },
+  {
+    "id": "tram_switch",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Трамвайна стрілка",
+    "nameEn": "Tram Switch",
+    "light": 4,
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      },
+      {
+        "name": "state",
+        "type": "ENUM",
+        "values": [
+          "a",
+          "b"
+        ]
+      }
+    ],
+    "visual": [
+      "state"
+    ]
+  },
+  {
+    "id": "chromatic_relay",
+    "behaviour": "STATION",
+    "model": "ORIENTABLE",
+    "nameUk": "Хроматичне реле",
+    "nameEn": "Chromatic Relay",
+    "light": 10,
+    "lightProp": "active",
+    "sound": "metal",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
+      },
+      {
+        "name": "active",
+        "type": "BOOL",
+        "values": [
+          "false",
+          "true"
+        ]
+      }
+    ],
+    "visual": [
+      "active"
+    ]
+  },
+  {
+    "id": "crumbling_platform",
+    "behaviour": "CRUMBLING",
+    "model": "CUBE",
+    "nameUk": "Платформа, що кришиться",
+    "nameEn": "Crumbling Platform",
+    "light": 0,
+    "sound": "stone",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [
+      {
+        "name": "stage",
+        "type": "INT",
+        "values": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ]
+      }
+    ],
+    "visual": [
+      "stage"
+    ]
+  },
+  {
+    "id": "grey_void",
+    "behaviour": "VOID",
+    "model": "CUBE",
+    "nameUk": "Сіра порожнеча",
+    "nameEn": "Grey Void",
+    "light": 0,
+    "sound": "stone",
+    "unbreakable": true,
+    "passable": false,
+    "translucent": false,
+    "cutout": false,
+    "inTab": true,
+    "props": [],
+    "visual": []
+  }
+]

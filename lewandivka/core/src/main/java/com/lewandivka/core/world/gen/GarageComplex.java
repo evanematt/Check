@@ -330,7 +330,7 @@ public final class GarageComplex {
         }
         // the operator's lever: opens the tunnel gate for a limited time
         b.interact("escape_lever", 62, S + 2, 25, Pal.lever(Dir.EAST));
-        b.set(62, S + 3, 25, Pal.note(10, Dir.EAST));
+        b.set(62, S + 3, 25, Pal.note(17, Dir.EAST));
         b.set(64, S + 4, 18, Pal.light(12));
         b.set(64, S + 4, 26, Pal.light(12));
         // shaft down to the tunnels at x 65..66, z 21..22 (walls are the terrain itself)
