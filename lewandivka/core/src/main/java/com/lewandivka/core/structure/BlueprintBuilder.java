@@ -102,6 +102,34 @@ public final class BlueprintBuilder {
         return rot;
     }
 
+    /**
+     * Aligns a fresh builder so that a structure drawn in a local footprint of
+     * {@code localSx x localSz} (front = local north) ends up rotated by {@code turns} clockwise quarter
+     * turns inside a blueprint whose size is already the rotated footprint.
+     */
+    public BlueprintBuilder orient(int turns, int localSx, int localSz) {
+        rot = ((turns % 4) + 4) % 4;
+        switch (rot) {
+            case 1 -> {
+                ox = localSz - 1;
+                oz = 0;
+            }
+            case 2 -> {
+                ox = localSx - 1;
+                oz = localSz - 1;
+            }
+            case 3 -> {
+                ox = 0;
+                oz = localSx - 1;
+            }
+            default -> {
+                ox = 0;
+                oz = 0;
+            }
+        }
+        return this;
+    }
+
     /** Direction in blueprint space that frame-direction {@code d} points to. */
     public Dir world(Dir d) {
         return d.turn(rot);
@@ -317,6 +345,27 @@ public final class BlueprintBuilder {
 
     /** Region marker (door/gate volume, hazard zone, arena bounds). */
     public BlueprintBuilder region(String name, int x1, int y1, int z1, int x2, int y2, int z2) {
+        return region(name, x1, y1, z1, x2, y2, z2, "");
+    }
+
+    /**
+     * Quest gate: a region marker that remembers the block it is made of when closed
+     * ({@code closed=<key>}). The region is filled with that block now (initially closed) or left open.
+     */
+    public BlueprintBuilder gate(String name, int x1, int y1, int z1, int x2, int y2, int z2, String closedKey, boolean initiallyClosed) {
+        if (initiallyClosed) {
+            fill(x1, y1, z1, x2, y2, z2, closedKey);
+        }
+        return region(name, x1, y1, z1, x2, y2, z2, "closed=" + closedKey);
+    }
+
+    /** Places an interactable block and registers a point marker on it. */
+    public BlueprintBuilder interact(String name, int x, int y, int z, String key) {
+        set(x, y, z, key);
+        return marker(name, x, y, z);
+    }
+
+    public BlueprintBuilder region(String name, int x1, int y1, int z1, int x2, int y2, int z2, String data) {
         int[] a = toBlueprint(x1, y1, z1);
         int[] b = toBlueprint(x2, y2, z2);
         int minX = Math.min(a[0], b[0]);
@@ -328,7 +377,7 @@ public final class BlueprintBuilder {
         if (!inside(minX, minY, minZ) || !inside(maxX, maxY, maxZ)) {
             throw new IllegalArgumentException(id + ": region '" + name + "' outside blueprint");
         }
-        markers.add(new Blueprint.Marker(name, minX, minY, minZ, maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1, ""));
+        markers.add(new Blueprint.Marker(name, minX, minY, minZ, maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1, data == null ? "" : data));
         return this;
     }
 
@@ -364,7 +413,7 @@ public final class BlueprintBuilder {
             int minZ = Math.min(r[1], r2[1]);
             int maxZ = Math.max(r[1], r2[1]);
             if (m.isRegion()) {
-                region(other.id() + "." + m.name(), x + minX, y + m.y(), z + minZ, x + maxX, y + m.y() + m.sy() - 1, z + maxZ);
+                region(other.id() + "." + m.name(), x + minX, y + m.y(), z + minZ, x + maxX, y + m.y() + m.sy() - 1, z + maxZ, m.data());
             } else {
                 marker(other.id() + "." + m.name(), x + r[0], y + m.y(), z + r[1], rotateData(m.data(), t));
             }

@@ -25,6 +25,15 @@ public final class Noise {
         return mix(hash(seed, x, z) + y * 0x27D4EB2F165667C5L);
     }
 
+    /** Deterministic integer in [0, bound) derived from the position (never negative). */
+    public static int range(long seed, int x, int z, int bound) {
+        return (int) Math.floorMod(hash(seed, x, z), (long) bound);
+    }
+
+    public static int range(long seed, int x, int y, int z, int bound) {
+        return (int) Math.floorMod(hash(seed, x, y, z), (long) bound);
+    }
+
     /** Uniform in [0, 1). */
     public static double hash01(long seed, int x, int z) {
         return (hash(seed, x, z) >>> 11) * (1.0 / (1L << 53));

@@ -36,3 +36,17 @@ tasks.named('test') {
     // The structure catalog tests build every blueprint of the game (some are large).
     maxHeapSize = '1g'
 }
+
+// Development aid: gradle render -Pids=garage13 -Pslices=9,10 -Pscale=6
+tasks.register('render', JavaExec) {
+    group = 'verification'
+    description = 'Renders blueprints to PNG (build/renders)'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.RenderMain'
+    systemProperty 'java.awt.headless', 'true'
+    ['ids', 'slices', 'scale', 'out', 'cut', 'cutview'].each { k ->
+        if (project.hasProperty(k)) {
+            systemProperty k, project.property(k)
+        }
+    }
+}

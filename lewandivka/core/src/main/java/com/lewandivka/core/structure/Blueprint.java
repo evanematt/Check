@@ -50,6 +50,11 @@ public final class Blueprint {
         return id;
     }
 
+    /** Same content under another id (the arrays are shared; blueprints are immutable). */
+    public Blueprint withId(String newId) {
+        return new Blueprint(newId, sx, sy, sz, palette, cells, markers);
+    }
+
     public int sizeX() {
         return sx;
     }

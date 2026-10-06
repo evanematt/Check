@@ -15,6 +15,8 @@ public final class TerrainColumn {
     public String base = "minecraft:stone";
     public int fluidY = Integer.MIN_VALUE;
     public String fluid = "minecraft:water";
+    /** Optional one-block decoration placed directly above the surface (rails, grass tufts, flowers). */
+    public String decor;
 
     public TerrainColumn reset(int height, String top, String sub, int subDepth, String base) {
         this.height = height;
@@ -24,6 +26,7 @@ public final class TerrainColumn {
         this.base = base;
         this.fluidY = Integer.MIN_VALUE;
         this.fluid = "minecraft:water";
+        this.decor = null;
         return this;
     }
 
