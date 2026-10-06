@@ -3,7 +3,9 @@ package com.lewandivka.core.boss;
 import com.lewandivka.core.scale.PartyScale;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Random;
 
 /**
@@ -22,6 +24,11 @@ public abstract class BossRules {
     protected long startedAt = Long.MIN_VALUE;
     protected boolean defeated;
     private final List<BossEvent> out = new ArrayList<>();
+    private final PriorityQueue<Timed> timeline = new PriorityQueue<>(Comparator.comparingLong(Timed::at).thenComparingLong(Timed::seq));
+    private long seq;
+
+    private record Timed(long at, long seq, BossEvent event) {
+    }
 
     protected BossRules(long seed, double... phaseThresholds) {
         this.rng = new Random(seed);
@@ -51,6 +58,7 @@ public abstract class BossRules {
         this.defeated = false;
         phases.reset();
         out.clear();
+        timeline.clear();
         onStart(now);
         return drain();
     }
@@ -64,6 +72,9 @@ public abstract class BossRules {
         while ((next = phases.advanceIfNeeded(health)) >= 0) {
             emit(BossEvent.of(BossEvent.Type.PHASE, next));
             onPhase(next, now);
+        }
+        while (!timeline.isEmpty() && timeline.peek().at() <= now) {
+            emit(timeline.poll().event());
         }
         onTick(now, health);
         return drain();
@@ -85,6 +96,7 @@ public abstract class BossRules {
         defeated = false;
         phases.reset();
         out.clear();
+        timeline.clear();
         onReset();
     }
 
@@ -105,6 +117,16 @@ public abstract class BossRules {
 
     protected final void emit(BossEvent e) {
         out.add(e);
+    }
+
+    /** Emits {@code e} on the first tick at or after {@code at} (telegraph, then attack). */
+    protected final void schedule(long at, BossEvent e) {
+        timeline.add(new Timed(at, seq++, e));
+    }
+
+    /** Drops everything that was scheduled and has not happened yet (a phase change cancels the old script). */
+    protected final void cancelScheduled() {
+        timeline.clear();
     }
 
     /** Events produced by an interaction (levers, drains ...) are collected the same way. */
