@@ -53,7 +53,6 @@ public final class TowerApproach {
         springShaft(b);
         chasm(b);
         farSide(b);
-        b.region("body", 0, S, 0, SX - 1, S + 4, SZ - 1);
         return b.build();
     }
 

@@ -236,7 +236,7 @@ public final class DistrictPlan implements WorldPlan {
             int seg = Math.floorDiv(x, 5);
             double broken = Noise.hash01(SEED + 21, seg, 0);
             if (broken < 0.62) {
-                return (Noise.hash(SEED, x, 9) & 3) == 0 ? "minecraft:short_grass" : null;
+                return (Noise.hash(SEED, x, 9) & 3) == 0 ? "minecraft:grass" : null;
             }
             return "minecraft:rail[shape=east_west]";
         }
@@ -246,7 +246,7 @@ public final class DistrictPlan implements WorldPlan {
         long h = Noise.hash(SEED + 30, x, z);
         int roll = (int) Math.floorMod(h, 100L);
         if (roll < 16) {
-            return "minecraft:short_grass";
+            return "minecraft:grass";
         }
         if (roll < 18) {
             return "minecraft:dandelion";
@@ -279,8 +279,14 @@ public final class DistrictPlan implements WorldPlan {
         int ox = bodyX - body.x();
         int oz = bodyZ - body.z();
         StructurePlacement sp = new StructurePlacement(id, bp, ox, GROUND, oz);
+        clearTrees(sp.x(), sp.z(), sp.maxX(), sp.maxZ());
         placements.add(sp);
         occupied.add(new Rect(sp.x(), sp.z(), sp.maxX(), sp.maxZ()));
+    }
+
+    /** Buildings and quest objects always win over decorative trees. */
+    private void clearTrees(int x1, int z1, int x2, int z2) {
+        placements.removeIf(p -> p.id().equals("tree") && p.intersectsXZ(x1, z1, x2, z2));
     }
 
     private boolean free(int x1, int z1, int x2, int z2) {
@@ -312,6 +318,7 @@ public final class DistrictPlan implements WorldPlan {
 
     /** Like {@link #prop} but ignores collisions (quest objects must exist). */
     private void propForce(String id, Blueprint bp, int x, int y, int z) {
+        clearTrees(x - 1, z - 1, x + bp.sizeX(), z + bp.sizeZ());
         placements.add(new StructurePlacement(id, bp, x, y, z));
     }
 
@@ -324,7 +331,14 @@ public final class DistrictPlan implements WorldPlan {
         if (!free(x - 1, z - 1, x + 1, z + 1)) {
             return;
         }
-        placements.add(new StructurePlacement("tree", t, ox, GROUND + 1, oz));
+        // the crown must not grow through a building or a prop either
+        StructurePlacement sp = new StructurePlacement("tree", t, ox, GROUND + 1, oz);
+        for (StructurePlacement other : placements) {
+            if (!other.id().equals("tree") && other.intersectsXZ(sp.x(), sp.z(), sp.maxX(), sp.maxZ())) {
+                return;
+            }
+        }
+        placements.add(sp);
         occupied.add(new Rect(x - 1, z - 1, x + 1, z + 1));
     }
 
@@ -349,6 +363,7 @@ public final class DistrictPlan implements WorldPlan {
     private void tramStop() {
         Blueprint stop = TramBuilders.tramStop();
         StructurePlacement sp = new StructurePlacement("tram_stop", stop, -12, GROUND, -9);
+        clearTrees(sp.x(), sp.z(), sp.maxX(), sp.maxZ());
         placements.add(sp);
         occupied.add(new Rect(sp.x(), sp.z(), sp.maxX(), sp.maxZ()));
         // terminus: brick depot with the barred arch facing the turning loop
@@ -370,7 +385,7 @@ public final class DistrictPlan implements WorldPlan {
         prop("bench_n2", Props.bench(), -6, -36);
         // bench clue: tea glass left on the seat
         Blueprint bench = Props.bench();
-        placements.add(new StructurePlacement("bench_clue", bench, 14, GROUND + 1, -36));
+        propForce("bench_clue", bench, 14, GROUND + 1, -36);
         propForce("clue_bench", Props.clue(1), 15, GROUND + 2, -36);
         prop("car_n1", Props.car(Props.CAR_BLUE, 0), -54, -41);
         prop("car_n2", Props.car(Props.CAR_WHITE, 0), 22, -41);
@@ -423,7 +438,7 @@ public final class DistrictPlan implements WorldPlan {
     private void northEast() {
         building("old_shop", Buildings.oldShop(2), 64, -20);
         // the marked foundation for the abandoned kiosk
-        placements.add(new StructurePlacement("kiosk_foundation", Props.kioskFoundation(), 58, GROUND, -11));
+        propForce("kiosk_foundation", Props.kioskFoundation(), 58, GROUND, -11);
         propForce("clue_tea", Props.clue(0), 66, GROUND + 1, -23);
         propForce("dumpster_shop", Props.dumpster("junk"), 80, GROUND + 1, -23);
         propForce("stash_seeds_shop", Props.stash("seeds"), 70, GROUND + 1, -23);
@@ -474,7 +489,7 @@ public final class DistrictPlan implements WorldPlan {
 
     private void garageCooperative() {
         Blueprint garage = GarageComplex.garage13();
-        placements.add(new StructurePlacement("garage13", garage, GarageComplex.ORIGIN_X, GarageComplex.ORIGIN_Y, GarageComplex.ORIGIN_Z));
+        propForce("garage13", garage, GarageComplex.ORIGIN_X, GarageComplex.ORIGIN_Y, GarageComplex.ORIGIN_Z);
         occupied.add(new Rect(GarageComplex.ORIGIN_X, GarageComplex.ORIGIN_Z,
                 GarageComplex.ORIGIN_X + garage.sizeX() - 1, GarageComplex.ORIGIN_Z + garage.sizeZ() - 1));
     }

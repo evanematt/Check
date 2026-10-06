@@ -26,17 +26,4 @@ class StructureTest {
         assertEquals(List.of(), issues.stream().map(StructureChecks.Issue::toString).toList());
     }
 
-    @Test
-    void everyBlueprintKeyIsAKnownBlock() {
-        List<String> unknown = new java.util.ArrayList<>();
-        for (Blueprint bp : Catalog.namedBlueprints().values()) {
-            for (String key : bp.paletteKeys()) {
-                String id = com.lewandivka.core.structure.Keys.blockId(key);
-                if (!id.startsWith("minecraft:") && !Catalog.MOD_BLOCKS.contains(id)) {
-                    unknown.add(bp.id() + " uses unknown block " + id);
-                }
-            }
-        }
-        assertEquals(List.of(), unknown);
-    }
 }

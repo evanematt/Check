@@ -195,7 +195,7 @@ public final class Nature {
             int x = (int) Math.floorMod(Noise.hash(seed, i, 1), (long) (2 * radius - 1)) - radius + 1;
             int z = (int) Math.floorMod(Noise.hash(seed, i, 2), (long) (2 * radius - 1)) - radius + 1;
             if (x * x + z * z < (radius - 1) * (radius - 1) && Pal.GRASS.equals(b.get(c + x, top, c + z))) {
-                String[] flowers = {"minecraft:allium", "minecraft:pink_tulip", "minecraft:azure_bluet", "minecraft:short_grass", "minecraft:short_grass", "minecraft:cornflower"};
+                String[] flowers = {"minecraft:allium", "minecraft:pink_tulip", "minecraft:azure_bluet", "minecraft:grass", "minecraft:grass", "minecraft:cornflower"};
                 b.set(c + x, top + 1, c + z, flowers[(int) Math.floorMod(Noise.hash(seed, i, 3), 6L)]);
             }
         }

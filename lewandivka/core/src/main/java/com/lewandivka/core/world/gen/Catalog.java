@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Registry of every named blueprint of the game, for tooling (renderer, validators, reports).
@@ -17,22 +16,6 @@ public final class Catalog {
 
     private Catalog() {
     }
-
-    /** Every block id of the mod. Structure builders may only use these (plus vanilla blocks). */
-    public static final Set<String> MOD_BLOCKS = Set.of(
-            "lewandivka:abandoned_kiosk", "lewandivka:kiosk_foundation", "lewandivka:artifact_pedestal",
-            "lewandivka:garage_lift", "lewandivka:garage_power_panel", "lewandivka:ticket_validator",
-            "lewandivka:colored_portal", "lewandivka:portal_frame", "lewandivka:spring_pad", "lewandivka:spring_hatch",
-            "lewandivka:chromatic_crystal", "lewandivka:crystal_cluster", "lewandivka:glowshroom_cap",
-            "lewandivka:glowshroom_stem", "lewandivka:rainbow_leaves", "lewandivka:colored_grate",
-            "lewandivka:guard_door", "lewandivka:collector_door", "lewandivka:shelter_door", "lewandivka:dash_door",
-            "lewandivka:office_door", "lewandivka:grey_void", "lewandivka:crumbling_platform",
-            "lewandivka:chromatic_relay", "lewandivka:water_drain", "lewandivka:pump_control",
-            "lewandivka:tram_switch", "lewandivka:garage_plate", "lewandivka:lore_note", "lewandivka:supply_stash",
-            "lewandivka:clue_prop", "lewandivka:cardboard_box", "lewandivka:package_block", "lewandivka:kettle_block",
-            "lewandivka:old_rug", "lewandivka:waterfall", "lewandivka:waterfall_up", "lewandivka:heavy_lever",
-            "lewandivka:battery_socket", "lewandivka:collar_stand", "lewandivka:paint_tap", "lewandivka:press_head",
-            "lewandivka:checkpoint_lamp", "lewandivka:seed_bowl", "lewandivka:queue_display", "lewandivka:ticket_machine");
 
     /** Blueprint used for reachability checks (movable parts drawn at every position). */
     public static Blueprint validationBlueprint(String id) {

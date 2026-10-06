@@ -12,6 +12,7 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.google.code.gson:gson:2.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -49,4 +50,21 @@ tasks.register('render', JavaExec) {
             systemProperty k, project.property(k)
         }
     }
+}
+
+// Writes every block key the generators can place to build/palette.txt (checked by tools/validate_registry.py)
+tasks.register('dumpPalette', JavaExec) {
+    group = 'verification'
+    description = 'Dumps all block keys used by the world generators'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.PaletteDump'
+    maxHeapSize = '1g'
+}
+
+tasks.register('dumpMarkers', JavaExec) {
+    group = 'verification'
+    description = 'Lists every marker of the quest structures (build/markers.txt)'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.MarkerDump'
+    maxHeapSize = '1g'
 }

@@ -412,10 +412,11 @@ public final class BlueprintBuilder {
             int maxX = Math.max(r[0], r2[0]);
             int minZ = Math.min(r[1], r2[1]);
             int maxZ = Math.max(r[1], r2[1]);
+            String name = uniqueName(other.id() + "." + m.name());
             if (m.isRegion()) {
-                region(other.id() + "." + m.name(), x + minX, y + m.y(), z + minZ, x + maxX, y + m.y() + m.sy() - 1, z + maxZ, m.data());
+                region(name, x + minX, y + m.y(), z + minZ, x + maxX, y + m.y() + m.sy() - 1, z + maxZ, m.data());
             } else {
-                marker(other.id() + "." + m.name(), x + r[0], y + m.y(), z + r[1], rotateData(m.data(), t));
+                marker(name, x + r[0], y + m.y(), z + r[1], rotateData(m.data(), t));
             }
         }
         return this;
@@ -423,6 +424,25 @@ public final class BlueprintBuilder {
 
     public BlueprintBuilder stamp(Blueprint other, int x, int y, int z) {
         return stamp(other, x, y, z, 0);
+    }
+
+    /** Marker names are unique inside a blueprint: later duplicates get a {@code #n} suffix. */
+    private String uniqueName(String base) {
+        String name = base;
+        int n = 2;
+        while (hasMarker(name)) {
+            name = base + "#" + n++;
+        }
+        return name;
+    }
+
+    private boolean hasMarker(String name) {
+        for (Blueprint.Marker m : markers) {
+            if (m.name().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Footprint size of a blueprint after {@code turns} quarter turns. */

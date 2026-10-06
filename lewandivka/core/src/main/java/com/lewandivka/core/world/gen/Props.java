@@ -259,7 +259,7 @@ public final class Props {
         return cached("flowers" + length, () -> {
             BlueprintBuilder b = new BlueprintBuilder("flowers", length, 1, 2);
             String[] kinds = {"minecraft:poppy", "minecraft:dandelion", "minecraft:cornflower", "minecraft:allium",
-                    "minecraft:azure_bluet", "minecraft:red_tulip", "minecraft:oxeye_daisy", "minecraft:short_grass"};
+                    "minecraft:azure_bluet", "minecraft:red_tulip", "minecraft:oxeye_daisy", "minecraft:grass"};
             for (int x = 0; x < length; x++) {
                 for (int z = 0; z < 2; z++) {
                     long h = Noise.hash(3, x, z);
@@ -316,9 +316,9 @@ public final class Props {
             for (int y = 0; y <= 3; y++) {
                 b.set(14, y, 4, Keys.ladder(Dir.NORTH));
             }
-            b.set(16, 2, 6, Keys.stairs("minecraft:smooth_stone_stairs", Dir.WEST, false));
-            b.set(17, 1, 6, Keys.stairs("minecraft:smooth_stone_stairs", Dir.WEST, false));
-            b.set(18, 0, 6, Keys.stairs("minecraft:smooth_stone_stairs", Dir.WEST, false));
+            b.set(16, 2, 6, Keys.stairs("minecraft:stone_stairs", Dir.WEST, false));
+            b.set(17, 1, 6, Keys.stairs("minecraft:stone_stairs", Dir.WEST, false));
+            b.set(18, 0, 6, Keys.stairs("minecraft:stone_stairs", Dir.WEST, false));
             b.set(16, 3, 6, "minecraft:spruce_fence").set(16, 3, 5, "minecraft:spruce_fence").set(16, 3, 7, "minecraft:spruce_fence");
             return b.build();
         });
@@ -369,7 +369,7 @@ public final class Props {
                             b.set(x, 1, z, Pal.LEAVES_FLOWER);
                         }
                     } else if (!edge && (h & 7) < 3) {
-                        String[] crops = {"minecraft:wheat[age=7]", "minecraft:carrots[age=7]", "minecraft:potatoes[age=7]", "minecraft:short_grass"};
+                        String[] crops = {"minecraft:wheat[age=7]", "minecraft:carrots[age=7]", "minecraft:potatoes[age=7]", "minecraft:grass"};
                         b.set(x, 0, z, crops[(int) ((h >>> 9) % crops.length)]);
                     }
                 }

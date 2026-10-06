@@ -1,5 +1,8 @@
 package com.lewandivka.core.structure;
 
+import com.lewandivka.core.registry.BlockSpec;
+import com.lewandivka.core.registry.ModBlocks;
+
 import java.util.Set;
 
 /**
@@ -27,18 +30,8 @@ public final class Materials {
         HAZARD
     }
 
-    /** Mod blocks that act as quest gates. */
-    private static final Set<String> GATES = Set.of(
-            "lewandivka:guard_door", "lewandivka:collector_door", "lewandivka:shelter_door",
-            "lewandivka:dash_door", "lewandivka:office_door", "lewandivka:colored_grate",
-            "minecraft:iron_door", "minecraft:iron_trapdoor");
-
-    /** Mod blocks without a full collision box. */
-    private static final Set<String> MOD_PASS = Set.of(
-            "lewandivka:crystal_cluster", "lewandivka:waterfall", "lewandivka:waterfall_up",
-            "lewandivka:colored_portal", "lewandivka:lore_note", "lewandivka:clue_prop", "lewandivka:old_rug",
-            "lewandivka:garage_plate", "lewandivka:spring_pad", "lewandivka:checkpoint_lamp",
-            "lewandivka:queue_display", "lewandivka:kiosk_foundation");
+    /** Vanilla blocks that are used as quest gates in some structures. */
+    private static final Set<String> VANILLA_GATES = Set.of("minecraft:iron_door", "minecraft:iron_trapdoor");
 
     private static final Set<String> PASS_EXACT = Set.of(
             "air", "cave_air", "void_air", "light", "structure_void", "barrier_none",
@@ -46,7 +39,7 @@ public final class Materials {
             "lantern", "soul_lantern", "chain", "end_rod", "lever", "rail", "powered_rail", "detector_rail",
             "activator_rail", "redstone_wire", "tripwire", "tripwire_hook", "string", "cobweb", "snow",
             "moss_carpet", "glow_lichen", "sculk_vein", "spore_blossom", "hanging_roots", "flower_pot",
-            "grass", "short_grass", "tall_grass", "fern", "large_fern", "dead_bush", "dandelion", "poppy",
+            "grass", "tall_grass", "fern", "large_fern", "dead_bush", "dandelion", "poppy",
             "blue_orchid", "allium", "azure_bluet", "red_tulip", "orange_tulip", "white_tulip", "pink_tulip",
             "oxeye_daisy", "cornflower", "lily_of_the_valley", "sunflower", "lilac", "rose_bush", "peony",
             "torchflower", "pitcher_plant", "pink_petals", "sweet_berry_bush", "brown_mushroom", "red_mushroom",
@@ -67,11 +60,18 @@ public final class Materials {
             return Kind.PASS;
         }
         String id = Keys.blockId(key);
-        if (GATES.contains(id)) {
+        if (VANILLA_GATES.contains(id)) {
             return Kind.GATE;
         }
         if (id.startsWith("lewandivka:")) {
-            return MOD_PASS.contains(id) ? Kind.PASS : Kind.SOLID;
+            BlockSpec spec = ModBlocks.forKey(id);
+            if (spec == null) {
+                return Kind.SOLID;
+            }
+            if (spec.behaviour == BlockSpec.Behaviour.GATE || spec.behaviour == BlockSpec.Behaviour.DASH_GATE) {
+                return Kind.GATE;
+            }
+            return spec.passable ? Kind.PASS : Kind.SOLID;
         }
         String name = id.substring(id.indexOf(':') + 1);
         switch (name) {

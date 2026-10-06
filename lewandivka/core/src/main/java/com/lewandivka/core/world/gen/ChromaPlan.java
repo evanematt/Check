@@ -53,14 +53,49 @@ public final class ChromaPlan implements WorldPlan {
     public static final int ASCENT_X = -78;
     public static final int ASCENT_Z = -72;
 
-    /** Circular flat areas under quest structures: {x, z, radius, y}. */
+    /** Circular flat areas under small quest structures: {x, z, radius, y}. */
     private static final int[][] PADS = {
             {BASE_X, BASE_Z, 20, BASE_Y},
-            {GARAGE_X, GARAGE_Z, 48, GARAGE_Y},
-            {SHELTER_X, SHELTER_Z, 30, SHELTER_Y},
-            {TOWER_X, TOWER_Z, 36, TOWER_Y},
             {ASCENT_X, ASCENT_Z, 14, 72},
     };
+
+    /** How far (in blocks) the terrain blends from a flat structure area into the natural height. */
+    private static final double BLEND = 16;
+
+    /** Flat rectangular areas under the large quest structures: {minX, minZ, maxX, maxZ, groundY}. */
+    private static final int[][] RECTS = {
+            rect(RainbowGarage.ORIGIN_X, RainbowGarage.ORIGIN_Z, RainbowGarage.SX, RainbowGarage.SZ, RainbowGarage.ORIGIN_Y + RainbowGarage.S),
+            rect(Shelter.ORIGIN_X, Shelter.ORIGIN_Z, Shelter.SX, Shelter.SZ, Shelter.ORIGIN_Y + Shelter.S),
+            rect(Aquapark.ORIGIN_X, Aquapark.ORIGIN_Z, Aquapark.SX, Aquapark.SZ, Aquapark.ORIGIN_Y + Aquapark.S),
+            rect(TowerApproach.ORIGIN_X, TowerApproach.ORIGIN_Z, TowerApproach.SX, TowerApproach.SZ, TowerApproach.ORIGIN_Y + TowerApproach.S),
+            rect(Tower.ORIGIN_X, Tower.ORIGIN_Z, Tower.SX, Tower.SZ, Tower.ORIGIN_Y + Tower.S),
+    };
+
+    private static int[] rect(int x, int z, int sx, int sz, int y) {
+        return new int[] {x, z, x + sx - 1, z + sz - 1, y};
+    }
+
+    /** Distance from a point to a rectangle (0 inside). */
+    private static double rectDistance(int x, int z, int[] r) {
+        double dx = Math.max(Math.max(r[0] - x, 0), x - r[2]);
+        double dz = Math.max(Math.max(r[1] - z, 0), z - r[3]);
+        return Math.hypot(dx, dz);
+    }
+
+    /** Ground level of the flat area containing the point, or -1. */
+    public static int flatGround(int x, int z) {
+        for (int[] r : RECTS) {
+            if (rectDistance(x, z, r) == 0) {
+                return r[4];
+            }
+        }
+        for (int[] p : PADS) {
+            if (Math.hypot(x - p[0], z - p[1]) <= p[2] - 2) {
+                return p[3];
+            }
+        }
+        return -1;
+    }
 
     private final List<StructurePlacement> placements = new ArrayList<>();
     private final List<MarkerPos> markers = new ArrayList<>();
@@ -136,11 +171,14 @@ public final class ChromaPlan implements WorldPlan {
         h = Noise.lerp(h, 71, scar);
         // aquapark crater
         double dl = Math.hypot(x - LAKE_X, z - LAKE_Z);
-        h = Noise.lerp(h, LAKE_Y + 2, Noise.smoothstep(66, 40, dl) * 0.97);
-        // pads under quest structures
+        h = Noise.lerp(h, LAKE_Y, Noise.smoothstep(66, 40, dl) * 0.97);
+        // flat areas under quest structures
         for (int[] p : PADS) {
             double d = Math.hypot(x - p[0], z - p[1]);
-            h = Noise.lerp(h, p[3], Noise.smoothstep(p[2] + 14, p[2], d));
+            h = Noise.lerp(h, p[3], Noise.smoothstep(p[2] + BLEND, p[2], d));
+        }
+        for (int[] r : RECTS) {
+            h = Noise.lerp(h, r[4], Noise.smoothstep(BLEND, 0, rectDistance(x, z, r)));
         }
         return h;
     }
@@ -163,11 +201,9 @@ public final class ChromaPlan implements WorldPlan {
         double d2 = Math.abs(x - xc);
         double f2 = (z > -95 && z < 145) ? Noise.smoothstep(9, 3.5, d2) : 0;
         double f = Math.max(f1, f2);
-        // never cut rivers through the quest pads
-        for (int[] p : PADS) {
-            if (Math.hypot(x - p[0], z - p[1]) < p[2] + 6) {
-                return 0;
-            }
+        // never cut rivers through the quest areas
+        if (nearPad(x, z, 6)) {
+            return 0;
         }
         if (Math.hypot(x - LAKE_X, z - LAKE_Z) < 70) {
             return 0;
@@ -265,7 +301,7 @@ public final class ChromaPlan implements WorldPlan {
         if (top.equals(Pal.GRASS) && ih >= WATER_Y && (biome.equals(MEADOW) || biome.equals(BASIN))) {
             int roll = (int) Math.floorMod(Noise.hash(SEED + 5, x, z), 100L);
             if (roll < 14) {
-                out.decor = "minecraft:short_grass";
+                out.decor = "minecraft:grass";
             } else if (roll < 17) {
                 out.decor = new String[] {"minecraft:allium", "minecraft:pink_tulip", "minecraft:azure_bluet", "minecraft:cornflower"}[roll % 4];
             }
@@ -274,9 +310,14 @@ public final class ChromaPlan implements WorldPlan {
 
     // ================================================================== scatter
 
-    private boolean nearPad(int x, int z, int extra) {
+    private static boolean nearPad(int x, int z, int extra) {
         for (int[] p : PADS) {
             if (Math.hypot(x - p[0], z - p[1]) < p[2] + extra) {
+                return true;
+            }
+        }
+        for (int[] r : RECTS) {
+            if (rectDistance(x, z, r) < extra) {
                 return true;
             }
         }
@@ -354,8 +395,15 @@ public final class ChromaPlan implements WorldPlan {
     }
 
     private void layout() {
-        // base house on its pad: bp (C, 0, C) sits on the pad centre
-        placements.add(new StructurePlacement("base", BaseHouse.base(), BASE_X - BaseHouse.C, BASE_Y - 1, BASE_Z - BaseHouse.C));
+        // base house on its pad: bp (C, 0, C) sits on the pad centre, layer 0 replaces the surface
+        placements.add(new StructurePlacement("base", BaseHouse.base(), BASE_X - BaseHouse.C, BASE_Y, BASE_Z - BaseHouse.C));
+        placements.add(new StructurePlacement("rainbow_garage", RainbowGarage.blueprint(), RainbowGarage.ORIGIN_X, RainbowGarage.ORIGIN_Y, RainbowGarage.ORIGIN_Z));
+        placements.add(new StructurePlacement("shelter", Shelter.blueprint(), Shelter.ORIGIN_X, Shelter.ORIGIN_Y, Shelter.ORIGIN_Z));
+        placements.add(new StructurePlacement("aquapark", Aquapark.blueprint(), Aquapark.ORIGIN_X, Aquapark.ORIGIN_Y, Aquapark.ORIGIN_Z));
+        placements.add(new StructurePlacement("sky_ascent", SkyAscent.blueprint(), SkyAscent.ORIGIN_X, SkyAscent.ORIGIN_Y, SkyAscent.ORIGIN_Z));
+        placements.add(new StructurePlacement("sky_depot", SkyDepot.blueprint(), SkyDepot.ORIGIN_X, SkyDepot.ORIGIN_Y, SkyDepot.ORIGIN_Z));
+        placements.add(new StructurePlacement("tower_approach", TowerApproach.blueprint(), TowerApproach.ORIGIN_X, TowerApproach.ORIGIN_Y, TowerApproach.ORIGIN_Z));
+        placements.add(new StructurePlacement("tower", Tower.blueprint(), Tower.ORIGIN_X, Tower.ORIGIN_Y, Tower.ORIGIN_Z));
         // decorative floating islands with waterfalls (the "waterfalls falling from islands")
         int[][] isles = {
                 {-40, 150, -30, 12, 1, 1}, {60, 172, -95, 14, 2, 1}, {132, 142, 62, 10, 3, -1}, {-120, 162, 22, 13, 4, 1},
@@ -370,6 +418,27 @@ public final class ChromaPlan implements WorldPlan {
             placements.add(new StructurePlacement("isle" + i[4], bp, i[0] - half, i[1] - depth - fall, i[2] - half));
         }
         marker("spawn", BASE_X, BASE_Y, BASE_Z + 2, "");
+        // the route of the sky tram from the lower stop (x -18..5 at z -70) to the depot's arrival rails
+        double[][] ride = {
+                {-14, 163.1, -70}, {5, 163.1, -70}, {30, 166, -73}, {58, 172, -76}, {88, 180, -86}, {112, 190, -112},
+                {118, 198, -150}, {112, 203.1, -176}, {122, 203.1, -181}, {138, 203.1, -181}
+        };
+        for (int i = 0; i < ride.length; i++) {
+            markers.add(new MarkerPos("chromandivka:sky_ride_" + i, (int) Math.floor(ride[i][0]), (int) Math.floor(ride[i][1]), (int) Math.floor(ride[i][2]), 1, 1, 1,
+                    ride[i][0] + "," + ride[i][1] + "," + ride[i][2]));
+        }
+    }
+
+    /** Waypoints of the sky tram route (feet position of the cabin), in driving order. */
+    public static double[][] skyRide() {
+        List<double[]> out = new ArrayList<>();
+        for (MarkerPos m : get().planMarkers()) {
+            if (m.id().startsWith("chromandivka:sky_ride_")) {
+                String[] parts = m.data().split(",");
+                out.add(new double[] {Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2])});
+            }
+        }
+        return out.toArray(new double[0][]);
     }
 
     /** Hook for the structure builders to register quest structures (added by the individual plans). */

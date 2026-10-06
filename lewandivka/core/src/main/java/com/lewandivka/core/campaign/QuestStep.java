@@ -70,15 +70,15 @@ public enum QuestStep {
     AQ_BOSS(32, 112, CampaignStage.AQUAPARK, 0, "aquapark:boss_door"),
 
     // --- SKY_DEPOT ---
-    SKY_ASCENT(33, 120, CampaignStage.SKY_DEPOT, 0, "sky:ascent_start"),
-    SKY_RIDE(34, 121, CampaignStage.SKY_DEPOT, 0, "sky:tram_stop_lower"),
-    SKY_SWITCHES(35, 122, CampaignStage.SKY_DEPOT, 0, "depot:dispatcher"),
-    SKY_TICKETS(36, 123, CampaignStage.SKY_DEPOT, 3, "depot:ticket_office"),
-    SKY_BOSS(37, 124, CampaignStage.SKY_DEPOT, 0, "depot:boss_door"),
+    SKY_ASCENT(33, 120, CampaignStage.SKY_DEPOT, 0, "sky_ascent:ascent_start"),
+    SKY_RIDE(34, 121, CampaignStage.SKY_DEPOT, 0, "sky_ascent:tram_stop_lower"),
+    SKY_SWITCHES(35, 122, CampaignStage.SKY_DEPOT, 0, "sky_depot:dispatcher"),
+    SKY_TICKETS(36, 123, CampaignStage.SKY_DEPOT, 3, "sky_depot:ticket_office"),
+    SKY_BOSS(37, 124, CampaignStage.SKY_DEPOT, 0, "sky_depot:boss_door"),
 
     // --- TOWER ---
     TOWER_RING(38, 130, CampaignStage.TOWER, 0, null),
-    TOWER_APPROACH(39, 131, CampaignStage.TOWER, 0, "tower:approach_start"),
+    TOWER_APPROACH(39, 131, CampaignStage.TOWER, 0, "tower_approach:approach_start"),
     TOWER_CLIMB(40, 132, CampaignStage.TOWER, 5, "tower:entrance"),
 
     // --- FINAL_BOSS ---

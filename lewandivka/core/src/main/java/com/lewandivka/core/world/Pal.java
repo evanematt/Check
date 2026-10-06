@@ -105,7 +105,7 @@ public final class Pal {
     public static final String GREY_VOID = "lewandivka:grey_void";
     public static final String PORTAL_FRAME = "lewandivka:portal_frame";
     public static final String GLOWSHROOM_STEM = "lewandivka:glowshroom_stem";
-    public static final String RAINBOW_LEAVES = Keys.of("lewandivka:rainbow_leaves", "persistent", "true", "distance", "1");
+    public static final String RAINBOW_LEAVES = "lewandivka:rainbow_leaves";
     public static final String OLD_RUG = "lewandivka:old_rug";
     public static final String KIOSK_FOUNDATION = "lewandivka:kiosk_foundation";
     public static final String GARAGE_LIFT = "lewandivka:garage_lift";
@@ -198,8 +198,8 @@ public final class Pal {
         return Keys.mod("crumbling_platform", "stage", String.valueOf(stage));
     }
 
-    public static String springHatch(String facing) {
-        return Keys.mod("spring_hatch", "facing", facing);
+    public static String springHatch(String ignored) {
+        return "lewandivka:spring_hatch";
     }
 
     public static String pedestal(String kind) {
@@ -215,7 +215,7 @@ public final class Pal {
     }
 
     public static String dashDoor() {
-        return Keys.mod("dash_door", "open", "false");
+        return "lewandivka:dash_door";
     }
 
     public static String officeDoor() {

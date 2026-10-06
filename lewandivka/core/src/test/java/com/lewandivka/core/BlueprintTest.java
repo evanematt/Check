@@ -124,7 +124,7 @@ class BlueprintTest {
     void materialsClassification() {
         assertEquals(Materials.Kind.PASS, Materials.classify("minecraft:air"));
         assertEquals(Materials.Kind.PASS, Materials.classify("minecraft:oak_wall_sign[facing=north]"));
-        assertEquals(Materials.Kind.PASS, Materials.classify("minecraft:short_grass"));
+        assertEquals(Materials.Kind.PASS, Materials.classify("minecraft:grass"));
         assertEquals(Materials.Kind.SOLID, Materials.classify("minecraft:grass_block"));
         assertEquals(Materials.Kind.SOLID, Materials.classify("minecraft:light_gray_concrete"));
         assertEquals(Materials.Kind.PASS, Materials.classify("minecraft:light[level=7]"));
