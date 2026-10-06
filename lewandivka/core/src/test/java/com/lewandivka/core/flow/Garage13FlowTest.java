@@ -1,6 +1,7 @@
 package com.lewandivka.core.flow;
 
 import com.lewandivka.core.flow.dungeon.Garage13Flow;
+import com.lewandivka.core.story.Events;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -45,7 +46,7 @@ class Garage13FlowTest {
         solveBreakers(f);
         assertTrue(env.record.flag("power.a"));
         assertEquals("true", env.station("breaker_2", "lit"));
-        assertEquals(1, env.progress);
+        assertEquals(1, env.eventCount(Events.G13_POWER));
     }
 
     @Test
@@ -99,9 +100,10 @@ class Garage13FlowTest {
         assertEquals("lewandivka:garage_plate[plate=13,facing=south]", env.blocks.get("plate_13"));
         assertEquals(1, env.spawned.get("g13.package:item:package"));
         assertEquals(2, env.checkpoint);
-        assertEquals(3, env.progress, "three power points counted on the quest step");
+        assertEquals(3, env.eventCount(Events.G13_POWER), "three power points counted on the quest step");
 
         f.packageTaken(A);
+        assertEquals(1, env.eventCount(Events.G13_PACKAGE_TAKEN));
         assertFalse(env.gateOpen("gate_main"), "the main gate closes");
         assertTrue(env.gateOpen("hatch"));
         assertEquals(3, env.spawned.get("g13.guard:gopnik") - 1, "solo gets about half of the guards (3) plus a tunnel guard");
@@ -118,7 +120,7 @@ class Garage13FlowTest {
         assertEquals(3, env.checkpoint);
         f.carrierReachedExit(A);
         assertTrue(f.complete());
-        assertEquals(4, env.progress);
+        assertEquals(1, env.eventCount(Events.G13_ESCAPED));
     }
 
     @Test

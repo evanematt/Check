@@ -90,8 +90,11 @@ public interface FlowEnv {
     void give(UUID player, String item, int count);
 
     // ------------------------------------------------------------------ campaign
-    /** Adds to the counter of the current quest step ("power points 2/3"). */
-    void stepProgress(int delta);
+    /** Reports a story event; the campaign director decides what it completes (see {@code Events}). */
+    void event(String id);
+
+    /** Sets the displayed counter of the current quest step for steps that are not counted by events (levers 2/3). */
+    void stepCounter(int value);
 
     /** Marks a checkpoint of this encounter; respawns after a death go to the marker {@code cp_<n>}. */
     void checkpoint(int index);

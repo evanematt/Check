@@ -29,6 +29,7 @@ jobs:
     timeout-minutes: 60
     defaults:
       run:
+        shell: bash
         working-directory: lewandivka
     steps:
       - uses: actions/checkout@v4
@@ -44,12 +45,15 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Prepare log folder
+        run: mkdir -p ../logs
+
       - name: Core unit tests (pure Java, no Minecraft)
-        run: ./gradlew -p core test --console=plain --stacktrace
+        run: ./gradlew -p core test --console=plain 2>&1 | tee ../logs/core-test.txt
 
       - name: Compile and remap the mod
         if: always()
-        run: ./gradlew build --console=plain --stacktrace
+        run: ./gradlew build --console=plain 2>&1 | tee ../logs/compile.txt
 
       - name: Fabric GameTests (headless dedicated server)
         if: always()
@@ -57,13 +61,34 @@ jobs:
         run: |
           mkdir -p build/gametest
           echo "eula=true" > build/gametest/eula.txt
-          ./gradlew runGametest --console=plain --stacktrace
+          ./gradlew runGametest --console=plain 2>&1 | tee ../logs/gametest.txt
 
       - name: Static resource validation
         if: always()
         run: |
           python3 -m pip install --quiet pillow numpy
           python3 tools/validate_resources.py
+
+      - name: Digest of problems
+        if: always()
+        run: |
+          for f in core-test compile gametest; do
+            if [ -f "../logs/$f.txt" ]; then
+              echo "=== $f ==="
+              grep -nE "error:|: error|FAILED|What went wrong|Caused by|Exception|\[ERROR\]|/ERROR\]|Failed to|Could not|Crash|crash|Test .* failed|passed|GameTest" "../logs/$f.txt" | grep -v "at org.gradle\|at java.base" | cut -c1-260 | head -70
+            fi
+          done
+          if [ -f build/junit.xml ]; then
+            echo "=== junit.xml ==="
+            python3 - <<'PY'
+          import re
+          s = open("build/junit.xml", encoding="utf-8").read()
+          print(re.findall(r"<testsuite[^>]*>", s)[:1])
+          for m in re.finditer(r'<testcase name="([^"]+)"[^>]*?(/>|>(.*?)</testcase>)', s, re.S):
+              body = m.group(3) or ""
+              print(("FAIL " if "<failure" in body or "<error" in body else "ok   ") + m.group(1), re.sub(r"\s+", " ", body)[:300])
+          PY
+          fi
 
       - name: Upload test reports
         if: always()
@@ -74,6 +99,7 @@ jobs:
             lewandivka/core/build/reports
             lewandivka/build/reports
             lewandivka/build/junit.xml
+            logs
             lewandivka/build/gametest/logs
             lewandivka/build/gametest/crash-reports
           if-no-files-found: ignore

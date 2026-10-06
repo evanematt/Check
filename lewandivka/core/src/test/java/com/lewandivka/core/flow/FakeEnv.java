@@ -30,6 +30,7 @@ public class FakeEnv implements FlowEnv {
     public final Map<String, Integer> spawned = new HashMap<>();
     public final Map<String, Integer> given = new HashMap<>();
     public int progress;
+    public final List<String> events = new ArrayList<>();
     public int checkpoint = -1;
     public final List<String> dialogues = new ArrayList<>();
     public final List<String> sounds = new ArrayList<>();
@@ -201,8 +202,17 @@ public class FakeEnv implements FlowEnv {
     }
 
     @Override
-    public void stepProgress(int delta) {
-        progress += delta;
+    public void event(String id) {
+        events.add(id);
+    }
+
+    @Override
+    public void stepCounter(int value) {
+        progress = value;
+    }
+
+    public long eventCount(String id) {
+        return events.stream().filter(id::equals).count();
     }
 
     @Override

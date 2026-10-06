@@ -6,6 +6,7 @@ import com.lewandivka.core.flow.mechanism.DeadlineSwitch;
 import com.lewandivka.core.flow.mechanism.LeverPattern;
 import com.lewandivka.core.flow.mechanism.OrderedSequence;
 import com.lewandivka.core.flow.mechanism.SyncPresses;
+import com.lewandivka.core.story.Events;
 import com.lewandivka.core.world.gen.GarageComplex;
 
 import java.util.List;
@@ -68,6 +69,11 @@ public final class Garage13Flow implements Flow {
         return n;
     }
 
+    @Override
+    public void playerEntered(UUID player) {
+        env.event(Events.G13_ENTERED);
+    }
+
     // ------------------------------------------------------------------ stations
     @Override
     public boolean use(String marker, UUID player) {
@@ -114,7 +120,7 @@ public final class Garage13Flow implements Flow {
         }
         env.block("lamp_" + point, "minecraft:redstone_lamp[lit=true]");
         env.sound("lamp_" + point, "garage.power_on");
-        env.stepProgress(1);
+        env.event(Events.G13_POWER);
         env.checkpoint(1);
         int n = powerPoints();
         env.say(null, "message.lewandivka.garage.power", n);
@@ -152,6 +158,7 @@ public final class Garage13Flow implements Flow {
             }
             env.spawn("gopnik", "tunnel_guard", Math.max(1, env.party().adds(2)), GUARDS);
             env.checkpoint(2);
+            env.event(Events.G13_PACKAGE_TAKEN);
         }
         scheduleGrowl();
     }
@@ -195,7 +202,7 @@ public final class Garage13Flow implements Flow {
         operator.reset();
         env.despawn(GUARDS);
         env.sound("exit", "ui.checkpoint");
-        env.stepProgress(1);
+        env.event(Events.G13_ESCAPED);
         nextGrowl = -1;
     }
 
