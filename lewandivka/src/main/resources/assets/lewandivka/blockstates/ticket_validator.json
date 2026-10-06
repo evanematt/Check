@@ -1,0 +1,444 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "symbol": "0",
+        "active": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_none",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "0",
+        "active": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_none",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "0",
+        "active": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_none",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "0",
+        "active": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_none",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "0",
+        "active": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_none_active",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "0",
+        "active": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_none_active",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "0",
+        "active": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_none_active",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "0",
+        "active": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_none_active",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "1",
+        "active": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_cross",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "1",
+        "active": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_cross",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "1",
+        "active": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_cross",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "1",
+        "active": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_cross",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "1",
+        "active": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_cross_active",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "1",
+        "active": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_cross_active",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "1",
+        "active": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_cross_active",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "1",
+        "active": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_cross_active",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "2",
+        "active": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_circle",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "2",
+        "active": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_circle",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "2",
+        "active": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_circle",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "2",
+        "active": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_circle",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "2",
+        "active": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_circle_active",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "2",
+        "active": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_circle_active",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "2",
+        "active": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_circle_active",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "2",
+        "active": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_circle_active",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "3",
+        "active": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_triangle",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "3",
+        "active": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_triangle",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "3",
+        "active": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_triangle",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "3",
+        "active": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_triangle",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "3",
+        "active": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_triangle_active",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "3",
+        "active": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_triangle_active",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "3",
+        "active": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_triangle_active",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "3",
+        "active": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_triangle_active",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "4",
+        "active": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_square",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "4",
+        "active": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_square",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "4",
+        "active": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_square",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "4",
+        "active": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_square",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "symbol": "4",
+        "active": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_square_active",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "symbol": "4",
+        "active": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_square_active",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "symbol": "4",
+        "active": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_square_active",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "symbol": "4",
+        "active": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/ticket_validator_square_active",
+        "y": 270
+      }
+    }
+  ]
+}

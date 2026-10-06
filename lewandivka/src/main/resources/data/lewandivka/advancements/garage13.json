@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:garage13_note"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.garage13.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.garage13.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:debtor"
+}

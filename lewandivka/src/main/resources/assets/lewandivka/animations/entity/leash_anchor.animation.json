@@ -1,0 +1,74 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.leash_anchor.idle": {
+   "animation_length": 2.0,
+   "bones": {
+    "ring": {
+     "position": {
+      "0": [
+       0,
+       0,
+       0
+      ],
+      "1": [
+       0,
+       1.2,
+       0
+      ],
+      "2": [
+       0,
+       0,
+       0
+      ]
+     },
+     "rotation": {
+      "0": [
+       0,
+       0,
+       0
+      ],
+      "2": [
+       0,
+       360,
+       0
+      ]
+     }
+    }
+   },
+   "loop": true
+  },
+  "animation.leash_anchor.break": {
+   "animation_length": 0.8,
+   "bones": {
+    "stake": {
+     "scale": {
+      "0": [
+       1,
+       1,
+       1
+      ],
+      "0.8": [
+       0.01,
+       0.01,
+       0.01
+      ]
+     },
+     "rotation": {
+      "0": [
+       0,
+       0,
+       0
+      ],
+      "0.8": [
+       90,
+       0,
+       40
+      ]
+     }
+    }
+   },
+   "loop": "hold_on_last_frame"
+  }
+ }
+}

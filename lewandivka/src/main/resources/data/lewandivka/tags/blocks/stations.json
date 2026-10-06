@@ -1,0 +1,24 @@
+{
+  "replace": false,
+  "values": [
+    "lewandivka:abandoned_kiosk",
+    "lewandivka:supply_stash",
+    "lewandivka:clue_prop",
+    "lewandivka:lore_note",
+    "lewandivka:garage_power_panel",
+    "lewandivka:heavy_lever",
+    "lewandivka:ticket_validator",
+    "lewandivka:artifact_pedestal",
+    "lewandivka:checkpoint_lamp",
+    "lewandivka:ticket_machine",
+    "lewandivka:cardboard_box",
+    "lewandivka:seed_bowl",
+    "lewandivka:paint_tap",
+    "lewandivka:battery_socket",
+    "lewandivka:collar_stand",
+    "lewandivka:pump_control",
+    "lewandivka:water_drain",
+    "lewandivka:tram_switch",
+    "lewandivka:chromatic_relay"
+  ]
+}

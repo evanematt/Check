@@ -1,0 +1,268 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "kind": "0",
+        "lit": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_breaker",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "kind": "0",
+        "lit": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_breaker",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "kind": "0",
+        "lit": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_breaker",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "kind": "0",
+        "lit": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_breaker",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "kind": "0",
+        "lit": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_breaker_lit",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "kind": "0",
+        "lit": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_breaker_lit",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "kind": "0",
+        "lit": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_breaker_lit",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "kind": "0",
+        "lit": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_breaker_lit",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "lit": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_console",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "lit": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_console",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "lit": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_console",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "lit": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_console",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "lit": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_console_lit",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "lit": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_console_lit",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "lit": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_console_lit",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "lit": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_console_lit",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "lit": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_switchbox",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "lit": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_switchbox",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "lit": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_switchbox",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "lit": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_switchbox",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "lit": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_switchbox_lit",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "lit": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_switchbox_lit",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "lit": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_switchbox_lit",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "lit": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/garage_power_panel_switchbox_lit",
+        "y": 270
+      }
+    }
+  ]
+}

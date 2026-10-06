@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "lewandivka:guard_door",
+    "lewandivka:colored_grate",
+    "lewandivka:shelter_door",
+    "lewandivka:collector_door",
+    "lewandivka:dash_door"
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "lewandivka:block/pad_base",
+  "textures": {
+    "top": "lewandivka:block/spring_pad_up",
+    "side": "lewandivka:block/spring_pad_side"
+  }
+}

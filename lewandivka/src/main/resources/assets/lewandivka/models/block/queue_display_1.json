@@ -1,0 +1,6 @@
+{
+  "parent": "lewandivka:block/plate_base",
+  "textures": {
+    "tex": "lewandivka:block/queue_display_1"
+  }
+}

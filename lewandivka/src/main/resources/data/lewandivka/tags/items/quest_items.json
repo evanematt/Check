@@ -1,0 +1,27 @@
+{
+  "replace": false,
+  "values": [
+    "lewandivka:district_notebook",
+    "lewandivka:debtor_note",
+    "lewandivka:garage13_note",
+    "lewandivka:last_tram_note",
+    "lewandivka:magic_kettle",
+    "lewandivka:package",
+    "lewandivka:ticket_composter",
+    "lewandivka:chroma_tablet",
+    "lewandivka:chromatic_compass",
+    "lewandivka:lift_battery",
+    "lewandivka:cat_fish",
+    "lewandivka:collar_chinazik",
+    "lewandivka:collar_metadonna",
+    "lewandivka:ticket_cross",
+    "lewandivka:ticket_circle",
+    "lewandivka:ticket_triangle",
+    "lewandivka:ticket_square",
+    "lewandivka:ring_fragment_garage",
+    "lewandivka:ring_fragment_collector",
+    "lewandivka:ring_fragment_vortex",
+    "lewandivka:ring_fragment_conductor",
+    "lewandivka:chromatic_charge"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "kind": "0",
+        "filled": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/artifact_pedestal_kettle"
+      }
+    },
+    {
+      "when": {
+        "kind": "0",
+        "filled": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/artifact_pedestal_kettle_filled"
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "filled": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/artifact_pedestal_package"
+      }
+    },
+    {
+      "when": {
+        "kind": "1",
+        "filled": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/artifact_pedestal_package_filled"
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "filled": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/artifact_pedestal_composter"
+      }
+    },
+    {
+      "when": {
+        "kind": "2",
+        "filled": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/artifact_pedestal_composter_filled"
+      }
+    },
+    {
+      "when": {
+        "kind": "3",
+        "filled": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/artifact_pedestal_token"
+      }
+    },
+    {
+      "when": {
+        "kind": "3",
+        "filled": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/artifact_pedestal_token_filled"
+      }
+    }
+  ]
+}

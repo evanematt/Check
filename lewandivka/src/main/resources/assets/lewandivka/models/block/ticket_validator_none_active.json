@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "lewandivka:block/ticket_validator_none_active_front",
+    "side": "lewandivka:block/ticket_validator_side",
+    "top": "lewandivka:block/ticket_validator_top"
+  }
+}

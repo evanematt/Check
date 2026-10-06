@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:chroma_tablet"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.other_side.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.other_side.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:last_tram"
+}

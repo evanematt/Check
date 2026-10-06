@@ -1,0 +1,20 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "lit": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/checkpoint_lamp"
+      }
+    },
+    {
+      "when": {
+        "lit": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/checkpoint_lamp_lit"
+      }
+    }
+  ]
+}

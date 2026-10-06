@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "lewandivka:block/paint_tap_yellow_lit_front",
+    "side": "lewandivka:block/paint_tap_side",
+    "top": "lewandivka:block/paint_tap_top"
+  }
+}

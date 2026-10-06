@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "lewandivka:block/crystal_cluster_green"
+  }
+}
