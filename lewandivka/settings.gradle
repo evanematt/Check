@@ -1,0 +1,11 @@
+pluginManagement {
+    repositories {
+        maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+// The Minecraft-independent core lives in ./core: it has its own standalone build (gradle -p core test)
+// and its sources are also compiled into the mod jar by this build.
+rootProject.name = 'lewandivka'

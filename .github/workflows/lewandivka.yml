@@ -1,0 +1,73 @@
+name: Lewandivka CI
+
+# Builds and tests the Fabric mod «Левандівка: по той бік району» (directory lewandivka/).
+# Everything that can be verified without Minecraft (core tests, static resource validation) runs first,
+# then the Loom build compiles and remaps the jar against Minecraft 1.20.1.
+on:
+  push:
+    branches: ['claude/determined-clarke-eigmli']
+    paths:
+      - 'lewandivka/**'
+      - '.github/workflows/lewandivka.yml'
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish the built artifacts as a GitHub pre-release'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lewandivka-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: lewandivka
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Core unit tests (pure Java, no Minecraft)
+        run: ./gradlew -p core test --console=plain --stacktrace
+
+      - name: Static resource validation
+        run: |
+          python3 -m pip install --quiet pillow numpy
+          python3 tools/validate_resources.py
+
+      - name: Compile and remap the mod
+        run: ./gradlew build --console=plain --stacktrace
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            lewandivka/core/build/reports
+            lewandivka/build/reports
+          if-no-files-found: ignore
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: lewandivka-jar
+          path: |
+            lewandivka/build/libs/*.jar
