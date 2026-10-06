@@ -140,6 +140,25 @@ public interface FlowEnv {
     /** Plays a named cinematic (letterbox, title, camera) for everybody in the structure. */
     void cinematic(String id);
 
+    // ------------------------------------------------------------------ trams (the depot car and the sky tram)
+    /**
+     * Drives the tram with this tag along the markers (full marker ids or names of this structure); the tram is created
+     * at the first marker when it does not exist yet. Blocks per tick.
+     */
+    void tramDrive(String tag, List<String> markers, double speed);
+
+    /** True while the tram with the tag is still driving. */
+    boolean tramBusy(String tag);
+
+    /** Players sit down on the tram. */
+    void tramBoard(String tag, List<UUID> players);
+
+    /** Enemies that ride along on the tram (they attack the riders and can be knocked off). */
+    void tramBoardMobs(String tag, String entity, int count, String mobTag);
+
+    /** Removes the tram; its riders are put at the marker (null leaves them where they are). */
+    void tramClear(String tag, String dismountMarker);
+
     // ------------------------------------------------------------------ campaign
     /** Reports a story event; the campaign director decides what it completes (see {@code Events}). */
     void event(String id);

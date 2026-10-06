@@ -78,7 +78,7 @@ public final class Abilities {
         p.addVelocity(dir.x * 1.45, p.isOnGround() ? 0.22 : 0.05, dir.z * 1.45);
         p.velocityModified = true;
         p.fallDistance = 0;
-        p.getServerWorld().playSound(null, p.getBlockPos(), GameSounds.get("ability.dash_1"), SoundCategory.PLAYERS, 1.0f, 1.0f);
+        p.getServerWorld().playSound(null, p.getBlockPos(), GameSounds.get("ability.dash"), SoundCategory.PLAYERS, 1.0f, 1.0f);
         Net.cooldown(p, Ability.DASH, Ability.DASH.cooldownTicks);
     }
 
@@ -122,6 +122,9 @@ public final class Abilities {
     public static void tick(MinecraftServer server) {
         for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
             State s = STATES.get(p.getUuid());
+            if (s != null && valid(p) && p.getServerWorld().getTime() <= s.dashActiveUntil) {
+                DashDoors.check(p);
+            }
             if (s == null || !s.gliding) {
                 continue;
             }

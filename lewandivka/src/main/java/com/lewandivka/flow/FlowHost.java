@@ -3,11 +3,16 @@ package com.lewandivka.flow;
 import com.lewandivka.LewandivkaMod;
 import com.lewandivka.campaign.Campaign;
 import com.lewandivka.core.flow.Flow;
+import com.lewandivka.core.flow.dungeon.AquaparkFlow;
 import com.lewandivka.core.flow.dungeon.BaseFlow;
 import com.lewandivka.core.flow.dungeon.Garage13Flow;
 import com.lewandivka.core.flow.dungeon.LastTramFlow;
 import com.lewandivka.core.flow.dungeon.RainbowGarageFlow;
 import com.lewandivka.core.flow.dungeon.ShelterFlow;
+import com.lewandivka.core.flow.dungeon.SkyAscentFlow;
+import com.lewandivka.core.flow.dungeon.SkyDepotFlow;
+import com.lewandivka.core.flow.dungeon.TowerApproachFlow;
+import com.lewandivka.core.flow.dungeon.TowerFlow;
 import com.lewandivka.world.dimension.Dimensions;
 import com.lewandivka.world.structure.Structures;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -53,7 +58,13 @@ public final class FlowHost {
         FACTORIES.put("base", BaseFlow::new);
         FACTORIES.put("rainbow_garage", RainbowGarageFlow::new);
         FACTORIES.put("shelter", ShelterFlow::new);
+        FACTORIES.put("aquapark", AquaparkFlow::new);
+        FACTORIES.put("sky_ascent", SkyAscentFlow::new);
+        FACTORIES.put("sky_depot", SkyDepotFlow::new);
+        FACTORIES.put("tower_approach", TowerApproachFlow::new);
+        FACTORIES.put("tower", TowerFlow::new);
         MARGINS.put("tram_stop", 70);
+        MARGINS.put("sky_ascent", 400);            // the sky tram leaves the structure on its two minute ride
     }
 
     private FlowHost() {
@@ -70,6 +81,11 @@ public final class FlowHost {
 
     public static Iterable<String> structures() {
         return FACTORIES.keySet();
+    }
+
+    /** How far outside its box a structure still counts as "inside" (the sky tram ride, the last tram fight). */
+    public static int margin(String structure) {
+        return MARGINS.getOrDefault(structure, 10);
     }
 
     /** The flow of a structure, created and rebuilt on first use; null for structures without a flow. */
@@ -150,7 +166,7 @@ public final class FlowHost {
             if (site == null) {
                 continue;
             }
-            var players = com.lewandivka.campaign.PartyService.inStructure(server, structure, MARGINS.getOrDefault(structure, 10));
+            var players = com.lewandivka.campaign.PartyService.inStructure(server, structure, margin(structure));
             Slot s = SLOTS.get(structure);
             if (players.isEmpty()) {
                 if (s != null && s.occupied) {

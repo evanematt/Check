@@ -5,17 +5,20 @@ import com.lewandivka.campaign.Campaign;
 import com.lewandivka.campaign.PartyService;
 import com.lewandivka.core.campaign.EncounterRecord;
 import com.lewandivka.core.campaign.WorldProgress;
+import com.lewandivka.core.flow.Checkpoints;
 import com.lewandivka.core.flow.FlowEnv;
 import com.lewandivka.core.scale.PartyScale;
 import com.lewandivka.entity.FareDodgerEntity;
 import com.lewandivka.entity.GameEntities;
 import com.lewandivka.entity.GopnikEntity;
 import com.lewandivka.entity.boss.BossEntity;
+import com.lewandivka.entity.vehicle.TramEntity;
 import com.lewandivka.entity.npc.CatEntity;
 import com.lewandivka.quest.Cinematics;
 import com.lewandivka.quest.Dialogues;
 import com.lewandivka.quest.QuestInventory;
 import com.lewandivka.quest.Story;
+import com.lewandivka.quest.Travel;
 import com.lewandivka.quest.TimeControl;
 import com.lewandivka.sound.GameSounds;
 import com.lewandivka.world.dimension.Dimensions;
@@ -89,7 +92,7 @@ public final class GameEnv implements FlowEnv {
     }
 
     private List<ServerPlayerEntity> insidePlayers() {
-        return PartyService.inStructure(server, structure, 12);
+        return PartyService.inStructure(server, structure, Math.max(12, FlowHost.margin(structure)));
     }
 
     // ------------------------------------------------------------------ FlowEnv
@@ -257,6 +260,9 @@ public final class GameEnv implements FlowEnv {
             }
             if (e instanceof GopnikEntity g) {
                 g.setMood(GopnikEntity.Mood.HOSTILE);
+            }
+            if (e instanceof CatEntity cat && tag.startsWith("cat.helper")) {
+                cat.setHelper(true);
             }
             e.addCommandTag(TAG + tag);
             w.spawnEntity(e);
@@ -522,7 +528,8 @@ public final class GameEnv implements FlowEnv {
     public void checkpoint(int index) {
         EncounterRecord r = record();
         r.setCheckpoint(index);
-        Marker m = Structures.marker(structure + ":cp_" + index);
+        String name = Checkpoints.marker(structure, index);
+        Marker m = Structures.marker(structure + ":" + (name == null ? "spawn" : name));
         if (m != null && level() != null) {
             for (ServerPlayerEntity p : insidePlayers()) {
                 p.setSpawnPoint(level().getRegistryKey(), m.pos().up(), 0.0f, true, false);
@@ -533,6 +540,124 @@ public final class GameEnv implements FlowEnv {
                 p.sendMessage(Text.translatable("hud.lewandivka.checkpoint"), true);
             }
         }
+    }
+
+    // ------------------------------------------------------------------ trams
+
+    private final java.util.Map<String, UUID> trams = new java.util.HashMap<>();
+
+    private TramEntity tram(String tag) {
+        UUID id = trams.get(tag);
+        if (id == null || level() == null) {
+            return null;
+        }
+        Entity e = level().getEntity(id);
+        return e instanceof TramEntity t && t.isAlive() ? t : null;
+    }
+
+    /** Exact feet position of a tram waypoint: sky route markers carry their coordinates, other markers stand on the block. */
+    private Vec3d waypoint(String name) {
+        Marker m = marker(name);
+        if (m == null) {
+            return Vec3d.ZERO;
+        }
+        String[] parts = m.data().split(",");
+        if (parts.length == 3) {
+            try {
+                return new Vec3d(Double.parseDouble(parts[0]), Double.parseDouble(parts[1]), Double.parseDouble(parts[2]));
+            } catch (NumberFormatException ignored) {
+                // an ordinary marker whose data happens to contain commas
+            }
+        }
+        return m.isRegion() ? m.center() : m.stand();
+    }
+
+    @Override
+    public void tramDrive(String tag, List<String> markers, double speed) {
+        if (level() == null || markers.isEmpty()) {
+            return;
+        }
+        List<Vec3d> path = new ArrayList<>();
+        for (String m : markers) {
+            path.add(waypoint(m));
+        }
+        TramEntity t = tram(tag);
+        if (t == null) {
+            t = (TramEntity) GameEntities.<TramEntity>type("sky_tram").create(level());
+            if (t == null) {
+                return;
+            }
+            t.addCommandTag(TAG + "tram." + tag);
+            t.refreshPositionAndAngles(path.get(0).x, path.get(0).y, path.get(0).z, 0.0f, 0.0f);
+            level().getChunk(BlockPos.ofFloored(path.get(0)));
+            level().spawnEntity(t);
+            trams.put(tag, t.getUuid());
+        }
+        t.drive(path, speed, false, 0, null);
+    }
+
+    @Override
+    public boolean tramBusy(String tag) {
+        TramEntity t = tram(tag);
+        return t != null && t.driving();
+    }
+
+    @Override
+    public void tramBoard(String tag, List<UUID> players) {
+        TramEntity t = tram(tag);
+        if (t == null) {
+            return;
+        }
+        for (UUID id : players) {
+            ServerPlayerEntity p = server.getPlayerManager().getPlayer(id);
+            if (p != null && !p.hasVehicle()) {
+                p.startRiding(t, true);
+            }
+        }
+    }
+
+    @Override
+    public void tramBoardMobs(String tag, String entity, int count, String mobTag) {
+        TramEntity t = tram(tag);
+        if (t == null || !GameEntities.has(entity)) {
+            return;
+        }
+        for (int i = 0; i < count; i++) {
+            Entity e = GameEntities.<Entity>type(entity).create(level());
+            if (e == null) {
+                continue;
+            }
+            e.refreshPositionAndAngles(t.getX(), t.getY() + 1.0, t.getZ(), 0.0f, 0.0f);
+            if (e instanceof MobEntity mob) {
+                mob.initialize(level(), level().getLocalDifficulty(mob.getBlockPos()), net.minecraft.entity.SpawnReason.EVENT, null, null);
+                mob.setPersistent();
+            }
+            if (e instanceof GopnikEntity g) {
+                g.setMood(GopnikEntity.Mood.HOSTILE);
+            }
+            e.addCommandTag(TAG + mobTag);
+            level().spawnEntity(e);
+            e.startRiding(t, true);
+        }
+    }
+
+    @Override
+    public void tramClear(String tag, String dismountMarker) {
+        TramEntity t = tram(tag);
+        trams.remove(tag);
+        if (t == null) {
+            return;
+        }
+        List<Entity> riders = new ArrayList<>(t.getPassengerList());
+        t.removeAllPassengers();
+        for (Entity e : riders) {
+            if (e instanceof ServerPlayerEntity p && dismountMarker != null) {
+                Travel.toMarker(p, dismountMarker.indexOf(':') >= 0 ? dismountMarker : structure + ":" + dismountMarker);
+            } else if (!(e instanceof ServerPlayerEntity)) {
+                e.discard();
+            }
+        }
+        t.discard();
     }
 
     @Override

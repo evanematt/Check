@@ -165,7 +165,9 @@ UI = {
     "message.lewandivka.sky.arrived": ("Трамвайне депо над небом", "Depot Above the Sky"),
     "message.lewandivka.switch.wrong": ("Вагон упирається в тупик і котиться назад", "The car hits a buffer stop and rolls back"),
     "message.lewandivka.switch.ok": ("Колія вільна: вагон доїхав до каси", "The way is clear: the car reached the ticket office"),
-    "message.lewandivka.ticket.got": ("Квиток: %s", "Ticket: %s"),
+    "message.lewandivka.ticket.got": ("Квиток отримано", "Ticket received"),
+    "message.lewandivka.ticket.have_all": ("У вас уже є всі квитки", "You already have all the tickets"),
+    "message.lewandivka.approach.door": ("Двері %s з %s відчинено", "Door %s of %s is open"),
     "message.lewandivka.ticket.validated": ("Квиток дійсний", "The ticket is valid"),
     "message.lewandivka.ticket.invalid": ("Квиток недійсний", "The ticket is invalid"),
     "message.lewandivka.conductor.warning": ("Дзвінок! Трамвай на колії %s", "A bell! A tram on track %s"),
@@ -215,6 +217,7 @@ UI = {
     "message.lewandivka.shlahbaum.need_package": ("Пан Шлагбаум мовчки дивиться на ваші руки. Посилки немає.", "Mr. Shlahbaum silently looks at your hands. No package."),
     "message.lewandivka.welcome": ("Район вас не чекав. Але й не проти.", "The district did not expect you. It does not mind."),
     "bossbar.lewandivka.chroma": ("ХРОМА", "CHROMA"),
+    "message.lewandivka.fall_recovered": ("Ви зірвалися. Контрольна точка поруч.", "You slipped. The checkpoint is near."),
     # ---- config
     "config.lewandivka.title": ("Налаштування Левандівки", "Lewandivka Settings"),
     "config.lewandivka.screen_shake": ("Тряска екрана", "Screen shake"),

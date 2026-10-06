@@ -331,10 +331,51 @@ public class FakeEnv implements FlowEnv {
         resistance.put(entity, factor);
     }
 
+    public boolean bossAccepts = true;
+
     @Override
     public boolean bossStation(String entity, String action, int index, UUID player) {
         stationCalls.add(entity + ":" + action + ":" + index);
-        return true;
+        return bossAccepts;
+    }
+
+    public final Map<String, List<String>> tramRoutes = new HashMap<>();
+    public final Map<String, Long> tramBusyUntil = new HashMap<>();
+    public final Map<String, List<UUID>> tramRiders = new HashMap<>();
+    public final List<String> tramMobs = new ArrayList<>();
+    public final List<String> tramCleared = new ArrayList<>();
+    public double tramSpeed;
+    public long tramTicks = 100;
+
+    @Override
+    public void tramDrive(String tag, List<String> markers, double speed) {
+        tramRoutes.put(tag, List.copyOf(markers));
+        tramSpeed = speed;
+        tramBusyUntil.put(tag, now + tramTicks);
+    }
+
+    @Override
+    public boolean tramBusy(String tag) {
+        return tramBusyUntil.getOrDefault(tag, 0L) > now;
+    }
+
+    @Override
+    public void tramBoard(String tag, List<UUID> players) {
+        tramRiders.put(tag, List.copyOf(players));
+    }
+
+    @Override
+    public void tramBoardMobs(String tag, String entity, int count, String mobTag) {
+        entity(entity);
+        tramMobs.add(entity + "x" + count);
+        spawned.merge(mobTag + ":" + entity, count, Integer::sum);
+    }
+
+    @Override
+    public void tramClear(String tag, String dismountMarker) {
+        tramCleared.add(tag + "->" + dismountMarker);
+        tramBusyUntil.remove(tag);
+        tramRiders.remove(tag);
     }
 
     @Override

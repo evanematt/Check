@@ -254,6 +254,28 @@ def check_source_ids() -> None:
                 bad(f"{src.relative_to(ROOT)}: 'minecraft:{name}' does not exist in Minecraft 1.20.1")
 
 
+def check_source_refs() -> None:
+    """Catalog ids written as string literals in the game code must exist (a typo would only crash at runtime)."""
+    sounds = {x["id"] for x in spec("sounds")}
+    items = {x["id"] for x in spec("items")}
+    blocks = {x["id"] for x in spec("blocks")}
+    entities = {x["id"] for x in spec("entities")}
+    checks = [
+        (re.compile(r'GameSounds\.(?:get|has)\("([^"]+)"\)'), sounds, "sound"),
+        (re.compile(r'\w*SoundId\(\)\s*\{\s*return "([^"]+)";'), sounds, "sound"),
+        (re.compile(r'GameItems\.(?:get|stack)\("([^"]+)"'), items, "item"),
+        (re.compile(r'GameBlocks\.get\("([^"]+)"\)'), blocks, "block"),
+        (re.compile(r'GameEntities\.(?:type|has)\("([^"]+)"\)'), entities, "entity"),
+        (re.compile(r'(?:NpcSpawns\.once|spawn)\(\w+, "([a-z_]+)"'), entities, "entity"),
+    ]
+    for src in list((ROOT / "src").rglob("*.java")):
+        text = src.read_text(encoding="utf-8")
+        for rx, known, kind in checks:
+            for ref in rx.findall(text):
+                if ref not in known:
+                    bad(f"{src.relative_to(ROOT)}: unknown {kind} '{ref}'")
+
+
 def main() -> int:
     check_json_syntax()
     check_models()
@@ -263,6 +285,7 @@ def main() -> int:
     check_sounds()
     check_data()
     check_source_ids()
+    check_source_refs()
     if problems:
         print(f"{len(problems)} problem(s):")
         for p in problems[:200]:
