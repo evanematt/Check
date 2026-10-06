@@ -28,11 +28,12 @@ public final class RenderMain {
                 ys.add(Integer.parseInt(s.trim()));
             }
         }
-        for (Blueprint bp : Catalog.namedBlueprints().values()) {
-            if (!ids.isBlank() && !List.of(ids.split(",")).contains(bp.id())) {
+        for (java.util.Map.Entry<String, Blueprint> entry : Catalog.namedBlueprints().entrySet()) {
+            Blueprint bp = entry.getValue();
+            if (!ids.isBlank() && !List.of(ids.split(",")).contains(entry.getKey())) {
                 continue;
             }
-            String base = bp.id().replace(':', '_');
+            String base = entry.getKey().replace(':', '_');
             BlueprintRenderer.save(BlueprintRenderer.top(bp, scale), new File(out, base + "_top.png"));
             BlueprintRenderer.save(BlueprintRenderer.front(bp, scale), new File(out, base + "_front.png"));
             BlueprintRenderer.save(BlueprintRenderer.side(bp, scale), new File(out, base + "_side.png"));
@@ -49,7 +50,7 @@ public final class RenderMain {
                     BlueprintRenderer.save(BlueprintRenderer.slice(bp, y, scale), new File(out, base + "_y" + y + ".png"));
                 }
             }
-            System.out.println("rendered " + bp.id() + " " + bp.sizeX() + "x" + bp.sizeY() + "x" + bp.sizeZ());
+            System.out.println("rendered " + entry.getKey() + " " + bp.sizeX() + "x" + bp.sizeY() + "x" + bp.sizeZ());
         }
     }
 }

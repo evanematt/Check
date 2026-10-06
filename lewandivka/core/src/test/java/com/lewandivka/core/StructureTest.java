@@ -19,7 +19,7 @@ class StructureTest {
         Map<String, Blueprint> all = Catalog.namedBlueprints();
         List<StructureChecks.Issue> issues = new java.util.ArrayList<>();
         for (StructureChecks.Spec spec : Catalog.specs()) {
-            Blueprint bp = all.get(spec.id());
+            Blueprint bp = Catalog.validationBlueprint(spec.id());
             assertTrue(bp != null, "no blueprint for spec " + spec.id());
             issues.addAll(StructureChecks.validate(bp, spec));
         }
