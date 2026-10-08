@@ -332,7 +332,7 @@ public final class Tower {
         // spring hatch in the middle and the updraft
         b.interact("hatch_f4", C, y, C, Pal.springHatch("up"));
         b.marker("hatch_f4_top", C, y + 1, C);
-        b.region("wind_f4", C - 10, top - 8, C - 10, C + 10, top + 4, C + 10, "dir=east,speed=0.5");
+        b.region("wind_f4", C - 10, top - 8, C - 10, C + 10, top + 4, C + 10, "dir=east,speed=0.35");
         // the ledge in the F5 floor around the hole (r 5..10)
         b.disc(C, top, C, 10.5, SLAB);
         b.disc(C, top, C, 4.5, Pal.AIR);

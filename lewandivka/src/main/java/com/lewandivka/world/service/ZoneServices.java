@@ -108,7 +108,7 @@ public final class ZoneServices {
                 // a teleport is not a flight
                 if (moved.lengthSquared() < 64.0) {
                     double ticks = Math.max(1, now - before.tick());
-                    velocity = moved.multiply(1.0 / ticks);
+                    velocity = estimate(moved, ticks);
                     if (moved.y > 0.05 * ticks && !player.isTouchingWater()) {
                         CLIMBING_UNTIL.put(player.getUuid(), now + 10);
                     }
@@ -131,6 +131,24 @@ public final class ZoneServices {
             LAST.keySet().removeIf(id -> server.getPlayerManager().getPlayer(id) == null);
             CLIMBING_UNTIL.keySet().removeIf(id -> server.getPlayerManager().getPlayer(id) == null);
         }
+    }
+
+    /**
+     * The velocity the client will have when a packet sent now reaches it. The player moved by {@code moved} during the last
+     * {@code ticks} ticks; the client's tick is: move by the velocity, then {@code vy = (vy - 0.08) * 0.98} and the horizontal
+     * speed times 0.91. The last two moves are v1 and v2 = (v1 - 0.08) * 0.98, so their sum gives v2; the packet reaches the
+     * client one or two ticks after the position it is based on, hence one and a half steps further on. The plain average of
+     * the moves would be a tick or two out of date, and a fast rider would get that difference as a push at every application.
+     */
+    static Vec3d estimate(Vec3d moved, double ticks) {
+        if (ticks != 2) {
+            return moved.multiply(1.0 / ticks);
+        }
+        double v2y = (moved.y - 0.08) / (1.0 + 1.0 / 0.98);
+        double vy = (v2y - 0.08) * 0.98 - 0.04;
+        double k = 1.0 + 1.0 / 0.91;
+        double drag = 0.868;
+        return new Vec3d(moved.x / k * drag, vy, moved.z / k * drag);
     }
 
     /** Blends the motion of the player towards the wind; whoever rises fast keeps the rise (v is the real velocity, see {@link #LAST}). */

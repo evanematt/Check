@@ -18,7 +18,7 @@ English translation (`en_us`).
 
 | | |
 |---|---|
-| **Worlds** | `lewandivka:district` (the real-world district, 300×300, deterministic) and `lewandivka:chromandivka` (floating islands, glowshroom basins, orange rivers, crystal shelves, five landmark dungeons and the tower). Both are produced by the mod's own chunk generator: quests can never be broken by terrain. |
+| **Worlds** | `lewandivka:district` (the real-world district, 300×300, deterministic, in the middle of an **endless open country** — forests, plains, rivers, lakes, seas, mountains, caves, ores, animals and the monsters of the night, a world to survive in like the ordinary overworld, with the story on top) and `lewandivka:chromandivka` (floating islands, glowshroom basins, orange rivers, crystal shelves, five landmark dungeons and the tower). Both are produced by the mod's own chunk generator: quests can never be broken by terrain. |
 | **Campaign** | 46 steps in 17 stages, saved in the world (data version 1), shared by the party, readable in the **District Notebook**. See `docs/QUEST_FLOW.md`. |
 | **Dungeons** | Garage No. 13 · the Last Tram · the base and the coloured portal · Rainbow Garage · Shelter of Lost Names · Dry Lake Aquapark · sky ascent, the real 2.5 minute sky-tram ride and the Sky Depot · tower approach · Head of District Tower |
 | **Bosses** | Garage King · Collar Collector · Lady Vortex · the Conductor · the Colorless Head (Chromatic Charge, three phases, 12 s overload, pass with **Q**) |
@@ -71,7 +71,7 @@ Admin commands (permission level 2):
 | `/lewandivka teleport <structure> [view]` | visit any structure of either dimension (tab completion lists them); `view` puts you on an aerial vantage point instead of the entrance |
 | `/lewandivka validate` | checks the generated structures against their blueprints |
 | `/lewandivka selftest` · `/lewandivka probe <x> <y1> <y2> <z>` | checks that need the running server: the generated chunks against the world plan, the first arrival, a fake player crossing between the dimensions, three players joining; and the blocks of a column (`execute in <dimension> run ...`) |
-| `/lewandivka joinreplay start <label> <delay>` · `report` · `torture` · `result` · `/lewandivka trace <player> <ticks>` · `/lewandivka creatures` | developer diagnostics: joins fake players through the real join and decodes the packets a client would get, moves one around like the client test does; logs what the server knows about a real player on every tick; lists every creature of the mod in every world |
+| `/lewandivka joinreplay start <label> <delay>` · `report` · `torture` · `result` · `/lewandivka trace <player> <ticks>` · `/lewandivka creatures` · `/lewandivka survey <x> <z> <radius>` · `/lewandivka wild <x> <z> [view]` | developer diagnostics: joins fake players through the real join and decodes the packets a client would get, moves one around like the client test does; logs what the server knows about a real player on every tick; lists every creature of the mod in every world; counts the logs, water, ores, caves and animals around a point of the open country, stands (or hovers) there |
 
 ## Controls
 

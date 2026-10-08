@@ -98,6 +98,25 @@ seed. `Structures` indexes all markers (point markers for stations, regions for 
 the painted world against the blueprints (`/lewandivka validate`, run in CI over rcon), `StructureChecks` proves
 reachability of the quest points inside the blueprints at build time (core tests).
 
+### The open country (survival world)
+
+The district is a city of 304 x 304 blocks in the middle of an endless wilderness. `WildTerrain` (core, pure noise) describes
+it: continentalness (sea or land), relief (lowlands, hills, mountains with ridges), rivers (zero lines of a noise), lakes
+(basins), a temperature/humidity climate that picks one of 32 vanilla biomes with fitting surface blocks, and caves (wide
+caverns, winding tunnels, a few openings to the daylight, lava below y 10). Next to the city the land is calm (no water, no
+cliff, no cave, a temperate climate); `DistrictPlan.wildColumn` grows the flat ground of the city into the land over 64 blocks.
+The plan declares the vanilla biomes, so the game itself decorates them (trees, flowers, ores, springs, snow, ice), adds the
+animals of freshly generated chunks (`PlanChunkGenerator.populateEntities` calls `SpawnHelper`), spawns the ordinary monsters at
+night and generates its structures (villages, mineshafts, ruined portals ...) far from the city only (`farFromTheCity`).
+The city biome keeps no spawns and no features: the quest structures and the roaming gopniks are the story's. The story only
+holds the evening and the night, and only sends the gopniks, around people who are in town (`Town`); out in the country the
+days and nights are the ordinary ones.
+
+Tools: `gradle -p core worldMap -Pcx= -Pcz= -Pspan= [-Pcave=30]` draws the dimension (biomes, relief, water, caves of one
+height) and prints statistics; `/lewandivka wild <x> <z> [view]` stands or hovers there, `/lewandivka survey <x> <z> <r>` counts
+the logs, water, ores, caves and animals of the loaded chunks. The smoke test generates three 9 x 9 chunk areas and demands a
+forest, water, caves, coal and iron, grass and animals; any logged error of the generation fails it.
+
 ### Calibrated physics
 
 The dungeons are built for exact launch numbers: `core/.../world/Launch.java` holds the speed of the spring pads (vertical

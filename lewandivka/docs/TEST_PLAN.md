@@ -60,6 +60,7 @@ should be walked through once with real players. Tick per party size.
 | 22 | Dedicated server restart in every stage | ☐ | ☐ | ☐ | state restored (`rebuild`) |
 | 23 | Accessibility: shake 0 %, reduced flashes, no shaders | ☐ | ☐ | ☐ | every telegraph still readable (text + sound) |
 | 24 | TLauncher: installer on a clean `.minecraft`, join the server pack | ☐ | ☐ | ☐ | version `fabric-loader-0.16.10-1.20.1` starts |
+| 25 | Open country: walk out of the city in every direction, build a shelter, mine (coal, iron, caves, lava below y 10), eat, sleep through a night, meet the animals, zombies and skeletons, cross a river and a hill; come back and carry on with the notebook | ☐ | ☐ | ☐ | no wall at the city's edge, no cliff next to it, no gopniks and no held night out in the country, rain in the city too |
 
 ## 3. Known limits (honest list)
 

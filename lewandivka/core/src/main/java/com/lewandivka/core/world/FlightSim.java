@@ -63,12 +63,35 @@ public final class FlightSim {
      * @param height height of the box (1.8)
      */
     public static Flight fly(Solid world, double x, double y, double z, double vx, double vy, double vz, double width, double height, int maxTicks) {
+        return fly(world, x, y, z, vx, vy, vz, width, height, maxTicks, null);
+    }
+
+    /** A push on the rider every other tick (the wind regions of the game, see ZoneServices): the answer replaces the velocity. */
+    public interface Wind {
+        double[] adjust(double x, double y, double z, double vx, double vy, double vz);
+    }
+
+    /** The same flight with a wind that acts at the start of every second tick (or {@code null}). */
+    public static Flight fly(Solid world, double x, double y, double z, double vx, double vy, double vz, double width, double height, int maxTicks, Wind wind) {
+        return fly(world, x, y, z, vx, vy, vz, width, height, maxTicks, wind, 0);
+    }
+
+    /** The wind acts on the ticks with {@code tick % 2 == parity} (the server checks every second tick; which one depends on the moment of the throw). */
+    public static Flight fly(Solid world, double x, double y, double z, double vx, double vy, double vz, double width, double height, int maxTicks, Wind wind, int parity) {
         Flight f = new Flight();
         f.path.add(new double[] {x, y, z});
         f.apex = y;
         boolean onGround = true;
         double half = width / 2.0;
         for (int tick = 1; tick <= maxTicks; tick++) {
+            if (wind != null && tick % 2 == parity) {
+                double[] v = wind.adjust(x, y, z, vx, vy, vz);
+                if (v != null) {
+                    vx = v[0];
+                    vy = v[1];
+                    vz = v[2];
+                }
+            }
             double friction = onGround ? GROUND : AIR;
             double dx = vx;
             double dy = vy;

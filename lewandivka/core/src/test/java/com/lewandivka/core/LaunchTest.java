@@ -117,6 +117,50 @@ class LaunchTest {
         assertTrue(gap >= 0 && gap <= 0.6, "the hatch is " + gap + " blocks short of the exit cell");
     }
 
+    /** The value of {@code key} in the data of a marker ("dir=east,speed=0.35"). */
+    private static String data(Blueprint.Marker m, String key) {
+        for (String part : m.data().split(",")) {
+            if (part.startsWith(key + "=")) {
+                return part.substring(key.length() + 1);
+            }
+        }
+        return null;
+    }
+
+    @Test
+    void theHatchOfTheServiceShaftThrowsTheRiderOntoTheLedgeOfTheFifthFloor() {
+        Blueprint bp = Catalog.namedBlueprints().get("tower");
+        Blueprint.Marker hatch = bp.marker("hatch_f4_top");
+        Blueprint.Marker wind = bp.marker("wind_f4");
+        Blueprint.Marker ledge = bp.marker("f4_ledge");
+        assertNotNull(hatch);
+        assertNotNull(wind);
+        assertNotNull(ledge);
+        assertEquals("east", data(wind, "dir"));
+        double speed = Double.parseDouble(data(wind, "speed"));
+        int c = hatch.x();
+        // the wind of the game (ZoneServices.push): blends the horizontal speed towards the wind, lifts the slow
+        FlightSim.Wind push = (x, y, z, vx, vy, vz) -> {
+            if (x < wind.x() || x > wind.x() + wind.sx() || z < wind.z() || z > wind.z() + wind.sz() || y < wind.y() || y > wind.y() + wind.sy()) {
+                return null;
+            }
+            double ny = vy < 0.32 ? Math.min(0.42, vy + 0.11) : vy;
+            return new double[] {vx + (speed - vx) * 0.25, ny, vz - vz * 0.25};
+        };
+        for (int parity = 0; parity <= 1; parity++) {
+            FlightSim.Flight f = FlightSim.fly(solid(bp), hatch.x() + 0.5, hatch.y(), hatch.z() + 0.5, 0, Launch.HATCH_UP, 0, FlightSim.WIDTH, FlightSim.HEIGHT, 200, push, parity);
+            String what = "service shaft, wind on the ticks of parity " + parity;
+            assertTrue(f.landed, what + ": never comes down");
+            assertTrue(f.sideTick < 0, what + ": runs into a wall at tick " + f.sideTick + " " + java.util.Arrays.toString(f.sideAt));
+            assertTrue(f.ceilingTick < 0, what + ": hits a ceiling");
+            assertEquals(ledge.y(), f.landAt[1], 0.01, what + ": does not land on the ledge but at " + java.util.Arrays.toString(f.landAt));
+            // between the edge of the hole (radius 4.5) and the shaft wall (the ledge ring ends at 11.5), with a body width to spare
+            assertTrue(f.landAt[0] > c + 5.5 && f.landAt[0] < c + 10.5, what + ": lands at x " + f.landAt[0] + " (the shaft axis is " + (c + 0.5) + ")");
+            assertEquals(hatch.z() + 0.5, f.landAt[2], 1.0, what);
+            assertTrue(f.apex > ledge.y() + 1.0, what + ": the throw only just reaches the ledge (apex " + f.apex + ")");
+        }
+    }
+
     @Test
     void theGlideSettlesAtTheDesignedSpeedDespiteTheFrictionOfTheAir() {
         assertEquals(Launch.GLIDE_SPEED, Launch.glideSpeed(0.3, 200), 0.005);
