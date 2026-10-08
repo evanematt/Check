@@ -68,7 +68,7 @@ Admin commands (permission level 2):
 | `/lewandivka setstage <stage>` · `/lewandivka step <step>` | repair a stuck campaign |
 | `/lewandivka party <1\|2\|3\|auto>` | force the scaling for tests |
 | `/lewandivka ability grant\|revoke <player> <dash\|spring_insoles\|glider>` | abilities |
-| `/lewandivka teleport <structure>` | visit any structure of either dimension (tab completion lists them) |
+| `/lewandivka teleport <structure> [view]` | visit any structure of either dimension (tab completion lists them); `view` puts you on an aerial vantage point instead of the entrance |
 | `/lewandivka validate` | checks the generated structures against their blueprints |
 
 ## Controls

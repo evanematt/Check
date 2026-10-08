@@ -8,6 +8,8 @@ import com.lewandivka.LewandivkaMod;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.ScreenshotRecorder;
+import net.minecraft.entity.Entity;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
@@ -155,11 +157,41 @@ public final class AutoTest {
         });
     }
 
-    /** The server puts the camera on an aerial vantage point of the structure (see {@code /lewandivka teleport <id> view}). */
-    private static void tour(MinecraftClient c, String structure) {
+    /**
+     * The server puts the camera on an aerial vantage point of the structure (see {@code /lewandivka teleport <id> view}).
+     * With a step the campaign is first moved there, so the structure's encounter is in the state it is played in.
+     */
+    private static void tour(MinecraftClient c, String structure, String step) {
+        if (step != null) {
+            cmd(c, "lewandivka step " + step, 8);
+        }
         cmd(c, "lewandivka teleport " + structure + " view", 20);
         settle(c, structure, 2400);
         shot(c, "tour_" + structure, 6);
+    }
+
+    /** Standing at the entrance of a structure (for the ones that lie underground). */
+    private static void inside(MinecraftClient c, String structure, String step) {
+        if (step != null) {
+            cmd(c, "lewandivka step " + step, 8);
+        }
+        cmd(c, "lewandivka teleport " + structure, 20);
+        settle(c, structure, 2400);
+        shot(c, "inside_" + structure, 40);
+    }
+
+    /** Logs how many creatures of the mod the client knows about (the night population of the district, for example). */
+    private static void census(MinecraftClient c, String what) {
+        add("census " + what, 2, () -> {
+            java.util.Map<String, Integer> counts = new java.util.TreeMap<>();
+            for (Entity e : c.world.getEntities()) {
+                var id = Registries.ENTITY_TYPE.getId(e.getType());
+                if (id.getNamespace().equals("lewandivka")) {
+                    counts.merge(id.getPath(), 1, Integer::sum);
+                }
+            }
+            note("census " + what + ": " + counts);
+        });
     }
 
     private static void show(MinecraftClient c, String name, String... entities) {
@@ -183,11 +215,22 @@ public final class AutoTest {
         shot(c, "02_notebook", 4);
         add("close", 6, () -> c.setScreen(null));
 
+        // the first night: the district fills with gopniks around the player (the service that spawns them runs for real)
+        cmd(c, "lewandivka step collect_tokens", 8);
+        cmd(c, "time set 18000", 8);
+        add("the night population arrives", 500, () -> { });
+        census(c, "first night");
+        shot(c, "03_first_night", 4);
+
         // night vision only for the tours: the district is held at night (see TimeControl), the shots must show the buildings
         cmd(c, "effect give @s minecraft:night_vision 99999 0 true", 6);
-        for (String s : List.of("tram_stop", "old_shop", "garage13", "block_a", "house_ne0", "kindergarten", "playground_north", "tram_depot", "kiosk_foundation")) {
-            tour(c, s);
+        tour(c, "tram_stop", "tram_fight");
+        tour(c, "old_shop", null);
+        tour(c, "garage13", "garage_panels");
+        for (String s : List.of("block_a", "house_ne0", "kindergarten", "playground_north", "tram_depot")) {
+            tour(c, s, null);
         }
+        tour(c, "kiosk_foundation", "place_kiosk");
         // mobs of the district
         cmd(c, "lewandivka teleport tram_stop", 20);
         settle(c, "mobs", 2400);
@@ -212,12 +255,21 @@ public final class AutoTest {
         shot(c, "gallery_3", 6);
 
         // the other side
-        tour(c, "base");
+        tour(c, "base", "base_pedestals");
         cmd(c, "tp @s ~ ~ ~ 200 -32", 30);
         shot(c, "sky_chromandivka", 6);
-        for (String s : List.of("rainbow_garage", "shelter", "aquapark", "sky_ascent", "sky_depot", "tower_approach", "tower", "isle3")) {
-            tour(c, s);
-        }
+        tour(c, "rainbow_garage", "rg_wings");
+        tour(c, "shelter", "sh_levers");
+        tour(c, "aquapark", "aq_pumps");
+        tour(c, "sky_ascent", "sky_ascent");
+        tour(c, "sky_depot", "sky_tickets");
+        tour(c, "tower_approach", "tower_approach");
+        tour(c, "tower", "tower_climb");
+        tour(c, "isle3", null);
+        // the postgame: free play, Garage No. 0 under the district
+        cmd(c, "lewandivka step post_free", 8);
+        inside(c, "garage0", null);
+        census(c, "garage 0");
 
         // HUD pieces (client-side mock state, only for the screenshots)
         add("hud state", 10, () -> {

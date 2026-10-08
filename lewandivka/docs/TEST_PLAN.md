@@ -15,6 +15,20 @@
 
 Reproduce locally: see "Building from source" in `README.md`.
 
+### Where each automated test required by the design brief lives
+
+| Required test | Test (class `#` method) |
+|---|---|
+| Campaign state transition | `CampaignModelTest#stepCanOnlyAdvanceForward`, `CampaignDirectorTest#theGoldenPathWalksEveryStepInOrderAndEndsInThePostgame`, `#wrongEventsAndRepeatedEventsAreHarmless`, `#earlyCompletionIsRememberedAndCountsWhenTheStoryArrives` |
+| Quest item restoration | `QuestLogicTest#notebookIsAlwaysRestored`, `#lostPackageIsRestoredButNotWhilePlacedInTheWorld`, `#partyLevelItemOwnedByAnyoneIsNotDuplicated`, `#everyQuestStepProducesAConsistentLedger` |
+| Solo / two-player / three-player lever scaling | `ScalingAndSyncTest#soloPlayerCanDoItSequentially`, `#twoPlayersHaveAMediumWindow`, `#threePlayersPressTogether`, `#windowsGetLongerForSmallerParties`; in a whole encounter `Garage13FlowTest#trioWindowIsShortAndExpires` |
+| Boss reset | `BossRulesTest#bossStartsFromScratchAfterReset`, `ColorlessHeadRulesTest#resetStartsTheFightFromTheBeginning`, `CampaignModelTest#encounterResetClearsEverything` |
+| Ability persistence | `CampaignModelTest#abilitiesPersistAcrossReloadsAndSurviveRevokeOfOthers`, GameTest `campaignSurvivesItsNbtRoundTrip` |
+| Portal unlock | `BaseFlowTest#theFourthArtifactCompletesThePortalAndRebuildRestoresThePedestals` |
+| Chroma synchronization | `ScalingAndSyncTest#chromaSoloCompletesImmediately`, `#chromaTwoPlayers`, `#chromaThreePlayersAllMustConsume`, `#chromaExpiresAfterFiveMinutesAndCanBeRetried`, `#chromaDisconnectedPlayerCannotBlockThePartyAndLateJoinerIsNotRequired` |
+| Final charge relay | `ScalingAndSyncTest#chargeOverloadsAfterTwelveSecondsAndPassResetsTheTimer`, `#soloRelayReturnsWithAFreshTimer`, `#chargeIsNeverLostWhenTheHolderLeavesOrDies`, `ColorlessHeadRulesTest#overloadMovesTheChargeOnInsteadOfDestroyingIt` |
+| Dedicated server launch | `tools/ci/smoke.sh` (both dimensions loaded, `/lewandivka validate`), `tools/ci/serverpack-smoke.sh` (the shipped server pack) |
+
 ## 2. What the automated tests cannot see (manual checklist)
 
 Nobody is in the world during CI, so interactions that need a human body are covered by the flow tests (logic) but

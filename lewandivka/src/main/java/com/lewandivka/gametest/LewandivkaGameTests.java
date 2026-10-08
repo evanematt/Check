@@ -24,9 +24,12 @@ import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
@@ -90,6 +93,66 @@ public final class LewandivkaGameTests implements FabricGameTest {
         }
         check(problems.isEmpty(), String.join("; ", problems));
         context.complete();
+    }
+
+    // ------------------------------------------------------------------ entities
+
+    /**
+     * Every creature and vehicle of the catalog must be creatable, spawnable, survive some ticks outside its home
+     * structure (an admin can summon anything anywhere) and load again from its own NBT, which is also how the game reads
+     * entities from disk. A constructor that calls into half-built state fails here, not in front of a player.
+     */
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 300)
+    public void everyEntityCanBeCreatedTicksAndReloads(TestContext context) {
+        ServerWorld world = context.getWorld();
+        List<String> problems = new ArrayList<>();
+        List<Entity> made = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
+        int n = 0;
+        for (EntitySpec spec : ModEntities.ALL) {
+            EntityType<?> type = Registries.ENTITY_TYPE.get(Ids.of(spec.id));
+            try {
+                Entity e = type.create(world);
+                if (e == null) {
+                    problems.add(spec.id + ": create() returned null");
+                    continue;
+                }
+                BlockPos pos = context.getAbsolutePos(new BlockPos(1 + (n % 6) * 2, 2, 1 + (n / 6) * 2));
+                n++;
+                e.refreshPositionAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0.0f, 0.0f);
+                if (!world.spawnEntity(e)) {
+                    problems.add(spec.id + ": spawnEntity() refused");
+                    continue;
+                }
+                made.add(e);
+                ids.add(spec.id);
+            } catch (RuntimeException ex) {
+                problems.add(spec.id + ": " + ex);
+            }
+        }
+        check(problems.isEmpty(), "entities that cannot be created: " + problems);
+        context.runAtTick(60, () -> {
+            List<String> late = new ArrayList<>();
+            for (int i = 0; i < made.size(); i++) {
+                Entity e = made.get(i);
+                try {
+                    NbtCompound nbt = new NbtCompound();
+                    if (e.saveNbt(nbt)) {
+                        Entity back = EntityType.loadEntityWithPassengers(nbt, world, x -> x);
+                        if (back == null) {
+                            late.add(ids.get(i) + ": could not be loaded from its own NBT");
+                        } else {
+                            back.discard();
+                        }
+                    }
+                } catch (RuntimeException ex) {
+                    late.add(ids.get(i) + ": " + ex);
+                }
+                e.discard();
+            }
+            check(late.isEmpty(), "entities that cannot be saved and loaded: " + late);
+            context.complete();
+        });
     }
 
     // ------------------------------------------------------------------ structures and markers

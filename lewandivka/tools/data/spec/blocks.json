@@ -622,6 +622,16 @@
           "8",
           "9"
         ]
+      },
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
+        ]
       }
     ],
     "visual": [
@@ -955,6 +965,16 @@
           "yellow",
           "blue",
           "release"
+        ]
+      },
+      {
+        "name": "facing",
+        "type": "FACING",
+        "values": [
+          "north",
+          "south",
+          "west",
+          "east"
         ]
       },
       {

@@ -46,6 +46,14 @@ public abstract class LewMob extends PathAwareEntity implements GeoEntity {
         return spec;
     }
 
+    /**
+     * The catalog entry, also while the super constructor is still running: {@code MobEntity} calls {@code initGoals()}
+     * before {@link #spec} is assigned, so goal setup must use this instead of the field.
+     */
+    protected final EntitySpec specNow() {
+        return spec != null ? spec : ModEntities.byId(Registries.ENTITY_TYPE.getId(getType()).getPath());
+    }
+
     public static DefaultAttributeContainer.Builder attributes(EntitySpec s) {
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, s.health)

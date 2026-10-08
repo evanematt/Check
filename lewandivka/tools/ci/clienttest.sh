@@ -85,4 +85,21 @@ mkdir -p "$OUT/shots"
 cp "$CLI"/screenshots/*.png "$OUT/shots/" 2>/dev/null
 cp "$CLI/autotest-result.txt" "$OUT/autotest-result.txt" 2>/dev/null
 echo "screenshots: $(ls "$OUT/shots" 2>/dev/null | wc -l)"
-if grep -q "AUTOTEST-RESULT OK" "$OUT/autotest-result.txt" 2>/dev/null; then echo "CLIENTTEST-RESULT OK"; else echo "CLIENTTEST-RESULT FAILED"; exit 1; fi
+# Everything the game logged about the mod is a defect: entities that failed to load, models that could not be baked,
+# flows that threw, missing sounds. (The sound device and the narrator do not exist on the CI machine.)
+PROBLEMS="$OUT/clienttest-problems.txt"
+{
+  grep -nE "/ERROR\]|Exception loading entity|Exception ticking|Ticking entity|\(lewandivka\).*/WARN\]" "$SERVER_LOG" | sed 's/^/server: /'
+  grep -nE "/ERROR\]|\(lewandivka\).*/WARN\]|(Unable to bake model|Exception evaluating model definition|Missing sound for event|Unable to load|Failed to load).*lewandivka" "$CLIENT_LOG" \
+    | grep -v "Error starting SoundSystem\|Error while loading the narrator" | sed 's/^/client: /'
+} > "$PROBLEMS" 2>/dev/null
+N_PROBLEMS=$(wc -l < "$PROBLEMS" 2>/dev/null | tr -d ' ')
+N_PROBLEMS=${N_PROBLEMS:-0}
+echo "log problems: $N_PROBLEMS"
+if [ "$N_PROBLEMS" != "0" ]; then head -40 "$PROBLEMS"; fi
+if grep -q "AUTOTEST-RESULT OK" "$OUT/autotest-result.txt" 2>/dev/null && [ "$N_PROBLEMS" = "0" ]; then
+  echo "CLIENTTEST-RESULT OK"
+else
+  echo "CLIENTTEST-RESULT FAILED"
+  exit 1
+fi

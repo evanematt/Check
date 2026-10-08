@@ -62,7 +62,7 @@ public class GopnikEntity extends LewMob {
     }
 
     private boolean ranged() {
-        return spec.role == Role.SEED_THROWER;
+        return specNow().role == Role.SEED_THROWER;
     }
 
     @Override

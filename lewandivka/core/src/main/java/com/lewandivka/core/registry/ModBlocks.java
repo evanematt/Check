@@ -78,7 +78,7 @@ public final class ModBlocks {
                 .prop(PropSpec.horizontalFacing()).light(5).sound("metal"));
         l.add(BlockSpec.of("queue_display", Behaviour.DECOR, Model.PLATE)
                 .name("Табло черги", "Queue Display")
-                .prop(PropSpec.integer("digit", 0, 9)).visual("digit").light(8).passable().sound("metal"));
+                .prop(PropSpec.integer("digit", 0, 9)).prop(PropSpec.horizontalFacing()).visual("digit").light(8).passable().sound("metal"));
         l.add(BlockSpec.of("cardboard_box", Behaviour.STATION, Model.SMALL)
                 .name("Картонна коробка", "Cardboard Box")
                 .prop(PropSpec.bool("small")).prop(PropSpec.bool("opened")).visual("small", "opened").sound("wool"));
@@ -120,7 +120,7 @@ public final class ModBlocks {
                 .name("Підйомник гаража", "Garage Lift").sound("metal"));
         l.add(BlockSpec.of("paint_tap", Behaviour.STATION, Model.ORIENTABLE)
                 .name("Кран із фарбою", "Paint Tap")
-                .prop(PropSpec.named("color", TAP_COLORS.toArray(new String[0]))).prop(PropSpec.bool("lit")).visual("color", "lit").light(8, "lit").sound("metal"));
+                .prop(PropSpec.named("color", TAP_COLORS.toArray(new String[0]))).prop(PropSpec.horizontalFacing()).prop(PropSpec.bool("lit")).visual("color", "lit").light(8, "lit").sound("metal"));
         l.add(BlockSpec.of("battery_socket", Behaviour.STATION, Model.ORIENTABLE)
                 .name("Гніздо батареї", "Battery Socket")
                 .prop(PropSpec.horizontalFacing()).prop(PropSpec.bool("filled")).visual("filled").light(7, "filled").sound("metal"));

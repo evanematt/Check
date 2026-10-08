@@ -21,7 +21,8 @@ problems = []
 
 
 def bad(msg: str) -> None:
-    problems.append(msg)
+    if msg not in problems:
+        problems.append(msg)
 
 
 def load(path: Path):
@@ -110,6 +111,68 @@ def check_models() -> None:
         for r in refs:
             if r["model"].startswith("lewandivka:") and not (ASSETS / "models" / f"{r['model'].split(':')[1]}.json").exists():
                 bad(f"{p.relative_to(ROOT)}: missing model {r['model']}")
+
+
+def check_blockstate_properties() -> None:
+    """Every blockstate file may only use properties and values the block really has (otherwise the game logs
+    "Unknown property" and draws the missing-model cube), and every possible state needs a model."""
+    import itertools
+    blocks = {b["id"]: b for b in spec("blocks")}
+
+    def allowed(q):
+        return {str(i) for i in range(len(q["values"]))} if q["type"] == "ENUM" else {str(v) for v in q["values"]}
+
+    for path in sorted((ASSETS / "blockstates").glob("*.json")):
+        b = blocks.get(path.stem)
+        st = load(path)
+        if b is None or not isinstance(st, dict):
+            continue
+        rel = path.relative_to(ROOT)
+        props = {q["name"]: q for q in b["props"]}
+
+        def check(cond, where):
+            for k, v in cond.items():
+                if k in ("OR", "AND"):
+                    for sub in v:
+                        check(sub, where)
+                    continue
+                if k not in props:
+                    bad(f"{rel}: {where} uses the property '{k}' that {b['id']} does not have")
+                    continue
+                for one in str(v).split("|"):
+                    if one not in allowed(props[k]):
+                        bad(f"{rel}: {where} uses {k}={one}, not a value of that property")
+
+        def matches(cond, state):
+            for k, v in cond.items():
+                if k == "OR":
+                    if not any(matches(sub, state) for sub in v):
+                        return False
+                elif k == "AND":
+                    if not all(matches(sub, state) for sub in v):
+                        return False
+                elif state.get(k) not in str(v).split("|"):
+                    return False
+            return True
+
+        variants = {}
+        for key in st.get("variants", {}):
+            cond = dict(kv.split("=", 1) for kv in key.split(",")) if key else {}
+            variants[key] = cond
+            check(cond, f"variant '{key}'")
+        for part in st.get("multipart", []):
+            if "when" in part:
+                check(part["when"], "multipart condition")
+        names = list(props)
+        for combo in itertools.product(*[sorted(allowed(props[n]), key=lambda x: (len(x), x)) for n in names]):
+            state = dict(zip(names, combo))
+            if "variants" in st:
+                covered = any(matches(c, state) for c in variants.values())
+            else:
+                covered = any("when" not in part or matches(part["when"], state) for part in st.get("multipart", []))
+            if not covered:
+                bad(f"{rel}: no model for the state {state}")
+                break
 
 
 def check_textures() -> None:
@@ -279,6 +342,7 @@ def check_source_refs() -> None:
 def main() -> int:
     check_json_syntax()
     check_models()
+    check_blockstate_properties()
     check_textures()
     check_entities()
     check_lang()

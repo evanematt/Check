@@ -54,7 +54,7 @@ public final class DistrictSpawns {
         }
         List<ServerPlayerEntity> players = world.getPlayers(p -> !p.isSpectator() && p.isAlive());
         boolean night = Population.night(server.getOverworld().getTimeOfDay());
-        List<GopnikEntity> mine = world.getEntitiesByType(TypeFilter.instanceOf(GopnikEntity.class), e -> e.isAlive() && e.getCommandTags().contains(TAG));
+        List<? extends GopnikEntity> mine = world.getEntitiesByType(TypeFilter.instanceOf(GopnikEntity.class), e -> e.isAlive() && e.getCommandTags().contains(TAG));
         if (!night) {
             for (GopnikEntity g : mine) {
                 if (players.stream().noneMatch(p -> p.squaredDistanceTo(g) < 20 * 20)) {
@@ -100,7 +100,7 @@ public final class DistrictSpawns {
         return true;
     }
 
-    private static void groups(ServerWorld world, int index, List<GopnikEntity> mine, List<ServerPlayerEntity> players, PartyScale party, long now) {
+    private static void groups(ServerWorld world, int index, List<? extends GopnikEntity> mine, List<ServerPlayerEntity> players, PartyScale party, long now) {
         Marker m = Structures.marker("district:neutral_" + index);
         if (m == null || now < GROUP_READY[index]) {
             return;
