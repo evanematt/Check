@@ -25,10 +25,13 @@ if grep -q "Done (" "$LOG"; then
     "execute in lewandivka:district run forceload add 0 0 31 31" \
     "execute in lewandivka:chromandivka run forceload add 0 0 31 31" \
     "lewandivka validate" \
+    "execute in lewandivka:district run forceload add -32 348 32 412" \
+    "!until 240 chunks=25 lewandivka survey 0 380 2" \
     "stop" | tee "$LOG.rcon"
 else
   echo "SERVERPACK: the server did not finish starting"
   kill "$PID" 2>/dev/null
 fi
 wait "$PID" 2>/dev/null
-if grep -q "validate: OK" "$LOG.rcon" 2>/dev/null; then echo "SERVERPACK-RESULT OK"; else echo "SERVERPACK-RESULT FAILED"; exit 1; fi
+# the open country must generate with the third-party mods of the pack too (they change chunk generation and lighting)
+if grep -q "validate: OK" "$LOG.rcon" 2>/dev/null && grep -q "^survey .* chunks=25 " "$LOG.rcon" 2>/dev/null; then echo "SERVERPACK-RESULT OK"; else echo "SERVERPACK-RESULT FAILED"; exit 1; fi

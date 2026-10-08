@@ -822,6 +822,10 @@ public final class AutoTest {
         wild(c, "forest", 0, 380);
         wild(c, "west", -450, -100);
         wild(c, "coast", 520, 300);
+        // the edge of the city seen from the open country (no wall, no step: the flat ground grows into the land)
+        cmd(c, atIn("lewandivka:district", 235.5, 96, 0.5, 90, 22), 20);
+        settle(c, "the edge of the city", 2400);
+        shot(c, "wild_city_edge", 8);
         // underground: caves found offline in the noise (they are a pure function of the position)
         underground(c, "cavern", 361.5, 50, 514.5);
         underground(c, "lava_cave", 250.5, 12, 274.5);

@@ -77,6 +77,8 @@ session "$LOG" \
   "!until 300 chunks=81 lewandivka survey 0 380 4" \
   "!until 300 chunks=81 lewandivka survey -450 -100 4" \
   "!until 300 chunks=81 lewandivka survey 520 300 4" \
+  "execute in lewandivka:district positioned 0 64 0 run locate structure #minecraft:village" \
+  "execute in lewandivka:district positioned 0 64 0 run locate biome minecraft:desert" \
   "lewandivka step $STEP" \
   "lewandivka status" \
   "save-all flush" \
@@ -131,6 +133,8 @@ if len(lines) < 3 or missing or animals < 1:
     print("missing:", missing, "animals:", animals, "reports:", len(lines))
     sys.exit(1)
 PY
+# informational: do the structures and the biomes of the ordinary game exist in the open country?
+grep -h "nearest\|Could not find" "$LOG.rcon" 2>/dev/null | cut -c1-300
 echo "--- join replay"
 grep -h "joinreplay:\|joined (\|torture started\|RUNNING\|DONE" "$LOG.rcon" 2>/dev/null | cut -c1-3000
 # the first status line of the second session is the one printed right after the restart
