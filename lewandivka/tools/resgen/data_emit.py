@@ -91,7 +91,8 @@ def emit_dimensions() -> int:
 SPAWNERS = {k: [] for k in ("monster", "creature", "ambient", "axolotls", "underground_water_creature", "water_creature", "water_ambient", "misc")}
 
 
-def biome(sky, fog, water, water_fog, grass=None, foliage=None, particle=None, ambient=None, mood=None, additions=None, music=None) -> dict:
+def biome(sky, fog, water, water_fog, grass=None, foliage=None, particle=None, ambient=None, mood=None, additions=None, music=None,
+          rain=False) -> dict:
     eff = {"sky_color": sky, "fog_color": fog, "water_color": water, "water_fog_color": water_fog}
     if grass is not None:
         eff["grass_color"] = grass
@@ -107,7 +108,7 @@ def biome(sky, fog, water, water_fog, grass=None, foliage=None, particle=None, a
         eff["additions_sound"] = {"sound": additions, "tick_chance": 0.0111}
     if music:
         eff["music"] = {"sound": music, "min_delay": 6000, "max_delay": 18000, "replace_current_music": False}
-    return {"has_precipitation": False, "temperature": 0.6, "downfall": 0.2, "effects": eff, "spawners": SPAWNERS,
+    return {"has_precipitation": rain, "temperature": 0.6, "downfall": 0.2, "effects": eff, "spawners": SPAWNERS,
             "spawn_costs": {}, "carvers": {}, "features": []}
 
 
@@ -118,7 +119,8 @@ def rgb(h: str) -> int:
 def emit_biomes() -> int:
     b = {
         "district": biome(rgb("#8a7aa8"), rgb("#c09a8a"), rgb("#4a6a68"), rgb("#2a3a3a"), rgb("#6e8a4e"), rgb("#5a7a3a"),
-                          ambient=f"{M}:ambient.district.loop", mood=f"{M}:ambient.district.mood", music=f"{M}:music.district"),
+                          ambient=f"{M}:ambient.district.loop", mood=f"{M}:ambient.district.mood", music=f"{M}:music.district",
+                          rain=True),   # the city lies in the open country: it rains there like everywhere else
         "chromatic_meadow": biome(rgb("#ff9ad0"), rgb("#ffc8e6"), rgb("#2fd6c0"), rgb("#1a8a80"), rgb("#2fe0c0"), rgb("#1fc0a0"),
                                   particle=("minecraft:cherry_leaves", 0.003), ambient=f"{M}:ambient.chroma.loop",
                                   additions=f"{M}:ambient.chroma.additions", music=f"{M}:music.chroma"),

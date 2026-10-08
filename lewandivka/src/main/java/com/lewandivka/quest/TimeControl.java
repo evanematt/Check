@@ -16,7 +16,8 @@ import java.util.Map;
  * Holds the time of day of a campaign dimension while a story beat needs it: the endless first evening of the
  * exploration, the first night of the token hunt, the night of the last tram. A hold that is ahead of the clock is
  * reached like a time-lapse (a few seconds), one that is behind is a cut. Several reasons can hold a dimension at once;
- * the latest time of day wins, and the clock runs again when the last reason lets go.
+ * the latest time of day wins, and the clock runs again when the last reason lets go. The hold only works while somebody is
+ * in town (see {@link Town}): the open country around the city has the ordinary days and nights of the survival game.
  *
  * <p>The campaign dimensions share the clock of the overworld (derived worlds ignore writes to their own time), so it is
  * the overworld clock that is moved.</p>
@@ -75,6 +76,10 @@ public final class TimeControl {
     private static void follow(MinecraftServer server, String dimension, long target) {
         ServerWorld world = Dimensions.world(server, dimension);
         if (world == null) {
+            return;
+        }
+        // the story holds the evening and the night for the people in town; out in the open country the days run as usual
+        if (Dimensions.DISTRICT_ID.equals(dimension) && world.getPlayers(p -> !p.isSpectator() && Town.contains(p)).isEmpty()) {
             return;
         }
         ServerWorld clock = server.getOverworld();

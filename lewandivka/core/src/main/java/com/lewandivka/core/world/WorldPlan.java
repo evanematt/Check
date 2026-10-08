@@ -42,4 +42,25 @@ public interface WorldPlan {
 
     /** Where new players appear. */
     int[] spawn();
+
+    /**
+     * Whether the block (x, y, z) is carved out of the rock (a cave); {@code surface} is the height of its column. Caves
+     * are part of the terrain, not of a structure, so they come before the structures are stamped.
+     */
+    default boolean carved(int x, int y, int z, int surface) {
+        return false;
+    }
+
+    /**
+     * Whether the chunk with this centre column is open country that the game may populate like the ordinary overworld
+     * (animals when the chunk is generated; trees, ores and flowers come from the biomes' own features).
+     */
+    default boolean wilderness(int x, int z) {
+        return false;
+    }
+
+    /** Whether the column is so far from the structures of the plan that a big vanilla structure starting there cannot reach them. */
+    default boolean farFromTheCity(int x, int z) {
+        return false;
+    }
 }

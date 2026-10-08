@@ -88,6 +88,86 @@ public final class Noise {
         return sum / norm;
     }
 
+    // ------------------------------------------------------------------ gradient noise (terrain)
+
+    private static final double[][] GRAD2 = {
+            {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+            {0.70710678, 0.70710678}, {-0.70710678, 0.70710678}, {0.70710678, -0.70710678}, {-0.70710678, -0.70710678}
+    };
+
+    private static final int[][] GRAD3 = {
+            {1, 1, 0}, {-1, 1, 0}, {1, -1, 0}, {-1, -1, 0}, {1, 0, 1}, {-1, 0, 1},
+            {1, 0, -1}, {-1, 0, -1}, {0, 1, 1}, {0, -1, 1}, {0, 1, -1}, {0, -1, -1}
+    };
+
+    private static double fade(double t) {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+
+    private static double dot2(long seed, int ix, int iz, double dx, double dz) {
+        double[] g = GRAD2[(int) (hash(seed, ix, iz) >>> 61)];
+        return g[0] * dx + g[1] * dz;
+    }
+
+    /** 2D gradient (Perlin) noise in [-1, 1]: smooth, without the grid look of value noise. */
+    public static double perlin2(long seed, double x, double z) {
+        int x0 = (int) Math.floor(x);
+        int z0 = (int) Math.floor(z);
+        double fx = x - x0;
+        double fz = z - z0;
+        double u = fade(fx);
+        double v = fade(fz);
+        double n00 = dot2(seed, x0, z0, fx, fz);
+        double n10 = dot2(seed, x0 + 1, z0, fx - 1, fz);
+        double n01 = dot2(seed, x0, z0 + 1, fx, fz - 1);
+        double n11 = dot2(seed, x0 + 1, z0 + 1, fx - 1, fz - 1);
+        return clamp(lerp(lerp(n00, n10, u), lerp(n01, n11, u), v) * 1.41421356, -1, 1);
+    }
+
+    private static double dot3(long seed, int ix, int iy, int iz, double dx, double dy, double dz) {
+        int[] g = GRAD3[(int) Math.floorMod(hash(seed, ix, iy, iz) >>> 33, 12L)];
+        return g[0] * dx + g[1] * dy + g[2] * dz;
+    }
+
+    /** 3D gradient noise in [-1, 1] (caves). */
+    public static double perlin3(long seed, double x, double y, double z) {
+        int x0 = (int) Math.floor(x);
+        int y0 = (int) Math.floor(y);
+        int z0 = (int) Math.floor(z);
+        double fx = x - x0;
+        double fy = y - y0;
+        double fz = z - z0;
+        double u = fade(fx);
+        double v = fade(fy);
+        double w = fade(fz);
+        double n000 = dot3(seed, x0, y0, z0, fx, fy, fz);
+        double n100 = dot3(seed, x0 + 1, y0, z0, fx - 1, fy, fz);
+        double n010 = dot3(seed, x0, y0 + 1, z0, fx, fy - 1, fz);
+        double n110 = dot3(seed, x0 + 1, y0 + 1, z0, fx - 1, fy - 1, fz);
+        double n001 = dot3(seed, x0, y0, z0 + 1, fx, fy, fz - 1);
+        double n101 = dot3(seed, x0 + 1, y0, z0 + 1, fx - 1, fy, fz - 1);
+        double n011 = dot3(seed, x0, y0 + 1, z0 + 1, fx, fy - 1, fz - 1);
+        double n111 = dot3(seed, x0 + 1, y0 + 1, z0 + 1, fx - 1, fy - 1, fz - 1);
+        double a = lerp(lerp(n000, n100, u), lerp(n010, n110, u), v);
+        double b = lerp(lerp(n001, n101, u), lerp(n011, n111, u), v);
+        return clamp(lerp(a, b, w) * 1.15, -1, 1);
+    }
+
+    /** Fractal sum of 2D gradient noise, normalised to [-1, 1]; every octave doubles the frequency and halves the weight. */
+    public static double fbmPerlin2(long seed, double x, double z, int octaves) {
+        double sum = 0;
+        double amp = 1;
+        double norm = 0;
+        double f = 1;
+        for (int i = 0; i < octaves; i++) {
+            sum += perlin2(seed + i * 131L, x * f, z * f) * amp;
+            norm += amp;
+            amp *= 0.5;
+            f *= 2;
+        }
+        return sum / norm;
+    }
+
     /** 3D value noise in [0, 1] (floating islands, cave pockets). */
     public static double value3(long seed, double x, double y, double z) {
         int x0 = (int) Math.floor(x);

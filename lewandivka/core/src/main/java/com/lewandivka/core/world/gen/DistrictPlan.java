@@ -98,18 +98,18 @@ public final class DistrictPlan implements WorldPlan {
         return HEIGHT;
     }
 
+    /** The city is a square of {@code EDGE + 2} blocks around the tram stop; the wilderness starts right behind it. */
+    public static final int CITY_EDGE = EDGE + 2;
+    /** Width of the strip in which the flat ground of the city grows into the land of the wilderness. */
+    public static final int BLEND = 64;
+
+    private static final ThreadLocal<WildTerrain.Sample> WILD = ThreadLocal.withInitial(WildTerrain.Sample::new);
+
     @Override
     public void column(int x, int z, TerrainColumn out) {
         int r = Math.max(Math.abs(x), Math.abs(z));
-        if (r > EDGE + 42) {
-            out.reset(118, "minecraft:stone", "minecraft:stone", 3, "minecraft:stone");
-            return;
-        }
-        if (r > EDGE + 2) {
-            double t = (r - EDGE - 2) / 40.0;
-            int h = GROUND + (int) Math.round(t * t * 24 + t * 6 + Noise.value2(SEED + 7, x * 0.15, z * 0.15) * 2);
-            String top = r > EDGE + 36 ? "minecraft:stone" : (Noise.hash(SEED, x, z) & 7) == 0 ? Pal.COARSE_DIRT : Pal.GRASS;
-            out.reset(h, top, Pal.DIRT, 3, "minecraft:stone");
+        if (r > CITY_EDGE) {
+            wildColumn(x, z, r, out);
             return;
         }
         String top = topBlock(x, z);
@@ -118,14 +118,57 @@ public final class DistrictPlan implements WorldPlan {
         out.decor = decorAt(x, z, top);
     }
 
+    /** The wilderness: natural land, blended into the flat ground of the city over {@link #BLEND} blocks. */
+    private static void wildColumn(int x, int z, int r, TerrainColumn out) {
+        WildTerrain.Sample s = WILD.get();
+        WildTerrain.sample(x, z, EDGE, s);
+        double w = Noise.smoothstep(CITY_EDGE, CITY_EDGE + BLEND, r);
+        int height = (int) Math.round(Noise.lerp(GROUND, s.exactHeight, w));
+        out.reset(height, s.top, s.sub, s.subDepth, s.base);
+        if (height < WildTerrain.SEA) {
+            out.fluid(WildTerrain.SEA, "minecraft:water");
+        }
+    }
+
     @Override
     public String biomeAt(int x, int y, int z) {
-        return BIOME;
+        int r = Math.max(Math.abs(x), Math.abs(z));
+        if (r <= CITY_EDGE) {
+            return BIOME;
+        }
+        WildTerrain.Sample s = WILD.get();
+        WildTerrain.sample(x, z, EDGE, s);
+        return s.biome;
+    }
+
+    private static final List<String> BIOME_LIST;
+
+    static {
+        List<String> all = new ArrayList<>();
+        all.add(BIOME);
+        all.addAll(List.of(WildTerrain.BIOMES));
+        BIOME_LIST = List.copyOf(all);
     }
 
     @Override
     public List<String> biomes() {
-        return List.of(BIOME);
+        return BIOME_LIST;
+    }
+
+    @Override
+    public boolean carved(int x, int y, int z, int surface) {
+        int r = Math.max(Math.abs(x), Math.abs(z));
+        return r > CITY_EDGE + 24 && WildTerrain.cave(x, y, z, surface);
+    }
+
+    @Override
+    public boolean wilderness(int x, int z) {
+        return Math.max(Math.abs(x), Math.abs(z)) > CITY_EDGE + 8;
+    }
+
+    @Override
+    public boolean farFromTheCity(int x, int z) {
+        return Math.max(Math.abs(x), Math.abs(z)) > CITY_EDGE + BLEND + 150;
     }
 
     @Override
@@ -152,6 +195,9 @@ public final class DistrictPlan implements WorldPlan {
                 Blueprint tree = Props.tree(Noise.range(SEED + 6, cx, cz, Props.TREE_VARIANTS));
                 TerrainColumn col = new TerrainColumn();
                 column(tx, tz, col);
+                if (col.fluidY > col.height) {
+                    continue;
+                }
                 int half = tree.sizeX() / 2;
                 StructurePlacement sp = new StructurePlacement("forest", tree, tx - half, col.height + 1, tz - half);
                 if (sp.intersectsXZ(minX, minZ, maxX, maxZ)) {

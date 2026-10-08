@@ -35,7 +35,7 @@ public final class ChunkPainter {
         for (int dx = 0; dx < 16; dx++) {
             for (int dz = 0; dz < 16; dz++) {
                 plan.column(x0 + dx, z0 + dz, col);
-                paintColumn(chunk, mp, x0 + dx, z0 + dz, col, minY, maxY);
+                paintColumn(plan, chunk, mp, x0 + dx, z0 + dz, col, minY, maxY);
             }
         }
         for (StructurePlacement p : plan.scatterIn(x0, z0, x0 + 15, z0 + 15)) {
@@ -49,7 +49,10 @@ public final class ChunkPainter {
         Heightmap.populateHeightmaps(chunk, EnumSet.of(Heightmap.Type.OCEAN_FLOOR_WG, Heightmap.Type.WORLD_SURFACE_WG));
     }
 
-    private static void paintColumn(Chunk chunk, BlockPos.Mutable mp, int x, int z, TerrainColumn col, int minY, int maxY) {
+    /** Caves that reach down this far are filled with lava (the lava lakes of the deep, as in the ordinary overworld). */
+    private static final int LAVA_LEVEL = 10;
+
+    private static void paintColumn(WorldPlan plan, Chunk chunk, BlockPos.Mutable mp, int x, int z, TerrainColumn col, int minY, int maxY) {
         BlockState base = StateResolver.parse(col.base);
         BlockState sub = StateResolver.parse(col.sub);
         BlockState top = StateResolver.parse(col.top);
@@ -58,6 +61,11 @@ public final class ChunkPainter {
             BlockState s;
             if (y == minY) {
                 s = Blocks.BEDROCK.getDefaultState();
+            } else if (plan.carved(x, y, z, col.height)) {
+                if (y > minY + LAVA_LEVEL) {
+                    continue;
+                }
+                s = Blocks.LAVA.getDefaultState();
             } else if (y == col.height) {
                 s = top;
             } else if (y >= col.height - col.subDepth) {

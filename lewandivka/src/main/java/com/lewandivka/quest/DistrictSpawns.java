@@ -52,7 +52,8 @@ public final class DistrictSpawns {
         if (world == null || !Campaign.world(server).started()) {
             return;
         }
-        List<ServerPlayerEntity> players = world.getPlayers(p -> !p.isSpectator() && p.isAlive());
+        // only the people in town meet the gopniks: out in the open country the monsters are the ones of the ordinary game
+        List<ServerPlayerEntity> players = world.getPlayers(p -> !p.isSpectator() && p.isAlive() && Town.contains(p));
         boolean night = Population.night(server.getOverworld().getTimeOfDay());
         List<? extends GopnikEntity> mine = world.getEntitiesByType(TypeFilter.instanceOf(GopnikEntity.class), e -> e.isAlive() && e.getCommandTags().contains(TAG));
         if (!night) {

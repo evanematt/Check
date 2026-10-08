@@ -109,6 +109,23 @@ public final class LewCommands {
                         .then(CommandManager.argument("ticks", IntegerArgumentType.integer(1, 2400))
                                 .executes(c -> feedback(c.getSource(), ServerTrace.start(c.getSource().getServer(), StringArgumentType.getString(c, "player"), IntegerArgumentType.getInteger(c, "ticks")))))));
         root.then(CommandManager.literal("creatures").executes(c -> creatures(c.getSource())));
+        // development tools for the open country: count what the generator made around a point, stand (or hover) somewhere out there
+        root.then(CommandManager.literal("survey")
+                .then(CommandManager.argument("x", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("z", IntegerArgumentType.integer())
+                                .then(CommandManager.argument("radius", IntegerArgumentType.integer(0, 8))
+                                        .executes(c -> {
+                                            ServerWorld world = Dimensions.district(c.getSource().getServer());
+                                            return feedback(c.getSource(), world == null ? "the district is not loaded"
+                                                    : Survey.count(world, IntegerArgumentType.getInteger(c, "x"), IntegerArgumentType.getInteger(c, "z"),
+                                                    IntegerArgumentType.getInteger(c, "radius")));
+                                        })))));
+        root.then(CommandManager.literal("wild")
+                .then(CommandManager.argument("x", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("z", IntegerArgumentType.integer())
+                                .executes(c -> wild(c.getSource(), IntegerArgumentType.getInteger(c, "x"), IntegerArgumentType.getInteger(c, "z"), false))
+                                .then(CommandManager.literal("view")
+                                        .executes(c -> wild(c.getSource(), IntegerArgumentType.getInteger(c, "x"), IntegerArgumentType.getInteger(c, "z"), true))))));
         root.then(CommandManager.literal("checkpoint").executes(c -> checkpoint(c.getSource())));
         root.then(CommandManager.literal("reset")
                 .then(CommandManager.literal("encounter")
@@ -297,6 +314,15 @@ public final class LewCommands {
         String text = SelfTest.probe(source.getWorld(), x, Math.min(y1, y2), Math.max(y1, y2), z);
         source.sendFeedback(() -> Text.literal(text), false);
         return 1;
+    }
+
+    private static int wild(ServerCommandSource source, int x, int z, boolean view) {
+        ServerPlayerEntity player = source.getPlayer();
+        if (player == null) {
+            source.sendError(Text.literal("only a player can use this"));
+            return 0;
+        }
+        return feedback(source, Survey.visit(player, x, z, view));
     }
 
     /** Development tool: every creature of the mod that lives in any world, with its position (the server's view, not the client's). */

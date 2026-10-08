@@ -53,6 +53,21 @@ tasks.register('render', JavaExec) {
     }
 }
 
+// Development aid: gradle worldMap -Pcx=0 -Pcz=0 -Pspan=3000 -Ppx=1000 [-Pcave=30]
+tasks.register('worldMap', JavaExec) {
+    group = 'verification'
+    description = 'Draws a top-down map of the district dimension (build/renders/worldmap.png) and prints statistics'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.WorldMapMain'
+    systemProperty 'java.awt.headless', 'true'
+    maxHeapSize = '1g'
+    ['cx', 'cz', 'span', 'px', 'cave', 'out'].each { k ->
+        if (project.hasProperty(k)) {
+            systemProperty k, project.property(k)
+        }
+    }
+}
+
 // Writes every block key the generators can place to build/palette.txt (checked by tools/validate_registry.py)
 tasks.register('dumpPalette', JavaExec) {
     group = 'verification'

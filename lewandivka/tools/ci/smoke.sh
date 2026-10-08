@@ -71,6 +71,12 @@ session "$LOG" \
   "lewandivka joinreplay torture" \
   "!until 150 DONE lewandivka joinreplay result" \
   "lewandivka joinreplay report" \
+  "execute in lewandivka:district run forceload add -72 308 72 452" \
+  "execute in lewandivka:district run forceload add -522 -172 -378 -28" \
+  "execute in lewandivka:district run forceload add 448 228 592 372" \
+  "!until 300 chunks=81 lewandivka survey 0 380 4" \
+  "!until 300 chunks=81 lewandivka survey -450 -100 4" \
+  "!until 300 chunks=81 lewandivka survey 520 300 4" \
   "lewandivka step $STEP" \
   "lewandivka status" \
   "save-all flush" \
@@ -106,6 +112,25 @@ grep -q "selftest: OK" "$LOG2.rcon" 2>/dev/null || { echo "SMOKE: the self test 
 grep -q "joinreplay: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the join replay found problems"; ok=0; }
 grep -q "torture: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the movement of the third player found problems"; ok=0; }
 grep -h "^lewandivka:district 2,-3:" "$LOG.rcon" 2>/dev/null | head -2
+# the open country: three 9 x 9 chunk areas around the city were generated; the game's own features must have made forests, ores,
+# water, caves and animals there (a world to survive in), and the chunks must have come out without a single logged error
+echo "--- wilderness"
+python3 - "$LOG.rcon" <<'PY' || { echo "SMOKE: the wilderness is not a world to survive in"; ok=0; }
+import re, sys
+lines = [l for l in open(sys.argv[1], encoding="utf-8", errors="replace").read().splitlines() if l.startswith("survey ")]
+totals = {}
+for l in lines:
+    print(l[:600])
+    for key, value in re.findall(r"([a-z_]+)=(\d+)", l.split(": ", 1)[1]):
+        totals[key] = totals.get(key, 0) + int(value)
+need = {"chunks": 200, "logs": 1, "leaves": 1, "water": 1, "cave_air": 1, "coal_ore": 1, "iron_ore": 1, "grass_block": 1}
+missing = [k for k, v in need.items() if totals.get(k, 0) < v]
+animals = sum(totals.get(k, 0) for k in ("cow", "pig", "sheep", "chicken", "horse", "rabbit", "fox", "wolf", "llama", "goat"))
+print("totals:", {k: totals.get(k, 0) for k in need}, "animals:", animals)
+if len(lines) < 3 or missing or animals < 1:
+    print("missing:", missing, "animals:", animals, "reports:", len(lines))
+    sys.exit(1)
+PY
 echo "--- join replay"
 grep -h "joinreplay:\|joined (\|torture started\|RUNNING\|DONE" "$LOG.rcon" 2>/dev/null | cut -c1-3000
 # the first status line of the second session is the one printed right after the restart
