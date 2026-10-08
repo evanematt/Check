@@ -355,6 +355,15 @@ public final class AutoTest {
         shot(c, "wild_" + name, 8);
     }
 
+    /** Inside a cave of the open country: the picture shows what the player finds when he digs. */
+    private static void underground(MinecraftClient c, String name, double x, double y, double z) {
+        cmd(c, atIn("lewandivka:district", x, y, z, 90, 12), 20);
+        settle(c, "the " + name, 2400);
+        add("check the " + name, 1, () -> expect("the player stands free in the " + name, !c.player.isInsideWall(),
+                "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
+        shot(c, "wild_" + name, 8);
+    }
+
     /** Standing at the entrance of a structure (for the ones that lie underground). */
     private static void inside(MinecraftClient c, String structure, String step) {
         if (step != null) {
@@ -813,6 +822,9 @@ public final class AutoTest {
         wild(c, "forest", 0, 380);
         wild(c, "west", -450, -100);
         wild(c, "coast", 520, 300);
+        // underground: caves found offline in the noise (they are a pure function of the position)
+        underground(c, "cavern", 361.5, 50, 514.5);
+        underground(c, "lava_cave", 250.5, 12, 274.5);
         // mobs of the district
         cmd(c, "lewandivka teleport tram_stop", 20);
         settle(c, "mobs", 2400);

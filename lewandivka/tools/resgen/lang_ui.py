@@ -221,6 +221,8 @@ UI = {
     "message.lewandivka.kettle.empty": ("Чайник порожній. Наберіть води.", "The kettle is empty. Fill it with water."),
     "message.lewandivka.shlahbaum.need_package": ("Пан Шлагбаум мовчки дивиться на ваші руки. Посилки немає.", "Mr. Shlahbaum silently looks at your hands. No package."),
     "message.lewandivka.welcome": ("Район вас не чекав. Але й не проти.", "The district did not expect you. It does not mind."),
+    "message.lewandivka.open_world": ("За районом починається вільний світ: ліси, ріки, печери й ніч із її мешканцями. Блокнот почекає — квести нікуди не втечуть.",
+                                      "Beyond the district a free world begins: forests, rivers, caves and the night with its inhabitants. The notebook can wait; the quests are not going anywhere."),
     "bossbar.lewandivka.chroma": ("ХРОМА", "CHROMA"),
     "cinematic.lewandivka.last_tram": ("ОСТАННІЙ ТРАМВАЙ", "THE LAST TRAM"),
     "cinematic.lewandivka.transition": ("ПО ТОЙ БІК", "TO THE OTHER SIDE"),

@@ -110,7 +110,10 @@ animals of freshly generated chunks (`PlanChunkGenerator.populateEntities` calls
 night and generates its structures (villages, mineshafts, ruined portals ...) far from the city only (`farFromTheCity`).
 The city biome keeps no spawns and no features: the quest structures and the roaming gopniks are the story's. The story only
 holds the evening and the night, and only sends the gopniks, around people who are in town (`Town`); out in the country the
-days and nights are the ordinary ones.
+days and nights are the ordinary ones. Beds work: the world wakes everybody up, but it cannot move the clock of a campaign
+dimension (the clock of the overworld), so `TimeControl.sleep` moves it to the next morning once everybody in the district has
+slept long enough. A Nether portal leads back to the overworld of the ordinary game, which is another world; whoever comes out
+of it is brought home to the district at the same coordinates (`Lifecycle`, `Travel.toSurface`).
 
 Tools: `gradle -p core worldMap -Pcx= -Pcz= -Pspan= [-Pcave=30]` draws the dimension (biomes, relief, water, caves of one
 height) and prints statistics; `/lewandivka wild <x> <z> [view]` stands or hovers there, `/lewandivka survey <x> <z> <r>` counts

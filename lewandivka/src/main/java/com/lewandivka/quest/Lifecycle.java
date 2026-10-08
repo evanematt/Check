@@ -132,6 +132,7 @@ public final class Lifecycle {
         player.networkHandler.sendPacket(new TitleS2CPacket(Text.translatable("title.lewandivka.district")));
         player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.translatable("title.lewandivka.district.sub")));
         player.sendMessage(Text.translatable("message.lewandivka.welcome"), false);
+        player.sendMessage(Text.translatable("message.lewandivka.open_world"), false);
     }
 
     /** Brings every player who is waiting for the arrival to the district now (the self test, which is not inside a tick of the game). */
