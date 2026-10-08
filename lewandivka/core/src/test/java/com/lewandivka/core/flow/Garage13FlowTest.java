@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -119,6 +120,34 @@ class Garage13FlowTest {
         f.enteredTunnels();
         assertEquals(3, env.checkpoint);
         f.carrierReachedExit(A);
+        assertTrue(f.complete());
+        assertEquals(1, env.eventCount(Events.G13_ESCAPED));
+    }
+
+    @Test
+    void thePocketsDecideWhoCarriesThePackageAndTheExitEndsTheEscape() {
+        FakeEnv env = new FakeEnv("garage13", 2);
+        env.inside.add(A);
+        Garage13Flow f = new Garage13Flow(env);
+        solveBreakers(f);
+        solveSwitchboxes(env, f);
+        solveLevers(f);
+        env.inventory.put("package", 1);                  // A picked it up from the floor
+        f.tick();
+        assertTrue(env.record.flag("taken"));
+        assertTrue(f.carried());
+        assertEquals(1, env.eventCount(Events.G13_PACKAGE_TAKEN));
+        env.inventory.put("package", 0);                  // dropped on the ground
+        f.tick();
+        assertFalse(f.carried());
+        env.inventory.put("package", 1);
+        f.tick();
+        assertTrue(f.carried());
+        env.playersAtMarker.put("cp_3", List.of(A));
+        f.tick();
+        assertEquals(3, env.checkpoint, "entering the tunnels saves the third checkpoint");
+        env.playersAtMarker.put("exit", List.of(A));
+        f.tick();
         assertTrue(f.complete());
         assertEquals(1, env.eventCount(Events.G13_ESCAPED));
     }

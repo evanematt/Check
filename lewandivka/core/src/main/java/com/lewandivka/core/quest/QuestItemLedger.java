@@ -73,7 +73,7 @@ public final class QuestItemLedger {
         }
 
         // --- package: carried during the escape, symbolic copy for the base pedestal ---
-        if (s == QuestStep.GARAGE_ESCAPE && !w.flag(FLAG_PACKAGE_PLACED)) {
+        if ((s == QuestStep.GARAGE_ESCAPE || s == QuestStep.GARAGE_DELIVER) && !w.flag(FLAG_PACKAGE_PLACED)) {
             out.add(Need.party(QuestItems.PACKAGE, 1));
         }
         if (s.isAtLeast(QuestStep.BASE_WAKE) && !s.isAfter(QuestStep.BASE_PEDESTALS) && !w.flag(FLAG_PEDESTAL_PACKAGE)) {

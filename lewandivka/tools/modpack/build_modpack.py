@@ -165,21 +165,31 @@ class Pick:
             raise RuntimeError(f"hash mismatch for {self.file['filename']}")
         self.jar = data
         self.meta = {}
+        self.nested = []
         if self.file["filename"].endswith(".jar"):
             try:
                 with zipfile.ZipFile(io.BytesIO(data)) as z:
                     self.meta = json.loads(z.read("fabric.mod.json").decode("utf-8-sig"))
+                    # jar-in-jar: Fabric API is a bundle of ~50 modules, other mods embed their libraries
+                    for entry in self.meta.get("jars", []) or []:
+                        try:
+                            with zipfile.ZipFile(io.BytesIO(z.read(entry["file"]))) as nz:
+                                self.nested.append(json.loads(nz.read("fabric.mod.json").decode("utf-8-sig")))
+                        except Exception:  # noqa: BLE001
+                            continue
             except Exception as e:  # noqa: BLE001
                 print(f"  note: no readable fabric.mod.json in {self.file['filename']} ({e})")
         self.numeric = numbers(str(self.meta.get("version") or self.version["version_number"]), minecraft) or numbers(self.version["version_number"], minecraft)
 
-    def mod_ids(self):
-        ids = set()
-        if self.meta.get("id"):
-            ids.add(self.meta["id"])
-        for p in self.meta.get("provides", []) or []:
-            ids.add(p if isinstance(p, str) else p.get("id"))
-        return ids
+    def provided(self, minecraft: str):
+        """Every mod id this jar makes available (itself, 'provides' aliases, embedded modules) with its numeric version."""
+        out = {}
+        for meta in [self.meta] + self.nested:
+            number = numbers(str(meta.get("version", "")), minecraft) or self.numeric
+            for mid in [meta.get("id")] + [p if isinstance(p, str) else p.get("id") for p in meta.get("provides", []) or []]:
+                if mid:
+                    out[mid] = number
+        return out
 
 
 def find_project(cfg, minecraft: str):
@@ -228,26 +238,36 @@ def resolve(cfg, minecraft: str, loader: str, reason: str = "pack"):
     return pick
 
 
-def graph_problems(picks):
-    """Dependency ranges inside the chosen jars versus the other chosen mods."""
+def graph_problems(picks, minecraft: str = "1.20.1", loader_version: str = "0.16.10"):
+    """Dependency ranges inside the chosen jars versus the other chosen mods, Minecraft and the loader."""
     provided = {}
     for p in picks:
-        for mid in p.mod_ids():
-            provided[mid] = p
+        for mid, number in p.provided(minecraft).items():
+            provided[mid] = (p, number)
+    game = numbers(minecraft, "") or (1, 20, 1)
+    loader = numbers(loader_version, "") or (0, 16, 10)
     problems = []
     for p in picks:
         for dep, pred in (p.meta.get("depends") or {}).items():
+            if dep == "minecraft":
+                if not satisfies(pred, game):
+                    problems.append((p, f"needs minecraft {pred}", None))
+                continue
+            if dep in ("fabricloader", "fabric-loader"):
+                if not satisfies(pred, loader):
+                    problems.append((p, f"needs fabric loader {pred}", None))
+                continue
             if dep in BUILTIN:
                 continue
             target = provided.get(dep)
             if target is None:
                 problems.append((p, f"needs {dep} which is not in the pack", None))
-            elif not satisfies(pred, target.numeric):
-                problems.append((p, f"needs {dep} {pred} but the pack has {target.version['version_number']}", target))
+            elif not satisfies(pred, target[1]):
+                problems.append((p, f"needs {dep} {pred} but the pack has {target[0].version['version_number']}", target[0]))
         for dep, pred in (p.meta.get("breaks") or {}).items():
             target = provided.get(dep)
-            if target is not None and satisfies(pred, target.numeric):
-                problems.append((p, f"breaks with {dep} {target.version['version_number']}", target))
+            if target is not None and target[0] is not p and satisfies(pred, target[1]):
+                problems.append((p, f"breaks with {dep} {target[0].version['version_number']}", target[0]))
     return problems
 
 
@@ -291,7 +311,7 @@ def build_graph(config, report):
                     print(f"! dependency {project['slug']} of {pick.slug} could not be resolved: {e}")
     # step back through older releases until every declared range holds
     for round_ in range(40):
-        problems = graph_problems(list(picks.values()))
+        problems = graph_problems(list(picks.values()), minecraft, config["loader_version"])
         if not problems:
             break
         progressed = False

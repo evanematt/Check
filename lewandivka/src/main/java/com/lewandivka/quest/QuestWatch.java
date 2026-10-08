@@ -3,10 +3,14 @@ package com.lewandivka.quest;
 import com.lewandivka.campaign.Campaign;
 import com.lewandivka.campaign.PartyService;
 import com.lewandivka.core.quest.QuestItemLedger;
+import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.item.SpecItem;
 import com.lewandivka.network.Net;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -22,6 +26,8 @@ import java.util.UUID;
  */
 public final class QuestWatch {
 
+    private static final UUID PACKAGE_SLOW = UUID.fromString("5d2a8a52-3d4f-4b7a-9a3b-2d1c6b0f7e10");
+
     private QuestWatch() {
     }
 
@@ -30,8 +36,29 @@ public final class QuestWatch {
     }
 
     private static void tick(MinecraftServer server) {
-        if (server.getTicks() % 40 == 7) {
+        long t = server.getTicks();
+        if (t % 40 == 7) {
             restore(server);
+        }
+        if (t % 10 == 3) {
+            for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+                carrierSlowness(p);
+            }
+        }
+    }
+
+    /** Whoever carries the package is 15 % slower (it is heavy and it growls); dropping it removes the penalty. */
+    private static void carrierSlowness(ServerPlayerEntity player) {
+        EntityAttributeInstance speed = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+        if (speed == null) {
+            return;
+        }
+        boolean carrying = QuestInventory.has(player, QuestItems.PACKAGE);
+        boolean slowed = speed.getModifier(PACKAGE_SLOW) != null;
+        if (carrying && !slowed) {
+            speed.addTemporaryModifier(new EntityAttributeModifier(PACKAGE_SLOW, "lewandivka.package", -0.15, EntityAttributeModifier.Operation.MULTIPLY_TOTAL));
+        } else if (!carrying && slowed) {
+            speed.removeModifier(PACKAGE_SLOW);
         }
     }
 

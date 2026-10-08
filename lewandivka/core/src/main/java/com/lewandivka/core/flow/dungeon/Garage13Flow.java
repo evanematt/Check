@@ -6,6 +6,7 @@ import com.lewandivka.core.flow.mechanism.DeadlineSwitch;
 import com.lewandivka.core.flow.mechanism.LeverPattern;
 import com.lewandivka.core.flow.mechanism.OrderedSequence;
 import com.lewandivka.core.flow.mechanism.SyncPresses;
+import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.story.Events;
 import com.lewandivka.core.world.gen.GarageComplex;
 
@@ -215,6 +216,7 @@ public final class Garage13Flow implements Flow {
     public void tick() {
         switchboxes.tick();
         operator.tick();
+        watchPackage();
         if (nextGrowl >= 0 && env.now() >= nextGrowl) {
             if (carrier != null) {
                 env.soundAt(carrier, "package.growl");
@@ -225,6 +227,39 @@ public final class Garage13Flow implements Flow {
                 }
             }
             scheduleGrowl();
+        }
+    }
+
+    /**
+     * The game gives no pick-up event, so the flow looks into the pockets of the players inside: who holds the package,
+     * did it hit the ground, did the carrier reach the manhole, did the party enter the tunnels.
+     */
+    private void watchPackage() {
+        if (!env.record().flag("revealed") || env.record().flag("escaped") || env.players().isEmpty()) {
+            return;
+        }
+        UUID holder = null;
+        for (UUID p : env.players()) {
+            if (env.has(p, QuestItems.PACKAGE)) {
+                holder = p;
+                break;
+            }
+        }
+        boolean taken = env.record().flag("taken");
+        if (holder != null) {
+            if (!taken) {
+                packageTaken(holder);
+            } else if (!carried || !holder.equals(carrier)) {
+                packageLifted(holder);
+            }
+        } else if (taken && carried) {
+            packagePlaced();
+        }
+        if (taken && carrier != null && carried && env.playersAt("exit", 3).contains(carrier)) {
+            carrierReachedExit(carrier);
+        }
+        if (taken && !env.record().flag("tunnels") && !env.playersAt("cp_3", 4).isEmpty() && env.record().setFlag("tunnels")) {
+            enteredTunnels();
         }
     }
 

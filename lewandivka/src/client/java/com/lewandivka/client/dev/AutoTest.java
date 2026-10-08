@@ -24,7 +24,7 @@ import java.util.List;
  */
 public final class AutoTest {
 
-    private record Step(String name, Runnable action, int wait) {
+    private record Step(String name, Runnable action, int delay) {
     }
 
     private static final List<Step> STEPS = new ArrayList<>();
@@ -75,7 +75,7 @@ public final class AutoTest {
             note("FAILED " + s.name() + ": " + e);
             LewandivkaMod.LOGGER.error("autotest step failed", e);
         }
-        wait = s.wait();
+        wait = s.delay();
     }
 
     private static void finish(MinecraftClient c, boolean ok) {
