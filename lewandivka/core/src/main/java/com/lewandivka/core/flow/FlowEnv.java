@@ -171,4 +171,10 @@ public interface FlowEnv {
 
     /** Plays a dialogue script for the party. */
     void dialogue(String scriptId);
+
+    /** Grants the advancement with this id (the file name in data/lewandivka/advancements) to everybody in the party. */
+    void award(String advancementId);
+
+    /** Plays a dialogue with choices for the party; the callback receives the player and the id of the chosen answer. */
+    void ask(String scriptId, java.util.function.BiConsumer<UUID, String> onChoice);
 }

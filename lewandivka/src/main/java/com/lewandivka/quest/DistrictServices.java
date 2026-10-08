@@ -45,6 +45,7 @@ public final class DistrictServices {
     public static void register() {
         NpcActions.on("pan_shlahbaum", DistrictServices::talkShlahbaum);
         NpcActions.on("debtor", DistrictServices::talkDebtor);
+        DistrictSpawns.register();
         ServerTickEvents.END_SERVER_TICK.register(DistrictServices::tick);
     }
 
@@ -71,6 +72,12 @@ public final class DistrictServices {
             }
             case TRAM_REPORT -> Story.event(server, Events.TRAM_REPORTED);
             case EPI_MORNING -> Story.event(server, Events.EPILOGUE_DONE);
+            case POST_FREE -> {
+                var flow = com.lewandivka.flow.FlowHost.flow(server, com.lewandivka.flow.FlowHost.WORLD_DISTRICT);
+                if (flow != null) {
+                    flow.use("shlahbaum", player.getUuid());
+                }
+            }
             default -> Dialogues.play(server, "shlahbaum_idle_" + (1 + RNG.nextInt(4)), List.of(player), npc);
         }
         return ActionResult.SUCCESS;

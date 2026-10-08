@@ -1,6 +1,7 @@
 package com.lewandivka.entity.npc;
 
 import com.lewandivka.entity.LewMob;
+import com.lewandivka.flow.FlowHost;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.FleeEntityGoal;
 import net.minecraft.entity.ai.goal.Goal;
@@ -10,6 +11,9 @@ import net.minecraft.entity.ai.goal.SwimGoal;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import software.bernie.geckolib.core.animation.AnimationState;
@@ -91,6 +95,23 @@ public class CatEntity extends LewMob {
         if (poseTicks > 0) {
             poseTicks--;
         }
+    }
+
+    /** The twelve hidden cats of the postgame are found by touching them; the district flow counts them. */
+    @Override
+    public ActionResult interactMob(PlayerEntity player, Hand hand) {
+        if (!getWorld().isClient && player instanceof ServerPlayerEntity sp && hand == Hand.MAIN_HAND) {
+            for (String tag : getCommandTags()) {
+                if (tag.startsWith("lew.flow.post.cat.")) {
+                    var flow = FlowHost.flow(sp.getServer(), FlowHost.WORLD_DISTRICT);
+                    if (flow != null && flow.use("cat_" + tag.substring("lew.flow.post.cat.".length()), sp.getUuid())) {
+                        play("sit");
+                        return ActionResult.SUCCESS;
+                    }
+                }
+            }
+        }
+        return super.interactMob(player, hand);
     }
 
     @Override

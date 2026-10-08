@@ -77,6 +77,9 @@ public final class LoreNotes {
         n(73, "ДВЕРІ №3. Відчиняються тільки на швидкості. Останні.", "DOOR 3. Opens only at speed. The last one.");
         n(74, "Це не стіна. Так вирішили.", "This is not a wall. It was decided so.");
         n(75, "Планер: натисніть стрибок у повітрі.", "Glider: press jump in the air.");
+        // ---- postgame
+        n(89, "ГАРАЖ №0. Тут стояли ті, кому не вистачило номера.", "GARAGE No. 0. Those who did not get a number parked here.");
+        n(90, "Вихід — драбина. Він завжди був — просто ніхто не питав.", "The exit is the ladder. It was always there; nobody asked.");
         // ---- tower
         n(80, "Ласкаво просимо до Голови району. Орієнтовний час очікування: невизначений.", "Welcome to the Head of District. Estimated waiting time: undefined.");
         n(81, "ТЕРМІНОВІ ПИТАННЯ — вхід збоку.", "URGENT MATTERS — side entrance.");

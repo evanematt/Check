@@ -272,6 +272,22 @@ public final class DistrictPlan implements WorldPlan {
         garageCooperative();
         streetFurniture();
         questMarkers();
+        postgame();
+    }
+
+    /** Free-play objects: the seed bowls, the validator of the wrong tram stop and the bunker of Garage No. 0. */
+    private void postgame() {
+        int[][] bowls = {{-33, -40}, {36, 38}, {-83, 24}};
+        for (int i = 0; i < bowls.length; i++) {
+            propForce("seed_bowl_" + (i + 1), Props.seedBowl(i + 1), bowls[i][0], GROUND + 1, bowls[i][1]);
+        }
+        propForce("wrong_stop", Props.wrongStop(), 1, GROUND + 1, 2);
+        // two rubbish heaps with district tokens (the first night must not depend on luck)
+        propForce("stash_tokens_n", Props.stash("tokens"), -30, GROUND + 1, -44);
+        propForce("stash_tokens_shop", Props.stash("tokens"), 72, GROUND + 1, -23);
+        StructurePlacement g0 = new StructurePlacement("garage0", Garage0.blueprint(), Garage0.ORIGIN_X, GROUND - Garage0.TOP, Garage0.ORIGIN_Z);
+        clearTrees(g0.x(), g0.z(), g0.maxX(), g0.maxZ());
+        placements.add(g0);
     }
 
     private void building(String id, Blueprint bp, int bodyX, int bodyZ) {

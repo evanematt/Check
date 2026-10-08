@@ -243,7 +243,10 @@ def graph_problems(picks, minecraft: str = "1.20.1", loader_version: str = "0.16
     provided = {}
     for p in picks:
         for mid, number in p.provided(minecraft).items():
-            provided[mid] = (p, number)
+            # Fabric Loader keeps the highest version when several jars (or jar-in-jar copies) provide the same id
+            current = provided.get(mid)
+            if current is None or (number or (0, 0, 0)) > (current[1] or (0, 0, 0)):
+                provided[mid] = (p, number)
     game = numbers(minecraft, "") or (1, 20, 1)
     loader = numbers(loader_version, "") or (0, 16, 10)
     problems = []
@@ -603,7 +606,8 @@ def write_server(path: Path, config, picks, jar_path: Path, jar_name: str, versi
         z.writestr(root + "fabric-server-launch.jar", launcher)
         z.writestr(root + "server.properties", SERVER_PROPERTIES)
         z.writestr(root + "eula.txt", "# Change to eula=true after reading https://aka.ms/MinecraftEULA (start.sh / start.bat ask you).\neula=false\n")
-        info = z.ZipInfo(root + "start.sh")
+        info = zipfile.ZipInfo(root + "start.sh")
+        info.compress_type = zipfile.ZIP_DEFLATED
         info.external_attr = 0o755 << 16
         z.writestr(info, START_SH)
         z.writestr(root + "start.bat", START_BAT)
@@ -621,7 +625,8 @@ def write_tlauncher(path: Path, config, index, jar_path: Path, jar_name: str, sh
         for rel, text in preset_files(shader_name).items():
             z.writestr(root + f"overrides/{rel}", text)
         z.writestr(root + "install.ps1", PS1.replace("{installer_url}", installer_url).replace("{minecraft}", fields["minecraft"]).replace("{loader}", fields["loader"]))
-        info = z.ZipInfo(root + "install.sh")
+        info = zipfile.ZipInfo(root + "install.sh")
+        info.compress_type = zipfile.ZIP_DEFLATED
         info.external_attr = 0o755 << 16
         z.writestr(info, SH.replace("{installer_url}", installer_url).replace("{minecraft}", fields["minecraft"]).replace("{loader}", fields["loader"]))
         z.writestr(root + "README-TLauncher.txt", TL_README.replace("{version}", version).replace("{loader}", fields["loader"]).replace("{minecraft}", fields["minecraft"]))

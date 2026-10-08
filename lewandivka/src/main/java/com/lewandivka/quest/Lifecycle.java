@@ -119,6 +119,7 @@ public final class Lifecycle {
             case SKY_ASCENT -> "spring";
             case TOWER_RING -> "glider";
             case TOWER_APPROACH -> "ring";
+            case TRAM_WAIT -> "local";
             case POST_FREE -> "district_colorful";
             default -> null;
         };

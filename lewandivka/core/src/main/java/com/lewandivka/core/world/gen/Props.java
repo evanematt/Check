@@ -334,6 +334,32 @@ public final class Props {
         });
     }
 
+    /** A bowl for the postgame seed mystery; the marker is named {@code bowl_<n>} so that the flow can tell the bowls apart. */
+    public static Blueprint seedBowl(int n) {
+        return cached("seedbowl" + n, () -> {
+            BlueprintBuilder b = new BlueprintBuilder("seed_bowl_" + n, 1, 1, 1);
+            b.set(0, 0, 0, Keys.mod("seed_bowl", "stage", "0"));
+            b.marker("bowl_" + n, 0, 0, 0);
+            return b.build();
+        });
+    }
+
+    /** The validator post of the stop that is not in the timetable (square ticket). 2 wide, 2 deep. */
+    public static Blueprint wrongStop() {
+        return cached("wrongstop", () -> {
+            BlueprintBuilder b = new BlueprintBuilder("wrong_stop", 3, 3, 2);
+            b.set(0, 0, 0, "minecraft:cobblestone_wall");
+            b.set(0, 1, 0, "minecraft:cobblestone_wall");
+            b.set(0, 2, 0, "minecraft:lantern[hanging=false]");
+            b.set(1, 0, 0, Pal.validator(Dir.NORTH, "square"));
+            b.set(2, 0, 0, "minecraft:cobblestone_wall");
+            b.set(2, 1, 0, "minecraft:cobblestone_wall");
+            b.set(2, 2, 0, "minecraft:lantern[hanging=false]");
+            b.marker("validator", 1, 0, 0);
+            return b.build();
+        });
+    }
+
     /** Clue prop with marker. */
     public static Blueprint clue(int kind) {
         return cached("clue" + kind, () -> {

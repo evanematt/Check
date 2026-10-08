@@ -62,7 +62,7 @@ public final class GameEnv implements FlowEnv {
     GameEnv(MinecraftServer server, String structure) {
         this.server = server;
         this.structure = structure;
-        this.dimension = Structures.dimensionOf(structure);
+        this.dimension = FlowHost.dimensionOf(structure);
     }
 
     void beginEncounter() {
@@ -88,11 +88,14 @@ public final class GameEnv implements FlowEnv {
     }
 
     private Box area() {
+        if (FlowHost.isWorldFlow(structure)) {
+            return new Box(-400, -64, -400, 400, 330, 400);
+        }
         return Structures.bounds(structure).expand(64, 32, 64);
     }
 
     private List<ServerPlayerEntity> insidePlayers() {
-        return PartyService.inStructure(server, structure, Math.max(12, FlowHost.margin(structure)));
+        return FlowHost.playersOf(server, structure);
     }
 
     // ------------------------------------------------------------------ FlowEnv
@@ -184,7 +187,12 @@ public final class GameEnv implements FlowEnv {
 
     @Override
     public void say(UUID player, String langKey, Object... args) {
-        Text text = Text.translatable(langKey, args);
+        Object[] shown = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            // a flow cannot build Text, so it passes the language key of a name ("cat.lewandivka.name.3") as a string
+            shown[i] = args[i] instanceof String str && str.contains(".lewandivka.") ? Text.translatable(str) : args[i];
+        }
+        Text text = Text.translatable(langKey, shown);
         if (player == null) {
             for (ServerPlayerEntity p : insidePlayers()) {
                 p.sendMessage(text, true);
@@ -261,8 +269,12 @@ public final class GameEnv implements FlowEnv {
             if (e instanceof GopnikEntity g) {
                 g.setMood(GopnikEntity.Mood.HOSTILE);
             }
-            if (e instanceof CatEntity cat && tag.startsWith("cat.helper")) {
+            if (e instanceof CatEntity cat && (tag.startsWith("cat.helper") || tag.startsWith("post."))) {
                 cat.setHelper(true);
+            }
+            if (tag.startsWith("post.cat.")) {
+                e.setCustomName(Text.translatable("cat.lewandivka.name." + tag.substring("post.cat.".length())));
+                e.setCustomNameVisible(true);
             }
             e.addCommandTag(TAG + tag);
             w.spawnEntity(e);
@@ -658,6 +670,20 @@ public final class GameEnv implements FlowEnv {
             }
         }
         t.discard();
+    }
+
+    @Override
+    public void award(String advancementId) {
+        for (ServerPlayerEntity p : PartyService.players(server)) {
+            if (Campaign.player(p).participating()) {
+                com.lewandivka.quest.Advancements.grant(p, advancementId);
+            }
+        }
+    }
+
+    @Override
+    public void ask(String scriptId, java.util.function.BiConsumer<UUID, String> onChoice) {
+        Dialogues.play(server, scriptId, insidePlayers(), null, (player, choice) -> onChoice.accept(player.getUuid(), choice));
     }
 
     @Override

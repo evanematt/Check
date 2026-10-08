@@ -94,6 +94,15 @@ public class FareDodgerEntity extends LewMob {
     }
 
     @Override
+    public void remove(net.minecraft.entity.Entity.RemovalReason reason) {
+        if (bar != null && !getWorld().isClient) {
+            bar.clearPlayers();
+            bar.setVisible(false);
+        }
+        super.remove(reason);
+    }
+
+    @Override
     protected String hurtSoundId() {
         return "gopnik.hurt";
     }

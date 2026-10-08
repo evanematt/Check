@@ -8,6 +8,8 @@ import com.lewandivka.LewandivkaMod;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.ScreenshotRecorder;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 
 import java.io.IOException;
@@ -33,6 +35,13 @@ public final class AutoTest {
     private static int index;
     private static int wait;
     private static int shots;
+    /** While set, the script is paused until the condition has held for {@link #STABLE_TICKS} ticks (or the time is up). */
+    private static java.util.function.BooleanSupplier awaiting;
+    private static String awaitingName = "";
+    private static int awaitLeft;
+    private static int stable;
+    private static final int STABLE_TICKS = 40;
+    private static int timeouts;
 
     private AutoTest() {
     }
@@ -63,6 +72,18 @@ public final class AutoTest {
             wait--;
             return;
         }
+        if (awaiting != null) {
+            stable = awaiting.getAsBoolean() ? stable + 1 : 0;
+            if (stable >= STABLE_TICKS || --awaitLeft <= 0) {
+                if (stable < STABLE_TICKS) {
+                    timeouts++;
+                    note("await " + awaitingName + " timed out");
+                }
+                awaiting = null;
+                where(c, awaitingName);
+            }
+            return;
+        }
         if (index >= STEPS.size()) {
             finish(c, true);
             return;
@@ -88,6 +109,24 @@ public final class AutoTest {
         c.scheduleStop();
     }
 
+    /** True when the player is out of the loading screen and the chunk around them is loaded and meshed. */
+    private static boolean terrainReady(MinecraftClient c) {
+        if (c.player == null || c.world == null || c.currentScreen != null) {
+            return false;
+        }
+        BlockPos p = c.player.getBlockPos();
+        return c.world.getChunkManager().isChunkLoaded(p.getX() >> 4, p.getZ() >> 4)
+                && c.worldRenderer.isRenderingReady(p) && c.worldRenderer.isTerrainRenderComplete();
+    }
+
+    /** What the camera sees: position, the block at the eye, the light there (to understand dark or blocked shots). */
+    private static void where(MinecraftClient c, String name) {
+        BlockPos eye = BlockPos.ofFloored(c.player.getEyePos());
+        note(String.format("at %s: %s %.1f %.1f %.1f yaw %.0f pitch %.0f eye=%s sky=%d block=%d", name,
+                c.world.getRegistryKey().getValue(), c.player.getX(), c.player.getY(), c.player.getZ(), c.player.getYaw(), c.player.getPitch(),
+                c.world.getBlockState(eye).getBlock().getTranslationKey(), c.world.getLightLevel(LightType.SKY, eye), c.world.getLightLevel(LightType.BLOCK, eye)));
+    }
+
     // ------------------------------------------------------------------ script
 
     private static void add(String name, int wait, Runnable action) {
@@ -105,9 +144,21 @@ public final class AutoTest {
         });
     }
 
-    private static void tour(MinecraftClient c, String structure, String view) {
-        cmd(c, "lewandivka teleport " + structure, 150);
-        cmd(c, view, 70);
+    /** Pauses the script until the terrain around the player has loaded (a dimension change can take a while). */
+    private static void settle(MinecraftClient c, String name, int maxTicks) {
+        add("await " + name, 2, () -> {
+            awaiting = () -> terrainReady(c);
+            awaitingName = name;
+            // a few slow loads are fine; once the machine keeps timing out the rest of the script must still finish
+            awaitLeft = timeouts >= 2 ? Math.min(maxTicks, 60) : Math.min(maxTicks, 900);
+            stable = 0;
+        });
+    }
+
+    /** The server puts the camera on an aerial vantage point of the structure (see {@code /lewandivka teleport <id> view}). */
+    private static void tour(MinecraftClient c, String structure) {
+        cmd(c, "lewandivka teleport " + structure + " view", 20);
+        settle(c, structure, 2400);
         shot(c, "tour_" + structure, 6);
     }
 
@@ -132,12 +183,14 @@ public final class AutoTest {
         shot(c, "02_notebook", 4);
         add("close", 6, () -> c.setScreen(null));
 
-        String high = "tp @s ~ ~14 ~18 180 30";
+        // night vision only for the tours: the district is held at night (see TimeControl), the shots must show the buildings
+        cmd(c, "effect give @s minecraft:night_vision 99999 0 true", 6);
         for (String s : List.of("tram_stop", "old_shop", "garage13", "block_a", "house_ne0", "kindergarten", "playground_north", "tram_depot", "kiosk_foundation")) {
-            tour(c, s, high);
+            tour(c, s);
         }
         // mobs of the district
-        cmd(c, "lewandivka teleport tram_stop", 120);
+        cmd(c, "lewandivka teleport tram_stop", 20);
+        settle(c, "mobs", 2400);
         cmd(c, "tp @s ~ ~2 ~", 10);
         show(c, "gopniks", "gopnik", "seed_thrower", "senior_yard_gopnik");
         show(c, "npcs", "pan_shlahbaum", "debtor", "fare_dodger", "fare_dodger_leader");
@@ -150,7 +203,8 @@ public final class AutoTest {
         show(c, "colorless_head", "colorless_head");
 
         // the block gallery (built by the CI script through rcon)
-        cmd(c, "tp @s 1020 154 997 0 24", 140);
+        cmd(c, "tp @s 1020 154 997 0 24", 20);
+        settle(c, "gallery", 2400);
         shot(c, "gallery_1", 6);
         cmd(c, "tp @s 1020 154 1010 0 24", 60);
         shot(c, "gallery_2", 6);
@@ -158,12 +212,11 @@ public final class AutoTest {
         shot(c, "gallery_3", 6);
 
         // the other side
-        String sky = "tp @s ~ ~ ~ 200 -32";
-        tour(c, "base", high);
-        cmd(c, sky, 20);
+        tour(c, "base");
+        cmd(c, "tp @s ~ ~ ~ 200 -32", 30);
         shot(c, "sky_chromandivka", 6);
         for (String s : List.of("rainbow_garage", "shelter", "aquapark", "sky_ascent", "sky_depot", "tower_approach", "tower", "isle3")) {
-            tour(c, s, high);
+            tour(c, s);
         }
 
         // HUD pieces (client-side mock state, only for the screenshots)

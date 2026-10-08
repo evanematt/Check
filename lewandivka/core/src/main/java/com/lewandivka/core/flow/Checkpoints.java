@@ -17,6 +17,7 @@ public final class Checkpoints {
             Map.entry("sky_ascent", List.of("cp_start", "cp_isle3", "cp_stop")),
             Map.entry("sky_depot", List.of("cp_arrival", "cp_dispatcher", "cp_yard", "cp_office", "cp_arena")),
             Map.entry("tower_approach", List.of("cp_start", "cp_dash", "cp_hidden", "cp_shaft", "cp_deck", "cp_landing", "cp_tower")),
+            Map.entry("garage0", List.of("cp_entry")),
             Map.entry("tower", List.of("cp_gate", "cp_lobby", "cp_archive", "cp_office", "cp_dept", "cp_shaft", "cp_collapsed", "cp_arena")));
 
     private Checkpoints() {

@@ -58,7 +58,7 @@ public final class ConfigScreen extends Screen {
         int w = 220;
         int x = width / 2 - w / 2;
         int y = height / 6;
-        addDrawableChild(new Slider(x, y, w, "config.lewandivka.screen_shake", 0.0, 1.5, c.screenShake, v -> c.screenShake = v));
+        addDrawableChild(new Slider(x, y, w, "config.lewandivka.screen_shake", 0.0, 1.0, c.screenShake, v -> c.screenShake = v));
         y += 24;
         addDrawableChild(new Slider(x, y, w, "config.lewandivka.particle_density", 0.0, 1.0, c.particleDensity, v -> c.particleDensity = v));
         y += 24;

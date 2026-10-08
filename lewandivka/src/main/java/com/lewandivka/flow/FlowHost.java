@@ -5,6 +5,8 @@ import com.lewandivka.campaign.Campaign;
 import com.lewandivka.core.flow.Flow;
 import com.lewandivka.core.flow.dungeon.AquaparkFlow;
 import com.lewandivka.core.flow.dungeon.BaseFlow;
+import com.lewandivka.core.flow.dungeon.Garage0Flow;
+import com.lewandivka.core.flow.dungeon.PostgameFlow;
 import com.lewandivka.core.flow.dungeon.Garage13Flow;
 import com.lewandivka.core.flow.dungeon.LastTramFlow;
 import com.lewandivka.core.flow.dungeon.RainbowGarageFlow;
@@ -51,6 +53,8 @@ public final class FlowHost {
     private static final Map<String, Integer> MARGINS = new HashMap<>();
     private static final Map<String, Slot> SLOTS = new HashMap<>();
     private static final int RESET_AFTER_TICKS = 20 * 20;
+    /** The whole district is one "structure" for the free-play flow; small props of it are routed to it by id. */
+    public static final String WORLD_DISTRICT = "district";
 
     static {
         FACTORIES.put("garage13", Garage13Flow::new);
@@ -63,6 +67,8 @@ public final class FlowHost {
         FACTORIES.put("sky_depot", SkyDepotFlow::new);
         FACTORIES.put("tower_approach", TowerApproachFlow::new);
         FACTORIES.put("tower", TowerFlow::new);
+        FACTORIES.put("garage0", Garage0Flow::new);
+        FACTORIES.put(WORLD_DISTRICT, PostgameFlow::new);
         MARGINS.put("tram_stop", 70);
         MARGINS.put("sky_ascent", 400);            // the sky tram leaves the structure on its two minute ride
     }
@@ -88,9 +94,41 @@ public final class FlowHost {
         return MARGINS.getOrDefault(structure, 10);
     }
 
+    /** Structures that belong to another flow: the seed bowls and the validator post of the wrong tram stop. */
+    public static String resolve(String structure) {
+        if (structure.startsWith("seed_bowl_") || structure.equals("wrong_stop")) {
+            return WORLD_DISTRICT;
+        }
+        return structure;
+    }
+
+    /** True for flows that cover a whole dimension instead of one structure. */
+    public static boolean isWorldFlow(String structure) {
+        return structure.equals(WORLD_DISTRICT);
+    }
+
+    /** The dimension id of a structure or world flow, or null. */
+    public static String dimensionOf(String structure) {
+        return isWorldFlow(structure) ? Dimensions.DISTRICT_ID : Structures.dimensionOf(structure);
+    }
+
+    /** The players who count as "inside" a structure (everybody in the dimension for a world flow). */
+    public static java.util.List<ServerPlayerEntity> playersOf(MinecraftServer server, String structure) {
+        if (isWorldFlow(structure)) {
+            java.util.List<ServerPlayerEntity> out = new java.util.ArrayList<>();
+            for (ServerPlayerEntity p : com.lewandivka.campaign.PartyService.players(server)) {
+                if (Dimensions.DISTRICT_ID.equals(Dimensions.idOf(p.getWorld()))) {
+                    out.add(p);
+                }
+            }
+            return out;
+        }
+        return com.lewandivka.campaign.PartyService.inStructure(server, structure, Math.max(12, margin(structure)));
+    }
+
     /** The flow of a structure, created and rebuilt on first use; null for structures without a flow. */
     public static Flow flow(MinecraftServer server, String structure) {
-        Slot s = slot(server, structure);
+        Slot s = slot(server, resolve(structure));
         return s == null ? null : s.flow;
     }
 
@@ -100,7 +138,8 @@ public final class FlowHost {
             return s;
         }
         Function<com.lewandivka.core.flow.FlowEnv, Flow> factory = FACTORIES.get(structure);
-        if (factory == null || Structures.site(structure) == null || Dimensions.world(server, Structures.dimensionOf(structure)) == null) {
+        if (factory == null || dimensionOf(structure) == null || (!isWorldFlow(structure) && Structures.site(structure) == null)
+                || Dimensions.world(server, dimensionOf(structure)) == null) {
             return null;
         }
         GameEnv env = new GameEnv(server, structure);
@@ -162,11 +201,10 @@ public final class FlowHost {
         }
         long now = server.getTicks();
         for (String structure : FACTORIES.keySet()) {
-            Structures.Site site = Structures.site(structure);
-            if (site == null) {
+            if (!isWorldFlow(structure) && Structures.site(structure) == null) {
                 continue;
             }
-            var players = com.lewandivka.campaign.PartyService.inStructure(server, structure, margin(structure));
+            var players = playersOf(server, structure);
             Slot s = SLOTS.get(structure);
             if (players.isEmpty()) {
                 if (s != null && s.occupied) {

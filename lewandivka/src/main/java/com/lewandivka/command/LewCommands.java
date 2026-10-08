@@ -81,7 +81,8 @@ public final class LewCommands {
                             }
                             return b.buildFuture();
                         })
-                        .executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure")))));
+                        .executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure"), false))
+                        .then(CommandManager.literal("view").executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure"), true)))));
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
         root.then(CommandManager.literal("checkpoint").executes(c -> checkpoint(c.getSource())));
         root.then(CommandManager.literal("reset")
@@ -206,7 +207,8 @@ public final class LewCommands {
 
     // ------------------------------------------------------------------ development tools
 
-    private static int teleport(ServerCommandSource source, String structure) {
+    /** Development tool: to the entrance of a structure, or ({@code view}) to an aerial vantage point looking at it. */
+    private static int teleport(ServerCommandSource source, String structure, boolean view) {
         ServerPlayerEntity player = source.getPlayer();
         Structures.Site site = Structures.site(structure);
         if (player == null || site == null) {
@@ -227,7 +229,25 @@ public final class LewCommands {
         double x = m != null ? m.x() + 0.5 : site.placement().x();
         double y = m != null ? m.y() : site.placement().y();
         double z = m != null ? m.z() + 0.5 : site.placement().z();
-        player.teleport(world, x, y, z, player.getYaw(), player.getPitch());
+        if (view) {
+            // above the roof line, south of the structure, looking at its lower middle (never inside a wall)
+            net.minecraft.util.math.Box b = Structures.bounds(structure);
+            double cx = (b.minX + b.maxX) / 2;
+            double cz = (b.minZ + b.maxZ) / 2;
+            double cy = b.minY + (b.maxY - b.minY) * 0.35;
+            double back = Math.max(16, Math.max(b.getXLength(), b.getZLength()) * 0.9 + 8);
+            double eyeY = b.maxY + 6 + back * 0.35;
+            double dy = cy - eyeY;
+            float yaw = 180.0f;
+            float pitch = (float) Math.toDegrees(Math.atan2(-dy, back));
+            player.teleport(world, cx, eyeY - 1.62, cz + back, yaw, pitch);
+            if (player.getAbilities().allowFlying) {
+                player.getAbilities().flying = true;
+                player.sendAbilitiesUpdate();
+            }
+        } else {
+            player.teleport(world, x, y, z, player.getYaw(), player.getPitch());
+        }
         source.sendFeedback(() -> Text.literal("teleported to " + structure), true);
         return 1;
     }

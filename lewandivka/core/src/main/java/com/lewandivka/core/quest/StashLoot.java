@@ -25,6 +25,7 @@ public final class StashLoot {
             "seeds", List.of(new Drop(QuestItems.SEEDS, 3, 6)),
             "fish", List.of(new Drop(QuestItems.FISH, 1, 1)),
             "tokens", List.of(new Drop(QuestItems.TOKEN, 1, 2)),
+            "garage0", List.of(new Drop(QuestItems.TOKEN, 2, 2), new Drop(QuestItems.SEEDS, 5, 5), new Drop("minecraft:emerald", 3, 3)),
             "junk", List.of(new Drop("minecraft:string", 1, 3), new Drop("minecraft:iron_nugget", 1, 4), new Drop("minecraft:bread", 1, 1)));
 
     public static boolean known(String kind) {

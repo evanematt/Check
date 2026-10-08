@@ -402,6 +402,22 @@ public class FakeEnv implements FlowEnv {
         checkpoint = index;
     }
 
+    public final List<String> awards = new ArrayList<>();
+    public final Map<String, java.util.function.BiConsumer<UUID, String>> asks = new HashMap<>();
+
+    @Override
+    public void award(String advancementId) {
+        awards.add(advancementId);
+    }
+
+    @Override
+    public void ask(String scriptId, java.util.function.BiConsumer<UUID, String> onChoice) {
+        if (DialogueBook.get(scriptId) == null) {
+            throw new IllegalArgumentException("unknown dialogue '" + scriptId + "'");
+        }
+        asks.put(scriptId, onChoice);
+    }
+
     @Override
     public void dialogue(String scriptId) {
         if (DialogueBook.get(scriptId) == null) {

@@ -1332,6 +1332,14 @@
     "88": {
       "uk": "Поверх обвалився. Ремонт заплановано на минулий вівторок.",
       "en": "The floor has collapsed. Repairs were scheduled for last Tuesday."
+    },
+    "89": {
+      "uk": "ГАРАЖ №0. Тут стояли ті, кому не вистачило номера.",
+      "en": "GARAGE No. 0. Those who did not get a number parked here."
+    },
+    "90": {
+      "uk": "Вихід — драбина. Він завжди був — просто ніхто не питав.",
+      "en": "The exit is the ladder. It was always there; nobody asked."
     }
   },
   "abilities": [

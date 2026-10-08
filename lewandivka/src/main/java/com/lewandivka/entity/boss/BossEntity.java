@@ -381,6 +381,25 @@ public abstract class BossEntity extends LewMob {
         bar.clearPlayers();
     }
 
+    /** {@code /kill}, unloading and every other removal go through here (onDeath alone is not enough). */
+    @Override
+    public void remove(Entity.RemovalReason reason) {
+        if (!getWorld().isClient) {
+            try {
+                releaseHud();
+            } catch (RuntimeException e) {
+                // the world may already be shutting down; the bar goes away with the entity anyway
+            }
+        }
+        super.remove(reason);
+    }
+
+    /** Takes the boss bar (and whatever the fight put on the screens) away from the players. */
+    protected void releaseHud() {
+        bar.clearPlayers();
+        bar.setVisible(false);
+    }
+
     @Override
     public boolean cannotDespawn() {
         return true;

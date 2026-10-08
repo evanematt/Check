@@ -593,6 +593,14 @@ public class ColorlessHeadEntity extends BossEntity {
         flooded.clear();
         called = null;
         Net.monochrome(participants(80), false);
+        Net.charge(participants(80), null, 0.0f, false);
+    }
+
+    @Override
+    protected void releaseHud() {
+        super.releaseHud();
+        Net.monochrome(participants(90), false);
+        Net.charge(participants(90), null, 0.0f, false);
     }
 
     @Override

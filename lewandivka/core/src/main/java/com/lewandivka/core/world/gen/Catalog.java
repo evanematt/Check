@@ -183,6 +183,7 @@ public final class Catalog {
         m.put("sky_depot", SkyDepot.blueprint());
         m.put("tower_approach", TowerApproach.blueprint());
         m.put("tower", Tower.blueprint());
+        m.put("garage0", Garage0.blueprint());
         m.put("glowshroom3", Nature.glowshroom(3));
         m.put("glowshroom6", Nature.glowshroom(6));
         m.put("rainbow_tree1", Nature.rainbowTree(1));

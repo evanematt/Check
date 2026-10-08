@@ -133,6 +133,12 @@ public class GopnikEntity extends LewMob {
             play("talk");
             com.lewandivka.campaign.Campaign.player(sp).addRepPoints(1);
             com.lewandivka.campaign.Campaign.dirty(sp.getServer());
+            com.lewandivka.quest.Advancements.grant(sp, "seeds");
+            if (random.nextInt(2) == 0) {
+                // a thank-you: talking is worth more than fighting
+                dropStack(new ItemStack(GameItems.get(QuestItems.TOKEN), 1));
+                com.lewandivka.quest.Story.event(sp.getServer(), com.lewandivka.core.story.Events.TOKEN_COLLECTED);
+            }
             return ActionResult.SUCCESS;
         }
         Dialogues.play(sp.getServer(), "seeds_none", List.of(sp), this);
@@ -170,7 +176,7 @@ public class GopnikEntity extends LewMob {
         }
         dropStack(new ItemStack(GameItems.get(QuestItems.SEEDS), 1 + random.nextInt(3)));
         boolean senior = spec.role == Role.SENIOR_GOPNIK;
-        if (senior || random.nextInt(4) == 0) {
+        if (senior || random.nextInt(ranged() ? 2 : 3) == 0) {
             dropStack(new ItemStack(GameItems.get(QuestItems.TOKEN), 1));
             if (source.getAttacker() instanceof ServerPlayerEntity sp) {
                 com.lewandivka.quest.Story.event(sp.getServer(), com.lewandivka.core.story.Events.TOKEN_COLLECTED);

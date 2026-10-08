@@ -166,6 +166,7 @@ public final class SkyDepotFlow implements Flow {
             if (!env.has(player, TICKETS.get(i))) {
                 env.give(player, TICKETS.get(i), 1);
                 env.sound("ticket_window", "tram.validate");
+                env.award("ticket_ok");
                 if (env.record().setFlag(TICKET_FLAGS.get(i))) {
                     env.event(Events.DEPOT_TICKET);
                     if (ticketsFound() >= TICKETS.size()) {
