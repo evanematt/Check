@@ -118,7 +118,9 @@ of it is brought home to the district at the same coordinates (`Lifecycle`, `Tra
 Tools: `gradle -p core worldMap -Pcx= -Pcz= -Pspan= [-Pcave=30]` draws the dimension (biomes, relief, water, caves of one
 height) and prints statistics; `/lewandivka wild <x> <z> [view]` stands or hovers there, `/lewandivka survey <x> <z> <r>` counts
 the logs, water, ores, caves and animals of the loaded chunks. The smoke test generates three 9 x 9 chunk areas and demands a
-forest, water, caves, coal and iron, grass and animals; any logged error of the generation fails it.
+forest, water, caves, coal and iron, grass and animals; `/lewandivka sweep start <count> <range>` · `status` · `end` then forces
+400 chunks scattered over 6000 x 6000 blocks to generate (all biomes, their features, the structures of the ordinary game) and
+reports the biomes and structures they came out with; any logged error of the generation fails the smoke test.
 
 ### Calibrated physics
 

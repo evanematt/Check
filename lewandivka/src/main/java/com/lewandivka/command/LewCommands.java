@@ -120,6 +120,23 @@ public final class LewCommands {
                                                     : Survey.count(world, IntegerArgumentType.getInteger(c, "x"), IntegerArgumentType.getInteger(c, "z"),
                                                     IntegerArgumentType.getInteger(c, "radius")));
                                         })))));
+        root.then(CommandManager.literal("sweep")
+                .then(CommandManager.literal("start")
+                        .then(CommandManager.argument("count", IntegerArgumentType.integer(1, 4000))
+                                .then(CommandManager.argument("range", IntegerArgumentType.integer(1, 2000))
+                                        .executes(c -> {
+                                            ServerWorld world = Dimensions.district(c.getSource().getServer());
+                                            return feedback(c.getSource(), world == null ? "the district is not loaded"
+                                                    : Sweep.start(world, IntegerArgumentType.getInteger(c, "count"), IntegerArgumentType.getInteger(c, "range")));
+                                        }))))
+                .then(CommandManager.literal("status").executes(c -> {
+                    ServerWorld world = Dimensions.district(c.getSource().getServer());
+                    return feedback(c.getSource(), world == null ? "the district is not loaded" : Sweep.status(world));
+                }))
+                .then(CommandManager.literal("end").executes(c -> {
+                    ServerWorld world = Dimensions.district(c.getSource().getServer());
+                    return feedback(c.getSource(), world == null ? "the district is not loaded" : Sweep.end(world));
+                })));
         root.then(CommandManager.literal("wild")
                 .then(CommandManager.argument("x", IntegerArgumentType.integer())
                         .then(CommandManager.argument("z", IntegerArgumentType.integer())
