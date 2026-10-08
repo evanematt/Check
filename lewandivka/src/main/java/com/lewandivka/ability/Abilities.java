@@ -5,6 +5,9 @@ import com.lewandivka.core.campaign.Ability;
 import com.lewandivka.network.Net;
 import com.lewandivka.sound.GameSounds;
 import com.lewandivka.world.dimension.Dimensions;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.server.MinecraftServer;
@@ -29,7 +32,6 @@ public final class Abilities {
         long glideReadyAt;
         boolean gliding;
         int glideEnergy;
-        long springReadyAt;
     }
 
     private static final Map<UUID, State> STATES = new HashMap<>();
@@ -146,23 +148,62 @@ public final class Abilities {
         }
     }
 
-    /** Spring pads rate-limit themselves per player so a bounce is never triggered twice in a row. */
-    public static boolean canSpring(ServerPlayerEntity p) {
-        State s = state(p);
-        long now = p.getServerWorld().getTime();
-        if (now < s.springReadyAt) {
+    // ------------------------------------------------------------------ spring insoles
+
+    /** Who was launched by a spring and when: a pad acts every tick somebody stands on it, one launch per few ticks is enough. */
+    private static final Map<UUID, Long> SPRUNG = new HashMap<>();
+    /** A launch can reach 30 blocks up; the whole flight (and the landing) counts as part of it. */
+    private static final long FLIGHT_TICKS = 400;
+    private static boolean softening;
+
+    public static void register() {
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register(Abilities::allowDamage);
+    }
+
+    /** The high bounce of the pads needs the Spring Insoles (admins in creative mode always have them). */
+    public static boolean hasInsoles(ServerPlayerEntity p) {
+        return p.isCreative() || Campaign.hasAbility(p, Ability.SPRING_INSOLES);
+    }
+
+    /** True when the entity may be launched now (and remembers the launch). */
+    public static boolean launched(Entity e, long now) {
+        Long last = SPRUNG.get(e.getUuid());
+        if (last != null && now - last < 8) {
             return false;
         }
-        s.springReadyAt = now + 8;
+        if (SPRUNG.size() > 256) {
+            SPRUNG.values().removeIf(t -> now - t > FLIGHT_TICKS);
+        }
+        SPRUNG.put(e.getUuid(), now);
         return true;
     }
 
-    /** Spring Insoles make landings soft: most of the fall damage disappears. */
-    public static float softenFall(ServerPlayerEntity p, float amount, DamageSource source) {
-        if (source.isOf(DamageTypes.FALL) && Campaign.hasAbility(p, Ability.SPRING_INSOLES)) {
-            return amount * 0.2f;
+    private static boolean recentlyLaunched(Entity e, long now) {
+        Long last = SPRUNG.get(e.getUuid());
+        return last != null && now - last < FLIGHT_TICKS;
+    }
+
+    /** A spring never hurts, and the Spring Insoles take most of the sting out of every other fall. */
+    private static boolean allowDamage(LivingEntity entity, DamageSource source, float amount) {
+        if (softening || !source.isOf(DamageTypes.FALL)) {
+            return true;
         }
-        return amount;
+        if (recentlyLaunched(entity, entity.getWorld().getTime())) {
+            return false;
+        }
+        if (entity instanceof ServerPlayerEntity p && Campaign.hasAbility(p, Ability.SPRING_INSOLES)) {
+            float reduced = amount * 0.2f;
+            if (reduced >= 1.0f) {
+                softening = true;
+                try {
+                    p.damage(source, reduced);
+                } finally {
+                    softening = false;
+                }
+            }
+            return false;
+        }
+        return true;
     }
 
     public static void forget(UUID id) {

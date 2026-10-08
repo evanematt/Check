@@ -12,7 +12,7 @@ public enum Ability {
     /** High bounce from spring blocks and reduced fall impact. Unlocked by Lady Vortex. */
     SPRING_INSOLES(1, "lady_vortex", 0, 0),
     /** Press jump while airborne to glide. Unlocked by the Conductor. */
-    GLIDER(2, "conductor", 100, 120);
+    GLIDER(2, "conductor", 100, 140);
 
     /** Stable id used in saves and packets. */
     public final int id;
@@ -20,7 +20,7 @@ public enum Ability {
     public final String unlockBoss;
     /** Cooldown in ticks after use (dash: 3.5 s, glider: 5 s after the glide ends). */
     public final int cooldownTicks;
-    /** Energy in ticks (glider only: 6 s). */
+    /** Energy in ticks (glider only: 7 s). */
     public final int energyTicks;
 
     Ability(int id, String unlockBoss, int cooldownTicks, int energyTicks) {

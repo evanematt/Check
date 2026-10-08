@@ -34,6 +34,7 @@ public final class Lifecycle {
     }
 
     public static void register() {
+        Abilities.register();
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> join(handler.player, server));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> Abilities.forget(handler.player.getUuid()));
         ServerPlayerEvents.AFTER_RESPAWN.register((old, player, alive) -> respawned(player));

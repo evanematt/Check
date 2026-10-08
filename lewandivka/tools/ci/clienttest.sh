@@ -95,6 +95,7 @@ PROBLEMS="$OUT/clienttest-problems.txt"
 } > "$PROBLEMS" 2>/dev/null
 N_PROBLEMS=$(wc -l < "$PROBLEMS" 2>/dev/null | tr -d ' ')
 N_PROBLEMS=${N_PROBLEMS:-0}
+[ "$N_PROBLEMS" = "0" ] && echo "none: the logs of the server and the client contain no error or warning of the mod" > "$PROBLEMS"
 echo "log problems: $N_PROBLEMS"
 if [ "$N_PROBLEMS" != "0" ]; then head -40 "$PROBLEMS"; fi
 if grep -q "AUTOTEST-RESULT OK" "$OUT/autotest-result.txt" 2>/dev/null && [ "$N_PROBLEMS" = "0" ]; then

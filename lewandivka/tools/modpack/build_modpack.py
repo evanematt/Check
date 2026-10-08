@@ -265,8 +265,12 @@ def graph_problems(picks, minecraft: str = "1.20.1", loader_version: str = "0.16
             target = provided.get(dep)
             if target is None:
                 problems.append((p, f"needs {dep} which is not in the pack", None))
+            elif dep.startswith("fabric-") and "fabric-api" in provided and target[0].slug != "fabric-api":
+                # the modules of Fabric API are versioned by the API release; the newest 1.20.1 release (the one the pack uses)
+                # contains the newest module of every mod built for 1.20.1, a copy embedded by some other mod is only older
+                continue
             elif not satisfies(pred, target[1]):
-                problems.append((p, f"needs {dep} {pred} but the pack has {target[0].version['version_number']}", target[0]))
+                problems.append((p, f"needs {dep} {pred} but {target[0].slug} {target[0].version['version_number']} provides {target[1]}", target[0]))
         for dep, pred in (p.meta.get("breaks") or {}).items():
             target = provided.get(dep)
             if target is not None and target[0] is not p and satisfies(pred, target[1]):
@@ -302,8 +306,8 @@ def build_graph(config, report):
                 project = fetch(f"{API}/project/{dep['project_id']}")
                 if not project:
                     continue
-                cfg = {"slug": project["slug"], "client": "required", "server": "required", "role": "dependency",
-                       "purpose": f"Required by {pick.project['title']}."}
+                # no forced sides: a library of a client-only mod does not belong on the server
+                cfg = {"slug": project["slug"], "role": "dependency", "purpose": f"Required by {pick.project['title']}."}
                 try:
                     extra = resolve(cfg, minecraft, loader, f"required by {pick.slug}")
                     extra.load(minecraft)
@@ -337,6 +341,14 @@ def build_graph(config, report):
             if not progressed:
                 raise RuntimeError("no compatible set: " + "; ".join(f"{p.slug}: {t}" for p, t, _ in problems))
     report["skipped"] = skipped
+    # who provides what more than once (jar-in-jar copies): the highest version wins in Fabric Loader
+    owners = {}
+    for p in picks.values():
+        for mid, number in p.provided(minecraft).items():
+            owners.setdefault(mid, []).append((p.slug, number))
+    for mid, who in sorted(owners.items()):
+        if len(who) > 1:
+            print(f"  provided more than once: {mid}: " + ", ".join(f"{slug} {number}" for slug, number in who))
     return list(picks.values())
 
 
@@ -677,6 +689,7 @@ def write_third_party(path: Path, config, picks, report, version, own_license: s
 
 
 def main() -> int:
+    sys.stdout.reconfigure(line_buffering=True)   # keep stdout and stderr in order inside the CI log
     parser = argparse.ArgumentParser()
     parser.add_argument("--jar", required=True, help="the built lewandivka jar")
     parser.add_argument("--out", default="dist")

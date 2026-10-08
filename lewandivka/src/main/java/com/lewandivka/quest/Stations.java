@@ -13,6 +13,7 @@ import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.quest.StashLoot;
 import com.lewandivka.core.registry.BlockSpec.Behaviour;
 import com.lewandivka.core.story.Events;
+import com.lewandivka.core.world.Launch;
 import com.lewandivka.flow.FlowHost;
 import com.lewandivka.item.GameItems;
 import com.lewandivka.sound.GameSounds;
@@ -35,6 +36,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
@@ -209,13 +211,17 @@ public final class Stations {
     // ------------------------------------------------------------------ springs and the grey void
 
     private static void spring(ServerWorld world, BlockPos pos, BlockState state, SpecBlock block, Entity entity) {
-        if (!(entity instanceof LivingEntity living) || entity.age % 6 != 0 || entity.getVelocity().y > 0.2) {
+        if (!(entity instanceof LivingEntity living) || entity.getVelocity().y > 0.2 || !Abilities.launched(entity, world.getTime())) {
             return;
         }
-        boolean full = !(entity instanceof ServerPlayerEntity sp) || Abilities.canSpring(sp);
-        double power = block.spec.id.equals("spring_hatch") ? 1.45 : 1.05;
+        boolean hatch = block.spec.id.equals("spring_hatch");
+        boolean full = !(entity instanceof ServerPlayerEntity sp) || Abilities.hasInsoles(sp);
+        Direction facing = hatch ? Direction.UP : block.getFacing(state);
         Vec3d v = entity.getVelocity();
-        entity.setVelocity(v.x, full ? power : 0.42, v.z);
+        double vy = !full ? Launch.HOP : hatch ? Launch.HATCH_UP : Launch.PAD_UP;
+        // an arrow pad throws the rider along its facing, a flat one and the hatch straight up
+        boolean along = full && facing.getAxis().isHorizontal();
+        entity.setVelocity(along ? facing.getOffsetX() * Launch.PAD_DRIFT : v.x, vy, along ? facing.getOffsetZ() * Launch.PAD_DRIFT : v.z);
         entity.velocityModified = true;
         entity.fallDistance = 0.0f;
         if (entity instanceof ServerPlayerEntity sp) {

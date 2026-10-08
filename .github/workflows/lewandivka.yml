@@ -139,5 +139,6 @@ jobs:
           (cd lewandivka/build/gametest && tar czf "$GITHUB_WORKSPACE/ci-out/gametest-run.tgz" logs crash-reports 2>/dev/null) || true
           cp lewandivka/build/libs/lewandivka-*[0-9].jar ci-out/lewandivka-ci.jar 2>/dev/null || true
           echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} clienttest=${{ steps.clienttest.outcome }} package=${{ steps.package.outcome }}" > ci-out/info.txt
+          find ci-out -type f -empty -delete          # GitHub refuses empty release assets and aborts the whole upload
           gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
           gh release upload ci-latest ci-out/* --clobber

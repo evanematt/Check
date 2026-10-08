@@ -88,6 +88,15 @@ seed. `Structures` indexes all markers (point markers for stations, regions for 
 the painted world against the blueprints (`/lewandivka validate`, run in CI over rcon), `StructureChecks` proves
 reachability of the quest points inside the blueprints at build time (core tests).
 
+### Calibrated physics
+
+The dungeons are built for exact launch numbers: `core/.../world/Launch.java` holds the speed of the spring pads (apex about
++20 blocks, drift 1.4 along the arrow), of the hatches (apex about +31) and of the glider (0.42 blocks/tick, sink 0.09).
+`LaunchTest` simulates vanilla movement and proves that every pad of the sky ascent lands on the next island, that the hatch
+reaches the platform of the sky tram and that the glider crosses the chasm of the tower approach with energy to spare. The
+server (`Stations.spring`, `Abilities`) and the client (`Keys.glide`) use the same constants, and the CI client test repeats
+the jumps with a real player in survival mode (`AutoTest.physics`).
+
 ## 7. Client
 
 `LewRenderer` (one GeckoLib renderer for all 20 entities, model/texture/animation from the catalog), `Hud` (objective,
@@ -113,7 +122,10 @@ and GeckoLib are never embedded in `lewandivka.jar`.
 
 ## 10. CI (`.github/workflows/lewandivka.yml`)
 
-1. core unit tests → 2. `./gradlew build` → 3. Fabric GameTests (headless server) → 4. dedicated-server smoke test over
-rcon (`/lewandivka validate`) → 5. resource validation → 6. client test (Xvfb, software GL, screenshots) → 7. modpack
+1. core unit tests → 2. `./gradlew build` → 3. Fabric GameTests (headless server; every registry entry, every entity is
+created, ticked and reloaded from NBT, the campaign NBT round trip) → 4. dedicated-server smoke test over rcon
+(`/lewandivka validate`, then a restart of the same world: the campaign step must survive) → 5. resource validation
+(including blockstate properties against the block catalog) → 6. client test (Xvfb, software GL: story-step soak of every
+dungeon, the night population, the physical jump checks, screenshots; any logged error of the mod fails it) → 7. modpack
 build → 8. boot the finished server pack. Every run publishes its logs, screenshots and artifacts to the pre-release
 `ci-latest`.

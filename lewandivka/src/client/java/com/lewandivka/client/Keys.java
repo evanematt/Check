@@ -2,6 +2,7 @@ package com.lewandivka.client;
 
 import com.lewandivka.config.LewandivkaConfig;
 import com.lewandivka.core.campaign.Ability;
+import com.lewandivka.core.world.Launch;
 import com.lewandivka.world.dimension.Dimensions;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
@@ -106,11 +107,15 @@ public final class Keys {
                 ClientNet.requestAbility(Ability.GLIDER, false);
                 return;
             }
+            // fly where you look; looking down or up does not change the speed
             Vec3d look = player.getRotationVec(1.0f);
+            double flat = Math.sqrt(look.x * look.x + look.z * look.z);
+            double dx = flat < 1.0E-3 ? 0.0 : look.x / flat;
+            double dz = flat < 1.0E-3 ? 0.0 : look.z / flat;
             Vec3d v = player.getVelocity();
-            double hx = v.x + (look.x * 0.36 - v.x) * 0.12;
-            double hz = v.z + (look.z * 0.36 - v.z) * 0.12;
-            player.setVelocity(hx, Math.max(v.y, -0.09), hz);
+            double hx = v.x + (dx * Launch.GLIDE_SPEED - v.x) * Launch.GLIDE_BLEND;
+            double hz = v.z + (dz * Launch.GLIDE_SPEED - v.z) * Launch.GLIDE_BLEND;
+            player.setVelocity(hx, Math.max(v.y, -Launch.GLIDE_SINK), hz);
             player.fallDistance = 0.0f;
         } else if (edge && airborne && ClientState.cooldownLeft(Ability.GLIDER) <= 0 && player.getVelocity().y < 0.0 && player.fallDistance > 0.6f) {
             ClientState.gliding = true;
