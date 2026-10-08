@@ -41,8 +41,10 @@ public class NpcEntity extends LewMob {
 
     @Override
     public boolean damage(DamageSource source, float amount) {
-        // quest givers cannot be killed (the campaign must stay winnable); the debtor just flinches
-        if (source.isOf(net.minecraft.entity.damage.DamageTypes.OUT_OF_WORLD) || source.getAttacker() instanceof PlayerEntity p && p.isCreative()) {
+        // quest givers cannot be killed (the campaign must stay winnable); the debtor just flinches. The void, creative players and
+        // the /kill command can: a stray one (a spawn egg, a summon) must be removable, and the story brings the real one back
+        if (source.isOf(net.minecraft.entity.damage.DamageTypes.OUT_OF_WORLD) || source.isOf(net.minecraft.entity.damage.DamageTypes.GENERIC_KILL)
+                || source.getAttacker() instanceof PlayerEntity p && p.isCreative()) {
             return super.damage(source, amount);
         }
         play("hurt");

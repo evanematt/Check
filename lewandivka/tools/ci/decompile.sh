@@ -7,8 +7,11 @@ set -u
 OUT="${1:-vanilla-src}"
 rm -rf "$OUT" "$OUT.tgz"
 mkdir -p "$OUT"
-COMMON=$(find "$HOME/.gradle" -name 'minecraft-common-*-v2.jar' 2>/dev/null | head -1)
-CLIENT=$(find "$HOME/.gradle" -name 'minecraft-clientOnly-*-v2.jar' 2>/dev/null | head -1)
+# the jar with the Yarn names (the intermediary one only has class_1234); the candidates are listed so the next run can be adjusted
+echo "minecraft jars in the Gradle caches:"
+find "$HOME/.gradle" -name 'minecraft-*.jar' -not -name '*sources*' 2>/dev/null | sed 's/^/  /'
+COMMON=$(find "$HOME/.gradle" -name 'minecraft-common-*.jar' -not -name '*sources*' 2>/dev/null | grep -v intermediary | head -1)
+CLIENT=$(find "$HOME/.gradle" -name 'minecraft-clientOnly-*.jar' -not -name '*sources*' 2>/dev/null | grep -v intermediary | head -1)
 echo "common jar: ${COMMON:-none}"
 echo "client jar: ${CLIENT:-none}"
 curl -fsSL -o "$OUT/cfr.jar" "https://github.com/leibnitz27/cfr/releases/download/0.152/cfr-0.152.jar" || { echo "could not download CFR"; exit 1; }
