@@ -19,6 +19,7 @@ import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Hand;
@@ -71,6 +72,8 @@ public final class AutoTest {
     /** The trace writes a line every this many ticks. */
     private static int traceEvery = 4;
     private static int traceSetEvery = 4;
+    /** Where the portal frame of the Nether leg stands (the block the player stood in when it was built). */
+    private static BlockPos portalSite = BlockPos.ORIGIN;
 
     private AutoTest() {
     }
@@ -362,6 +365,55 @@ public final class AutoTest {
         add("check the " + name, 1, () -> expect("the player stands free in the " + name, !c.player.isInsideWall(),
                 "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
         shot(c, "wild_" + name, 8);
+    }
+
+    /**
+     * The Nether from the open country. The frame of obsidian is lit with flint and steel by a real click (the game itself lights a
+     * portal only in the overworld and in the Nether, see NetherGate), the player goes through and comes out of the Nether through a
+     * second frame; the overworld of the ordinary game is not where the story is, so the way must end in the district (see Lifecycle).
+     */
+    private static void nether(MinecraftClient c) {
+        cmd(c, "give @s minecraft:flint_and_steel", 6);
+        cmd(c, "lewandivka wild 0 380", 20);
+        settle(c, "the site of the portal", 2400);
+        add("build the frame", 8, () -> {
+            portalSite = c.player.getBlockPos();
+            c.player.networkHandler.sendChatCommand("execute at @s run fill ~-1 ~ ~3 ~2 ~4 ~3 minecraft:obsidian");
+            c.player.networkHandler.sendChatCommand("execute at @s run fill ~ ~1 ~3 ~1 ~3 ~3 minecraft:air");
+        });
+        add("light the frame with flint and steel", 14, () -> {
+            expect("the hotbar holds flint_and_steel", hold(c, "flint_and_steel"), "the player has no flint and steel in the hotbar");
+            BlockPos bottom = portalSite.add(0, 0, 3);
+            BlockHitResult hit = new BlockHitResult(Vec3d.ofCenter(bottom).add(0, 0.5, 0), Direction.UP, bottom, false);
+            c.interactionManager.interactBlock(c.player, Hand.MAIN_HAND, hit);
+        });
+        add("check the portal", 6, () -> {
+            int n = 0;
+            for (int dx = 0; dx <= 1; dx++) {
+                for (int dy = 1; dy <= 3; dy++) {
+                    n += c.world.getBlockState(portalSite.add(dx, dy, 3)).isOf(Blocks.NETHER_PORTAL) ? 1 : 0;
+                }
+            }
+            expect("flint and steel lights a portal frame in the district", n == 6, n + " of 6 portal blocks in the frame at " + portalSite.toShortString());
+        });
+        shot(c, "wild_portal", 6);
+        cmd(c, "execute at @s run tp @s ~0.5 ~1 ~3.0", 4);
+        until("the Nether", 1200, 3, () -> in(c, "minecraft:the_nether"));
+        settle(c, "the Nether", 2400);
+        add("check the Nether", 1, () -> expect("the portal of the district leads to the Nether", in(c, "minecraft:the_nether"),
+                "the player is in " + c.world.getRegistryKey().getValue() + " at " + c.player.getBlockPos().toShortString()));
+        shot(c, "nether_arrival", 10);
+        // out of the portal and out of its reach until the cooldown has run out, then out of the Nether through a second frame
+        cmd(c, "tp @s ~ ~12 ~", 10);
+        add("wait for the cooldown of the portal", 400, () -> { });
+        cmd(c, "execute at @s run fill ~-1 ~ ~3 ~2 ~4 ~3 minecraft:obsidian", 4);
+        cmd(c, "execute at @s run fill ~ ~1 ~3 ~1 ~3 ~3 minecraft:nether_portal[axis=x]", 4);
+        cmd(c, "execute at @s run tp @s ~0.5 ~1 ~3.0", 4);
+        until("the district again", 1800, 3, () -> in(c, "lewandivka:district"));
+        settle(c, "the district after the Nether", 2400);
+        add("check the way back", 1, () -> expect("the way out of the Nether ends in the district, on its ground", in(c, "lewandivka:district") && !c.player.isInsideWall(),
+                "the player is in " + c.world.getRegistryKey().getValue() + " at " + c.player.getBlockPos().toShortString()));
+        shot(c, "nether_return", 8);
     }
 
     /** Standing at the entrance of a structure (for the ones that lie underground). */
@@ -822,6 +874,8 @@ public final class AutoTest {
         wild(c, "forest", 0, 380);
         wild(c, "west", -450, -100);
         wild(c, "coast", 520, 300);
+        // a portal of the Nether in the open country and the way back from there
+        nether(c);
         // the edge of the city seen from the open country (no wall, no step: the flat ground grows into the land)
         cmd(c, atIn("lewandivka:district", 235.5, 96, 0.5, 90, 22), 20);
         settle(c, "the edge of the city", 2400);

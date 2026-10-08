@@ -77,8 +77,11 @@ session "$LOG" \
   "!until 300 chunks=81 lewandivka survey 0 380 4" \
   "!until 300 chunks=81 lewandivka survey -450 -100 4" \
   "!until 300 chunks=81 lewandivka survey 520 300 4" \
-  "lewandivka sweep start 400 190" \
-  "!until 600 loaded=400 lewandivka sweep status" \
+  "lewandivka sweep start 24 2 190" \
+  "!until 600 done=true lewandivka sweep status" \
+  "lewandivka sweep end" \
+  "lewandivka sweep structures 100" \
+  "!until 900 done=true lewandivka sweep status" \
   "lewandivka sweep end" \
   "execute in lewandivka:district positioned 0 64 0 run locate structure #minecraft:village" \
   "execute in lewandivka:district positioned 0 64 0 run locate biome minecraft:desert" \
@@ -136,9 +139,10 @@ if len(lines) < 3 or missing or animals < 1:
     print("missing:", missing, "animals:", animals, "reports:", len(lines))
     sys.exit(1)
 PY
-# 400 chunks spread over 6000 x 6000 blocks went through the generator: every biome with its features, the structures of the game
-grep -h "^sweep " "$LOG.rcon" 2>/dev/null | cut -c1-1500
-grep -q "^sweep loaded=400 of 400" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the sweep did not generate all 400 chunks"; ok=0; }
+# 24 small squares of chunks spread over 6000 x 6000 blocks went through the generator (the biomes with their features), and the
+# structures of the game (villages, mineshafts, strongholds ...) were generated whole around the places the game found for them
+grep -h "^sweep " "$LOG.rcon" 2>/dev/null | cut -c1-1800
+[ "$(grep -c '^sweep loaded=.* done=true' "$LOG.rcon" 2>/dev/null)" = 2 ] || { echo "SMOKE: a sweep did not generate all its chunks"; ok=0; }
 # informational: do the structures and the biomes of the ordinary game exist in the open country?
 grep -h "nearest\|Could not find" "$LOG.rcon" 2>/dev/null | cut -c1-300
 echo "--- join replay"

@@ -64,10 +64,10 @@ def emit_tags() -> int:
     return 5
 
 
-def dimension_type(min_y: int, height: int, ambient: float, fixed_time: int | None) -> dict:
+def dimension_type(min_y: int, height: int, ambient: float, fixed_time: int | None, raids: bool = False) -> dict:
     d = {
         "ultrawarm": False, "natural": True, "coordinate_scale": 1.0, "has_skylight": True, "has_ceiling": False,
-        "ambient_light": ambient, "piglin_safe": False, "bed_works": True, "respawn_anchor_works": False, "has_raids": False,
+        "ambient_light": ambient, "piglin_safe": False, "bed_works": True, "respawn_anchor_works": False, "has_raids": raids,
         "logical_height": height, "min_y": min_y, "height": height, "infiniburn": "#minecraft:infiniburn_overworld",
         "effects": "minecraft:overworld", "monster_spawn_block_light_limit": 0,
         "monster_spawn_light_level": {"type": "minecraft:uniform", "value": {"min_inclusive": 0, "max_inclusive": 7}},
@@ -78,7 +78,7 @@ def dimension_type(min_y: int, height: int, ambient: float, fixed_time: int | No
 
 
 def emit_dimensions() -> int:
-    write_json(DATA / "dimension_type" / "district.json", dimension_type(0, 256, 0.05, None))
+    write_json(DATA / "dimension_type" / "district.json", dimension_type(0, 256, 0.05, None, raids=True))
     write_json(DATA / "dimension_type" / "chromandivka.json", dimension_type(0, 320, 0.25, 6000))
     for name in ("district", "chromandivka"):
         write_json(DATA / "dimension" / f"{name}.json", {

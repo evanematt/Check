@@ -7,6 +7,7 @@ import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.world.WorldPlan;
 import com.lewandivka.core.world.gen.ChromaPlan;
 import com.lewandivka.core.world.gen.DistrictPlan;
+import com.lewandivka.quest.NetherGate;
 import com.lewandivka.quest.QuestInventory;
 import com.lewandivka.quest.Travel;
 import com.lewandivka.world.dimension.Dimensions;
@@ -26,6 +27,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -68,6 +70,7 @@ public final class SelfTest {
         guarded(report, "district against the plan", () -> compare(district, DistrictPlan.get(), -4, -4, 5, 4, DistrictPlan.GROUND + 1, DistrictPlan.GROUND + 45, report));
         guarded(report, "chromandivka against the plan", () -> compare(chroma, ChromaPlan.get(), -2, -2, 2, 2, 60, 140, report));
         guarded(report, "first arrival", () -> firstArrival(district, report));
+        guarded(report, "nether portal", () -> netherPortal(district, report));
         guarded(report, "crossing", () -> crossing(server, district, chroma, report));
         guarded(report, "three players join", () -> threePlayers(server, report));
         return report;
@@ -178,6 +181,41 @@ public final class SelfTest {
     public static String probe(ServerWorld world, int x, int y0, int y1, int z) {
         world.getChunk(x >> 4, z >> 4);
         return Dimensions.idOf(world) + " " + x + "," + z + ": " + column(world, x, z, y0, y1);
+    }
+
+    /** A frame of obsidian high above the spawn is lit like in the overworld (the game itself lights portals only there and in the Nether). */
+    private static void netherPortal(ServerWorld district, Report report) {
+        int[] s = DistrictPlan.get().spawn();
+        int x0 = s[0];
+        int y0 = 200;
+        int z = s[2];
+        district.getChunk(x0 >> 4, z >> 4);
+        BlockPos.Mutable p = new BlockPos.Mutable();
+        try {
+            for (int dx = -1; dx <= 2; dx++) {
+                for (int dy = -1; dy <= 3; dy++) {
+                    boolean frame = dx == -1 || dx == 2 || dy == -1 || dy == 3;
+                    district.setBlockState(p.set(x0 + dx, y0 + dy, z), frame ? Blocks.OBSIDIAN.getDefaultState() : Blocks.AIR.getDefaultState());
+                }
+            }
+            boolean lit = NetherGate.light(district, new BlockPos(x0, y0, z), Direction.NORTH);
+            int portal = 0;
+            for (int dx = 0; dx <= 1; dx++) {
+                for (int dy = 0; dy <= 2; dy++) {
+                    portal += district.getBlockState(p.set(x0 + dx, y0 + dy, z)).isOf(Blocks.NETHER_PORTAL) ? 1 : 0;
+                }
+            }
+            report.notes().add("nether portal in the district: lit=" + lit + ", portal blocks " + portal + " of 6");
+            if (!lit || portal != 6) {
+                report.problems().add("a frame of obsidian in the district was not lit (lit " + lit + ", portal blocks " + portal + " of 6)");
+            }
+        } finally {
+            for (int dx = -1; dx <= 2; dx++) {
+                for (int dy = -1; dy <= 3; dy++) {
+                    district.setBlockState(p.set(x0 + dx, y0 + dy, z), Blocks.AIR.getDefaultState());
+                }
+            }
+        }
     }
 
     private static void firstArrival(ServerWorld district, Report report) {

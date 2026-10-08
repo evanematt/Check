@@ -112,15 +112,27 @@ The city biome keeps no spawns and no features: the quest structures and the roa
 holds the evening and the night, and only sends the gopniks, around people who are in town (`Town`); out in the country the
 days and nights are the ordinary ones. Beds work: the world wakes everybody up, but it cannot move the clock of a campaign
 dimension (the clock of the overworld), so `TimeControl.sleep` moves it to the next morning once everybody in the district has
-slept long enough. A Nether portal leads back to the overworld of the ordinary game, which is another world; whoever comes out
-of it is brought home to the district at the same coordinates (`Lifecycle`, `Travel.toSurface`).
+slept long enough.
+
+The district is a world of its own for the game, which knows only the overworld, the Nether and the End by their keys, so three
+things of ordinary survival needed a hand. The game lights a Nether portal only in the overworld and in the Nether
+(`AbstractFireBlock.isOverworldOrNether`): `NetherGate` takes the click of flint and steel or a fire charge on a frame of
+obsidian in the district and lights the portal exactly as the game does elsewhere (`NetherPortal.getNewPortal`). The way back
+from the Nether leads to the overworld of the ordinary game, which is another world than the district: whoever comes out of it
+is brought home to the district at the same coordinates (`Lifecycle`, `Travel.toSurface`). A bed replaces the spawn point the
+player was given on arrival, and when the bed is gone the game falls back on the spawn of the ordinary overworld: the respawn
+there is turned into a respawn at the spawn of the district (`Lifecycle.respawned`). The End needs nothing: its portal works
+everywhere and the way out of it is the respawn point. The dimensions of a mod get none of the spawners of the overworld, so
+there are no phantoms, patrols or wandering traders.
 
 Tools: `gradle -p core worldMap -Pcx= -Pcz= -Pspan= [-Pcave=30]` draws the dimension (biomes, relief, water, caves of one
 height) and prints statistics; `/lewandivka wild <x> <z> [view]` stands or hovers there, `/lewandivka survey <x> <z> <r>` counts
 the logs, water, ores, caves and animals of the loaded chunks. The smoke test generates three 9 x 9 chunk areas and demands a
-forest, water, caves, coal and iron, grass and animals; `/lewandivka sweep start <count> <range>` · `status` · `end` then forces
-400 chunks scattered over 6000 x 6000 blocks to generate (all biomes, their features, the structures of the ordinary game) and
-reports the biomes and structures they came out with; any logged error of the generation fails the smoke test.
+forest, water, caves, coal and iron, grass and animals; `/lewandivka sweep start <count> <side> <range>` · `structures <radius>` · `status` · `end`
+then generates 24 squares of chunks scattered over 6000 x 6000 blocks (biomes and their features) and, around the villages,
+mineshafts, strongholds and the other structures that the game's own `locate` finds, whole structures; it reports the biomes and
+structures (and how high each structure stands over the ground) they came out with; any logged error of the generation fails the
+smoke test. (A chunk needs its neighbours up to eight chunks away, so squares are far cheaper than single chunks.)
 
 ### Calibrated physics
 

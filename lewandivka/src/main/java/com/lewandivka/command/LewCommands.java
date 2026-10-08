@@ -122,13 +122,22 @@ public final class LewCommands {
                                         })))));
         root.then(CommandManager.literal("sweep")
                 .then(CommandManager.literal("start")
-                        .then(CommandManager.argument("count", IntegerArgumentType.integer(1, 4000))
-                                .then(CommandManager.argument("range", IntegerArgumentType.integer(1, 2000))
-                                        .executes(c -> {
-                                            ServerWorld world = Dimensions.district(c.getSource().getServer());
-                                            return feedback(c.getSource(), world == null ? "the district is not loaded"
-                                                    : Sweep.start(world, IntegerArgumentType.getInteger(c, "count"), IntegerArgumentType.getInteger(c, "range")));
-                                        }))))
+                        .then(CommandManager.argument("count", IntegerArgumentType.integer(1, 200))
+                                .then(CommandManager.argument("side", IntegerArgumentType.integer(1, 8))
+                                        .then(CommandManager.argument("range", IntegerArgumentType.integer(1, 2000))
+                                                .executes(c -> {
+                                                    ServerWorld world = Dimensions.district(c.getSource().getServer());
+                                                    return feedback(c.getSource(), world == null ? "the district is not loaded"
+                                                            : Sweep.start(world, IntegerArgumentType.getInteger(c, "count"), IntegerArgumentType.getInteger(c, "side"),
+                                                            IntegerArgumentType.getInteger(c, "range")));
+                                                })))))
+                .then(CommandManager.literal("structures")
+                        .then(CommandManager.argument("radius", IntegerArgumentType.integer(10, 300))
+                                .executes(c -> {
+                                    ServerWorld world = Dimensions.district(c.getSource().getServer());
+                                    return feedback(c.getSource(), world == null ? "the district is not loaded"
+                                            : Sweep.structures(world, IntegerArgumentType.getInteger(c, "radius")));
+                                })))
                 .then(CommandManager.literal("status").executes(c -> {
                     ServerWorld world = Dimensions.district(c.getSource().getServer());
                     return feedback(c.getSource(), world == null ? "the district is not loaded" : Sweep.status(world));

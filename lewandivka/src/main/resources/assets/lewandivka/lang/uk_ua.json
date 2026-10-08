@@ -459,6 +459,7 @@
   "message.lewandivka.quest_updated": "Блокнот оновлено",
   "message.lewandivka.rejoin_delay": "Повернення до бою за %s с",
   "message.lewandivka.respawn_checkpoint": "Ви повернулися до контрольної точки",
+  "message.lewandivka.respawn_home": "Ліжка вже немає — ви прокидаєтеся біля трамвайної зупинки району",
   "message.lewandivka.restored": "Предмет повернено: %s",
   "message.lewandivka.restored_checkpoint": "Предмет чекає на контрольній точці: %s",
   "message.lewandivka.rg.empty": "Змішувач порожній.",

@@ -92,6 +92,7 @@ UI = {
     "message.lewandivka.restored": ("Предмет повернено: %s", "Item restored: %s"),
     "message.lewandivka.restored_checkpoint": ("Предмет чекає на контрольній точці: %s", "The item is waiting at the checkpoint: %s"),
     "message.lewandivka.respawn_checkpoint": ("Ви повернулися до контрольної точки", "You are back at the checkpoint"),
+    "message.lewandivka.respawn_home": ("Ліжка вже немає — ви прокидаєтеся біля трамвайної зупинки району", "Your bed is gone: you wake up at the tram stop of the district"),
     "message.lewandivka.encounter_reset": ("Зустріч перезапущено", "The encounter was reset"),
     "message.lewandivka.encounter_wipe": ("Усіх переможено. Спробуйте ще раз.", "The whole party fell. Try again."),
     "message.lewandivka.rejoin_delay": ("Повернення до бою за %s с", "Returning to the fight in %s s"),

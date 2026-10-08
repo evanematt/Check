@@ -25,6 +25,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -55,6 +56,7 @@ public final class Lifecycle {
 
     public static void register() {
         Abilities.register();
+        NetherGate.register();
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> join(handler.player, server));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> Abilities.forget(handler.player.getUuid()));
         ServerPlayerEvents.AFTER_RESPAWN.register((old, player, alive) -> respawned(player));
@@ -180,6 +182,18 @@ public final class Lifecycle {
     private static void respawned(ServerPlayerEntity player) {
         if (Dimensions.isOurs(player.getWorld())) {
             player.sendMessage(Text.translatable("message.lewandivka.respawn_checkpoint"), true);
+        } else if (player.getWorld().getRegistryKey() == World.OVERWORLD) {
+            // the bed of this player is gone: the game falls back on the spawn of the ordinary overworld, which is another world than
+            // the district (a bed replaces the spawn point the player was given on arrival); the spawn of the district is the way home
+            Scheduler.later(3, () -> {
+                if (!player.isRemoved() && player.getWorld().getRegistryKey() == World.OVERWORLD) {
+                    int[] s = DistrictPlan.get().spawn();
+                    Vec3d at = new Vec3d(s[0] + 0.5, s[1], s[2] + 0.5);
+                    Travel.to(player, Dimensions.DISTRICT_ID, at);
+                    player.setSpawnPoint(Dimensions.DISTRICT, BlockPos.ofFloored(at), 0.0f, true, false);
+                    player.sendMessage(Text.translatable("message.lewandivka.respawn_home"), true);
+                }
+            });
         }
     }
 

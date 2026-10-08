@@ -80,7 +80,7 @@ jobs:
       - name: Dedicated server smoke test (fresh world, both dimensions, rcon)
         id: smoke
         if: always()
-        timeout-minutes: 20
+        timeout-minutes: 30
         run: bash tools/ci/smoke.sh ../logs/server.txt 2>&1 | tee ../logs/smoke.txt; exit ${PIPESTATUS[0]}
 
       - name: Static resource validation

@@ -35,6 +35,16 @@ def read_packet(sock: socket.socket):
     return request_id, kind, payload[8:-2].decode("utf-8", "replace")
 
 
+def read_response(sock: socket.socket) -> str:
+    """The answer to one command: the server cuts a long answer into packets of 4096 bytes, the last one is shorter."""
+    parts = []
+    while True:
+        _, _, body = read_packet(sock)
+        parts.append(body)
+        if len(body.encode("utf-8")) < 4096:
+            return "".join(parts)
+
+
 def connect(host: str, port: int, password: str, wait: float = 60.0) -> socket.socket:
     deadline = time.time() + wait
     last = None
@@ -67,7 +77,7 @@ def run(host: str, port: int, password: str, commands: list) -> int:
             while True:
                 sock.sendall(packet(100 + i, 2, real))
                 try:
-                    _, _, body = read_packet(sock)
+                    body = read_response(sock)
                 except (OSError, ConnectionError):
                     body = "(connection closed)"
                     break
@@ -78,7 +88,7 @@ def run(host: str, port: int, password: str, commands: list) -> int:
             continue
         sock.sendall(packet(100 + i, 2, cmd))
         try:
-            _, _, body = read_packet(sock)
+            body = read_response(sock)
         except (OSError, ConnectionError):
             body = "(connection closed)"
         print(f"> {cmd}\n{body}", flush=True)
