@@ -112,8 +112,11 @@ jobs:
           find ci-out -type f -empty -delete          # GitHub refuses empty release assets and aborts the whole upload
           gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
           # the file that says which commit the logs belong to goes last: whoever waits for it finds the rest already there
-          gh release upload ci-latest $(find ci-out -type f ! -name 'info-*') --clobber
-          gh release upload ci-latest ci-out/info-*.txt --clobber
+          # an upload that is still running from the partial publisher, or a hiccup of the server, must not lose the whole publication
+          for i in $(seq 1 30); do pgrep -f "gh release upload" >/dev/null || break; sleep 2; done
+          upload() { for i in 1 2 3 4; do gh release upload ci-latest "$@" --clobber && return 0; sleep 6; done; return 1; }
+          upload $(find ci-out -type f ! -name 'info-*')
+          upload ci-out/info-*.txt
 
   # ---------------------------------------------------------------- the modpack, the server pack, the installer
   package:
@@ -167,8 +170,11 @@ jobs:
           find ci-out -type f -empty -delete
           gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
           # the file that says which commit the logs belong to goes last: whoever waits for it finds the rest already there
-          gh release upload ci-latest $(find ci-out -type f ! -name 'info-*') --clobber
-          gh release upload ci-latest ci-out/info-*.txt --clobber
+          # an upload that is still running from the partial publisher, or a hiccup of the server, must not lose the whole publication
+          for i in $(seq 1 30); do pgrep -f "gh release upload" >/dev/null || break; sleep 2; done
+          upload() { for i in 1 2 3 4; do gh release upload ci-latest "$@" --clobber && return 0; sleep 6; done; return 1; }
+          upload $(find ci-out -type f ! -name 'info-*')
+          upload ci-out/info-*.txt
 
       # A manual run with "release" ticked, or a push whose commit message contains [release]: the finished files as a
       # GitHub pre-release v1.0.0 (the README links to it).

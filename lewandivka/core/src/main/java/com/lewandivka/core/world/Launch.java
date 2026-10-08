@@ -38,11 +38,33 @@ public final class Launch {
      */
     public static final double GLIDE_TARGET = GLIDE_SPEED * (1.0 - AIR_DRAG * (1.0 - GLIDE_BLEND)) / GLIDE_BLEND;
 
+    /**
+     * The wind regions (the sky tube, the shaft of the tower approach, the service shaft of the tower) act on a rider in the air every
+     * second tick: the horizontal speed is blended towards the speed of the wind by this share of the gap, and a rider who is slower
+     * than {@link #WIND_LIFT_BELOW} upwards is lifted by {@link #WIND_LIFT} (up to {@link #WIND_LIFT_MAX}), so the top of a throw
+     * stretches out instead of ending in a fall. The client applies it to its own player (it owns the movement; a push that the
+     * server estimates from the positions it is sent is always a little out of date), and {@code LaunchTest} flies every hatch with
+     * this very function.
+     */
+    public static final double WIND_BLEND = 0.25;
+    public static final double WIND_LIFT_BELOW = 0.32;
+    public static final double WIND_LIFT = 0.11;
+    public static final double WIND_LIFT_MAX = 0.42;
+
     private static final double GRAVITY = 0.08;
     private static final double DRAG_Y = 0.98;
     private static final double DRAG_XZ = 0.91;
 
     private Launch() {
+    }
+
+    /**
+     * The velocity of a rider after one push of a wind that blows along ({@code dx}, {@code dz}) at {@code speed} blocks per tick
+     * (both 0 for an updraft that only lifts and brakes the sideways drift).
+     */
+    public static double[] wind(double vx, double vy, double vz, double dx, double dz, double speed) {
+        double ny = vy < WIND_LIFT_BELOW ? Math.min(WIND_LIFT_MAX, vy + WIND_LIFT) : vy;
+        return new double[] {vx + (dx * speed - vx) * WIND_BLEND, ny, vz + (dz * speed - vz) * WIND_BLEND};
     }
 
     /** Highest point of a vertical launch, in blocks above the launch height. */

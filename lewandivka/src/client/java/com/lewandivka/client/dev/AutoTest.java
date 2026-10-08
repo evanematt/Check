@@ -552,7 +552,7 @@ public final class AutoTest {
         Marker ledge = marker("tower:f4_ledge");
         cmd(c, atC(f4.x() + 0.5 - 2.0, f4.y(), f4.z() + 0.5, -90, 0), 4);
         settle(c, "beside the tower hatch", 900);
-        trace(c, "tower hatch", 160);
+        trace(c, "tower hatch", 100, 1);
         add("walk onto the tower hatch", 1, () -> c.options.forwardKey.setPressed(true));
         until("the throw of the tower hatch", 80, 1, () -> c.player.getY() > f4.y() + 3.0);
         until("the landing on the ledge", 300, 5, () -> c.player.isOnGround() && c.player.getY() > ledge.y() - 0.5);

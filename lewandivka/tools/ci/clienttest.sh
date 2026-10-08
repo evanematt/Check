@@ -108,6 +108,8 @@ timeout 2400 xvfb-run -a -s "-screen 0 1280x720x24" \
   > "$CLIENT_LOG" 2>&1
 CLIENT_EXIT=$?
 kill "$UPLOADER" 2>/dev/null
+# an upload of the partial publisher that is in flight must be over before the final publication starts
+for i in $(seq 1 30); do pgrep -f "gh release upload" >/dev/null || break; sleep 2; done
 echo "client exit code $CLIENT_EXIT"
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "stop" > /dev/null 2>&1
 wait "$SERVER_PID" 2>/dev/null

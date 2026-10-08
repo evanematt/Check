@@ -18,6 +18,7 @@ public final class LewandivkaClient implements ClientModInitializer {
         SkyRenderers.register();
         AutoTest.register();
         ClientTickEvents.START_CLIENT_TICK.register(Keys::tick);
+        ClientTickEvents.START_CLIENT_TICK.register(Winds::tick);
         ClientTickEvents.END_CLIENT_TICK.register(Effects::tick);
     }
 }

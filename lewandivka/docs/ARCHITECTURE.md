@@ -146,6 +146,14 @@ come down on it. The islands are placed from the same numbers (`SkyAscent.island
 the level with it. The server (`Stations.spring`, `Abilities`) and the client (`Keys.glide`) use the same constants, and
 the CI client test repeats the jumps with a real player in survival mode (`AutoTest.physics`).
 
+The **wind** of the sky tube and of the two shafts (`wind_*` regions: the horizontal speed is blended towards the wind, a rider
+who is slow upwards is lifted a little so the top of the throw stretches out) is applied by the client to its own player
+(`client/Winds`, every second tick, in the air): the client owns the movement and knows its real velocity. The first design
+did it on the server from the positions the client had sent, estimating the velocity; every push of that estimate was a little
+out of date, took a few hundredths from a rising rider and cost the service-shaft hatch of the tower the last blocks of its
+throw (CI client test), and a player with a slow connection would have fared worse. The push is `Launch.wind`, the same function
+that `LaunchTest` flies through the sky tube, the spring shaft and the service shaft with the wind on either tick parity.
+
 The same care goes for the chase of the Debtor: a mob's pace grows with the square of attribute x multiplier (the
 product is the movement speed *and* the forward input), so `ChasePace` derives the navigation multiplier from the pace
 the chase should have (4.4 blocks/s alone, 5.0 for a party, a sprinting player does 5.6) and tires him after a long

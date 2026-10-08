@@ -127,6 +127,53 @@ class LaunchTest {
         return null;
     }
 
+    /** The wind region of a marker ("dir=east,speed=0.35"), as the game applies it ({@link Launch#wind}) to a rider inside the box. */
+    private static FlightSim.Wind windOf(Blueprint.Marker w) {
+        String dir = data(w, "dir");
+        double speed = Double.parseDouble(data(w, "speed"));
+        double dx = "east".equals(dir) ? 1 : "west".equals(dir) ? -1 : 0;
+        double dz = "south".equals(dir) ? 1 : "north".equals(dir) ? -1 : 0;
+        return (x, y, z, vx, vy, vz) -> {
+            if (x < w.x() || x > w.x() + w.sx() || z < w.z() || z > w.z() + w.sz() || y < w.y() || y > w.y() + w.sy()) {
+                return null;
+            }
+            return Launch.wind(vx, vy, vz, dx, dz, speed);
+        };
+    }
+
+    @Test
+    void theHatchOfTheBounceTunnelCarriesTheRiderOntoTheTramPlatformWithTheWindOfTheTube() {
+        Blueprint bp = Catalog.namedBlueprints().get("sky_ascent");
+        Blueprint.Marker hatch = bp.marker("hatch_up");
+        Blueprint.Marker top = bp.marker("tunnel_top");
+        FlightSim.Wind wind = windOf(bp.marker("wind_tube"));
+        for (int parity = 0; parity <= 1; parity++) {
+            // the hatch block is one lower than the feet of the rider standing on it
+            FlightSim.Flight f = FlightSim.fly(solid(bp), hatch.x() + 0.5, hatch.y() + 1.0, hatch.z() + 0.5, 0, Launch.HATCH_UP, 0, FlightSim.WIDTH, FlightSim.HEIGHT, 300, wind, parity);
+            String what = "bounce tunnel, wind on the ticks of parity " + parity;
+            assertTrue(f.landed, what + ": never comes down");
+            assertEquals(top.y(), f.landAt[1], 0.01, what + ": does not land on the platform but at " + java.util.Arrays.toString(f.landAt));
+            assertEquals(top.x() + 1.5, f.landAt[0], 3.5, what + ": lands at x " + f.landAt[0]);
+            assertEquals(top.z() + 0.5, f.landAt[2], 2.5, what);
+        }
+    }
+
+    @Test
+    void theHatchOfTheSpringShaftCarriesTheRiderOutOfTheShaftWithItsWind() {
+        Blueprint bp = Catalog.namedBlueprints().get("tower_approach");
+        Blueprint.Marker bottom = bp.marker("shaft_bottom");
+        Blueprint.Marker deck = bp.marker("glide_start");
+        FlightSim.Wind wind = windOf(bp.marker("wind_shaft"));
+        for (int parity = 0; parity <= 1; parity++) {
+            FlightSim.Flight f = FlightSim.fly(solid(bp), bottom.x() + 0.5, bottom.y(), bottom.z() + 0.5, 0, Launch.HATCH_UP, 0, FlightSim.WIDTH, FlightSim.HEIGHT, 300, wind, parity);
+            String what = "spring shaft, wind on the ticks of parity " + parity;
+            assertTrue(f.landed, what + ": never comes down");
+            assertEquals(deck.y(), f.landAt[1], 0.01, what + ": does not land on the level of the glider deck but at " + java.util.Arrays.toString(f.landAt));
+            assertEquals(deck.x(), f.landAt[0], 7, what);
+            assertEquals(deck.z() + 1, f.landAt[2], 6.5, what + ": lands at z " + f.landAt[2] + " (the deck starts at " + deck.z() + ")");
+        }
+    }
+
     @Test
     void theHatchOfTheServiceShaftThrowsTheRiderOntoTheLedgeOfTheFifthFloor() {
         Blueprint bp = Catalog.namedBlueprints().get("tower");
@@ -137,16 +184,8 @@ class LaunchTest {
         assertNotNull(wind);
         assertNotNull(ledge);
         assertEquals("east", data(wind, "dir"));
-        double speed = Double.parseDouble(data(wind, "speed"));
         int c = hatch.x();
-        // the wind of the game (ZoneServices.push): blends the horizontal speed towards the wind, lifts the slow
-        FlightSim.Wind push = (x, y, z, vx, vy, vz) -> {
-            if (x < wind.x() || x > wind.x() + wind.sx() || z < wind.z() || z > wind.z() + wind.sz() || y < wind.y() || y > wind.y() + wind.sy()) {
-                return null;
-            }
-            double ny = vy < 0.32 ? Math.min(0.42, vy + 0.11) : vy;
-            return new double[] {vx + (speed - vx) * 0.25, ny, vz - vz * 0.25};
-        };
+        FlightSim.Wind push = windOf(wind);
         for (int parity = 0; parity <= 1; parity++) {
             FlightSim.Flight f = FlightSim.fly(solid(bp), hatch.x() + 0.5, hatch.y(), hatch.z() + 0.5, 0, Launch.HATCH_UP, 0, FlightSim.WIDTH, FlightSim.HEIGHT, 200, push, parity);
             String what = "service shaft, wind on the ticks of parity " + parity;
