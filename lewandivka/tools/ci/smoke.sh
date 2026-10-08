@@ -56,8 +56,8 @@ for n in $FLOWS; do
   RESETS+=("lewandivka reset encounter $n" "lewandivka reset encounter $n full")
 done
 
-# the join replay (see JoinReplay): two players join through the real join, the first moved to the district inside the
-# join event (as the mod does), the second three ticks later; a third one is moved around like the client test does; the
+# the join replay (see JoinReplay and Lifecycle): two players join through the real join (the arrival in the district
+# comes a few ticks later, never inside the join event), a third one is moved around like the client test does; the
 # packets each of them would have been sent are decoded and compared with the worlds of the server
 session "$LOG" \
   "lewandivka status" \
@@ -66,8 +66,8 @@ session "$LOG" \
   "lewandivka validate" \
   "lewandivka selftest" \
   "execute in lewandivka:district run lewandivka probe 2 60 72 -3" \
-  "lewandivka joinreplay start A 0" \
-  "lewandivka joinreplay start B 3" \
+  "lewandivka joinreplay start A -1" \
+  "lewandivka joinreplay start B -1" \
   "lewandivka joinreplay torture" \
   "!until 150 DONE lewandivka joinreplay result" \
   "lewandivka joinreplay report" \
@@ -101,8 +101,12 @@ grep -q "validate: OK" "$LOG2.rcon" 2>/dev/null || { echo "SMOKE: the restarted 
 grep -h "selftest:" "$LOG.rcon" "$LOG2.rcon" 2>/dev/null | cut -c1-1800
 grep -q "selftest: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the self test failed in the first session"; ok=0; }
 grep -q "selftest: OK" "$LOG2.rcon" 2>/dev/null || { echo "SMOKE: the self test failed after the restart"; ok=0; }
+# the join replay must find nothing: no chunk of another world after the arrival, the player in exactly one world, no
+# exception in the movement of the third player
+grep -q "joinreplay: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the join replay found problems"; ok=0; }
+grep -q "torture: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the movement of the third player found problems"; ok=0; }
 grep -h "^lewandivka:district 2,-3:" "$LOG.rcon" 2>/dev/null | head -2
-echo "--- join replay (informational)"
+echo "--- join replay"
 grep -h "joinreplay:\|joined (\|torture started\|RUNNING\|DONE" "$LOG.rcon" 2>/dev/null | cut -c1-3000
 # the first status line of the second session is the one printed right after the restart
 if head -n 3 "$LOG2.rcon" 2>/dev/null | grep -q "step=$STEP"; then

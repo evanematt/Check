@@ -49,10 +49,7 @@ public final class Portals {
                     BlockOps.set(district, p, on ? Pal.portal('x') : "minecraft:air");
                 }
             }
-            // a plain frame so the pane is easy to find
-            for (int dx = -2; dx <= 2; dx++) {
-                BlockOps.set(district, base.add(dx, -1, 0), on ? "lewandivka:portal_frame" : "minecraft:air");
-            }
+            // the frame is part of the district plan (dormant while the pane is empty): nothing to do for it here
         }
         LewandivkaMod.LOGGER.info("Portals {}", on ? "open" : "closed");
     }

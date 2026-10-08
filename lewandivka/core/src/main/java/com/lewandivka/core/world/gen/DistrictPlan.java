@@ -591,7 +591,9 @@ public final class DistrictPlan implements WorldPlan {
         marker("seed_bowl_1", -33, y, -40, "");
         marker("seed_bowl_2", 36, y, 38, "");
         marker("seed_bowl_3", -83, y, 24, "");
-        // district portal (the way back from Chromandivka): right next to the tram stop
+        // district portal (the way back from Chromandivka): right next to the tram stop; the frame stands in the ground from
+        // the start (a dormant portal), the portal service only fills and empties the pane above it
+        propForce("portal_district_frame", Props.districtPortal(), 14, GROUND, -10);
         marker("portal_district", 16, GROUND + 1, -10, "");
         marker("wrong_tram_stop", 0, GROUND + 1, 0, "");
     }

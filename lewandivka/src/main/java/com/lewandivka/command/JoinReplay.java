@@ -66,6 +66,7 @@ public final class JoinReplay {
     private static ServerPlayerEntity scriptPlayer;
     private static int scriptTick;
     private static boolean scriptRunning;
+    private static int scriptProblems;
 
     private JoinReplay() {
     }
@@ -76,8 +77,14 @@ public final class JoinReplay {
 
     // ------------------------------------------------------------------ the join
 
-    /** Joins a player; the packets of the join (and of everything after it) stay in the queue of its connection. */
+    /**
+     * Joins a player; the packets of the join (and of everything after it) stay in the queue of its connection. The arrival
+     * delay is in ticks, negative for the one the game uses; 0 is the bug the replay was written to find (see {@link Lifecycle}).
+     */
     public static String start(MinecraftServer server, String label, int arrivalDelay) {
+        if (arrivalDelay < 0) {
+            arrivalDelay = Lifecycle.DEFAULT_ARRIVAL_DELAY;
+        }
         Session old = SESSIONS.remove(label);
         if (old != null) {
             server.getPlayerManager().remove(old.player());
@@ -175,6 +182,10 @@ public final class JoinReplay {
         report.notes().add(who + ": " + packets.size() + " packets, " + events);
         report.notes().add(who + ": chunks sent after the respawn, by the world their data come from: " + contamination + ", unloads " + unloads);
         report.notes().add(who + ": now " + where(s.player()) + " " + registrations(server, s.player()));
+        int listedIn = worldsListing(server, s.player());
+        if (listedIn != 1) {
+            report.problems().add(who + ": the player is listed by " + listedIn + " worlds, " + registrations(server, s.player()));
+        }
         for (Map.Entry<String, Integer> e : contamination.entrySet()) {
             if (!e.getKey().equals(Dimensions.idOf(s.player().getWorld()))) {
                 report.problems().add(who + ": " + e.getValue() + " chunks the client received after the respawn carry the blocks of " + e.getKey()
@@ -236,6 +247,17 @@ public final class JoinReplay {
 
     // ------------------------------------------------------------------ who the chunk system believes is where
 
+    /** In how many worlds the player is in the list of players (it must be one). */
+    private static int worldsListing(MinecraftServer server, ServerPlayerEntity p) {
+        int n = 0;
+        for (ServerWorld w : server.getWorlds()) {
+            if (w.getPlayers().contains(p)) {
+                n++;
+            }
+        }
+        return n;
+    }
+
     private static String where(ServerPlayerEntity p) {
         return Dimensions.idOf(p.getWorld()) + String.format(Locale.ROOT, " %.1f %.1f %.1f", p.getX(), p.getY(), p.getZ());
     }
@@ -281,6 +303,7 @@ public final class JoinReplay {
         }
         SCRIPT.clear();
         SCRIPT_LOG.setLength(0);
+        scriptProblems = 0;
         scriptServer = server;
         scriptTick = 0;
         ServerWorld district = Dimensions.district(server);
@@ -288,7 +311,7 @@ public final class JoinReplay {
         if (district == null || chroma == null) {
             return "the dimensions are not loaded";
         }
-        String joined = start(server, "T", 0);
+        String joined = start(server, "T", -1);
         scriptPlayer = SESSIONS.get("T").player();
         log("joined: " + joined);
         int[] s = DistrictPlan.get().spawn();
@@ -320,7 +343,8 @@ public final class JoinReplay {
     }
 
     public static String tortureResult() {
-        return (scriptRunning ? "RUNNING at tick " + scriptTick + " " : "DONE ") + SCRIPT_LOG;
+        return scriptRunning ? "RUNNING at tick " + scriptTick + " " + SCRIPT_LOG
+                : "DONE " + (scriptProblems == 0 ? "torture: OK" : "torture: PROBLEMS " + scriptProblems) + " ; " + SCRIPT_LOG;
     }
 
     private static void request(double x, double y, double z) {
@@ -356,7 +380,11 @@ public final class JoinReplay {
             if (step.at() == scriptTick) {
                 try {
                     step.action().run();
-                    log("+" + scriptTick + " " + step.name() + " ok: " + where(scriptPlayer) + " " + registrations(server, scriptPlayer));
+                    int listed = worldsListing(server, scriptPlayer);
+                    log("+" + scriptTick + " " + step.name() + (listed == 1 ? " ok: " : " LISTED BY " + listed + " WORLDS: ") + where(scriptPlayer) + " " + registrations(server, scriptPlayer));
+                    if (listed != 1) {
+                        scriptProblems++;
+                    }
                 } catch (Throwable t) {
                     LewandivkaMod.LOGGER.error("[torture] step '{}' threw", step.name(), t);
                     StringBuilder sb = new StringBuilder(t.toString());
@@ -365,6 +393,7 @@ public final class JoinReplay {
                         sb.append(" | ").append(frames[i].getClassName().substring(frames[i].getClassName().lastIndexOf('.') + 1)).append('.')
                                 .append(frames[i].getMethodName()).append(':').append(frames[i].getLineNumber());
                     }
+                    scriptProblems++;
                     log("+" + scriptTick + " " + step.name() + " THREW " + sb + " now " + where(scriptPlayer) + " " + registrations(server, scriptPlayer));
                 }
             }
@@ -380,8 +409,9 @@ public final class JoinReplay {
                 for (String p : r.problems()) {
                     log("PROBLEM " + p);
                 }
+                scriptProblems += r.problems().size();
             }
-            log("finished");
+            log(scriptProblems == 0 ? "torture: OK" : "torture: PROBLEMS " + scriptProblems);
             if (!Structures.has("base:spawn")) {
                 log("(no base:spawn marker)");
             }

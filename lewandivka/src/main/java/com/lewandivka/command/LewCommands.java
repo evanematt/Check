@@ -96,7 +96,7 @@ public final class LewCommands {
         root.then(CommandManager.literal("joinreplay")
                 .then(CommandManager.literal("start")
                         .then(CommandManager.argument("label", StringArgumentType.word())
-                                .then(CommandManager.argument("delay", IntegerArgumentType.integer(0, 100))
+                                .then(CommandManager.argument("delay", IntegerArgumentType.integer(-1, 100))
                                         .executes(c -> feedback(c.getSource(), JoinReplay.start(c.getSource().getServer(), StringArgumentType.getString(c, "label"), IntegerArgumentType.getInteger(c, "delay")))))))
                 .then(CommandManager.literal("report").executes(c -> joinReport(c.getSource())))
                 .then(CommandManager.literal("torture").executes(c -> feedback(c.getSource(), JoinReplay.torture(c.getSource().getServer()))))

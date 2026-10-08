@@ -16,6 +16,7 @@ import com.mojang.authlib.GameProfile;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
@@ -115,6 +116,7 @@ public final class SelfTest {
         Map<String, Integer> pairs = new LinkedHashMap<>();
         List<String> first = new ArrayList<>();
         int differ = 0;
+        int decayed = 0;
         long cells = 0;
         for (int cx = cx0; cx <= cx1; cx++) {
             for (int cz = cz0; cz <= cz1; cz++) {
@@ -126,7 +128,10 @@ public final class SelfTest {
                             Block expected = view.getBlockState(p).getBlock();
                             Block actual = world.getBlockState(p).getBlock();
                             cells++;
-                            if (expected != actual) {
+                            if (expected == Blocks.GRASS_BLOCK && actual == Blocks.DIRT) {
+                                // the random ticks of the game turn the grass under anything opaque into dirt (a tree trunk, a roof)
+                                decayed++;
+                            } else if (expected != actual) {
                                 differ++;
                                 String pair = id(expected) + " -> " + id(actual);
                                 pairs.merge(pair, 1, Integer::sum);
@@ -139,7 +144,7 @@ public final class SelfTest {
                 }
             }
         }
-        String line = Dimensions.idOf(world) + " against the plan: " + cells + " cells, " + differ + " differ";
+        String line = Dimensions.idOf(world) + " against the plan: " + cells + " cells, " + differ + " differ" + (decayed > 0 ? " (" + decayed + " grass blocks decayed to dirt by themselves)" : "");
         if (differ > 0) {
             List<String> top = new ArrayList<>();
             pairs.entrySet().stream().sorted((a, b) -> b.getValue() - a.getValue()).limit(6).forEach(e -> top.add(e.getKey() + " x" + e.getValue()));
@@ -214,6 +219,13 @@ public final class SelfTest {
                 manager.onPlayerConnect(new ClientConnection(NetworkSide.SERVERBOUND), player);
                 joined.add(player);
             }
+            // the arrival in the district comes a few ticks after the join (never inside the join event, see Lifecycle)
+            for (ServerPlayerEntity p : joined) {
+                if (!Dimensions.isOurs(p.getWorld()) && p.getServerWorld() != server.getOverworld()) {
+                    report.problems().add(p.getGameProfile().getName() + " is somewhere unexpected right after joining: " + where(p));
+                }
+            }
+            com.lewandivka.quest.Lifecycle.flushArrivals(server);
             for (ServerPlayerEntity p : joined) {
                 String who = p.getGameProfile().getName();
                 if (!Campaign.player(p).participating()) {

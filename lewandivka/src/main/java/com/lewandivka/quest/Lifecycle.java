@@ -35,11 +35,16 @@ import java.util.UUID;
 public final class Lifecycle {
 
     /**
-     * Ticks between the join of a new player and the first arrival in the district: 0 moves the player inside the join event
-     * (the way it has always worked), more waits that many ticks. A knob of the join replay ({@code /lewandivka joinreplay}),
-     * which compares the two to find out what the client is sent in each case.
+     * Ticks between the join of a new player and the first arrival in the district. Never 0: Fabric's JOIN event fires
+     * right after the game-join packet, before {@code PlayerManager.onPlayerConnect} has added the player to its world; a
+     * teleport in there moves the player to the district and then vanilla adds the same player to the overworld as well,
+     * so two worlds tick and watch it: the overworld sends its chunks (24 sections, the client decodes them as the 16
+     * sections of the district: stone and ore 64 blocks too high), and the next teleport to another dimension throws in
+     * {@code ChunkTicketManager.handleChunkLeave}. {@code /lewandivka joinreplay} shows both cases; the delay is a knob of
+     * it ({@link #DEFAULT_ARRIVAL_DELAY} is what the game uses).
      */
-    public static int arrivalDelayTicks = 0;
+    public static final int DEFAULT_ARRIVAL_DELAY = 3;
+    public static int arrivalDelayTicks = DEFAULT_ARRIVAL_DELAY;
     private static final Map<UUID, Integer> ARRIVALS = new HashMap<>();
 
     private Lifecycle() {
@@ -83,7 +88,6 @@ public final class Lifecycle {
         PlayerProgress progress = Campaign.player(player);
         WorldProgress world = Campaign.world(server);
         if (!progress.tutorialDone("arrived")) {
-            progress.completeTutorial("arrived");
             progress.setParticipating(true);
             if (!world.started()) {
                 world.setStarted(true);
@@ -92,7 +96,9 @@ public final class Lifecycle {
                 TimeControl.set(server, TimeControl.DUSK);
                 holdDistrictTime(server, Campaign.step(server));
             }
-            QuestInventory.give(player, QuestItems.NOTEBOOK, 1);
+            if (!QuestInventory.has(player, QuestItems.NOTEBOOK)) {
+                QuestInventory.give(player, QuestItems.NOTEBOOK, 1);
+            }
             if (arrivalDelayTicks <= 0) {
                 arriveWithWelcome(player, server);
             } else {
@@ -105,10 +111,24 @@ public final class Lifecycle {
     }
 
     private static void arriveWithWelcome(ServerPlayerEntity player, MinecraftServer server) {
+        // marked here, not at the join: a server that stops before the arrival must bring the player there at the next join
+        Campaign.player(player).completeTutorial("arrived");
+        Campaign.dirty(server);
         arrive(player, server);
         player.networkHandler.sendPacket(new TitleS2CPacket(Text.translatable("title.lewandivka.district")));
         player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.translatable("title.lewandivka.district.sub")));
         player.sendMessage(Text.translatable("message.lewandivka.welcome"), false);
+    }
+
+    /** Brings every player who is waiting for the arrival to the district now (the self test, which is not inside a tick of the game). */
+    public static void flushArrivals(MinecraftServer server) {
+        for (UUID id : new java.util.ArrayList<>(ARRIVALS.keySet())) {
+            ServerPlayerEntity player = server.getPlayerManager().getPlayer(id);
+            ARRIVALS.remove(id);
+            if (player != null) {
+                arriveWithWelcome(player, server);
+            }
+        }
     }
 
     private static void arrivals(MinecraftServer server) {

@@ -360,6 +360,22 @@ public final class Props {
         });
     }
 
+    /**
+     * The frame of the coloured portal next to the tram stop: five frame blocks in the ground and three by three free blocks
+     * above the middle three (the pane, which the portal service fills and empties; the plants of the meadow must not grow
+     * in it). Place with the origin at ground level, the pane marker is {@code portal_district}.
+     */
+    public static Blueprint districtPortal() {
+        return cached("districtportal", () -> {
+            BlueprintBuilder b = new BlueprintBuilder("district_portal", 5, 4, 1);
+            for (int x = 0; x < 5; x++) {
+                b.set(x, 0, 0, Pal.PORTAL_FRAME);
+            }
+            b.fill(1, 1, 0, 3, 3, 0, Pal.AIR);
+            return b.build();
+        });
+    }
+
     /** Clue prop with marker. */
     public static Blueprint clue(int kind) {
         return cached("clue" + kind, () -> {

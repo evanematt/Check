@@ -48,7 +48,13 @@ cannot drift apart.
 * Effects (items, abilities, dialogue, NPC spawns, portal, cinematics) go through the `Effects` interface; the glue
   implements it (`Story.Effects`).
 * `Lifecycle` handles joining (first arrival in the district or at the base), respawn points, step announcements,
-  advancements. `QuestWatch` runs the quest-item ledger and the package slowness.
+  advancements. `QuestWatch` runs the quest-item ledger and the package slowness. **The arrival is never done inside
+  Fabric's `ServerPlayConnectionEvents.JOIN`**: that event fires right after the game-join packet, before vanilla has added
+  the player to its world; a teleport in there moves the player to the district and vanilla then adds the same player to
+  the overworld too, so two worlds tick and watch it. The overworld then sends its chunks (24 sections) to a client that
+  decodes them as 16-section district chunks (stone, ore and an ocean 64 blocks too high around the first arrival), and
+  the next teleport to another dimension throws in `ChunkTicketManager.handleChunkLeave` and leaves a ghost player. The
+  arrival therefore waits three ticks (`Lifecycle.DEFAULT_ARRIVAL_DELAY`); `/lewandivka joinreplay` proves it on every CI run.
 
 ## 4. Dungeons: flows
 
