@@ -1,9 +1,13 @@
 package com.lewandivka.command;
 
 import com.lewandivka.LewandivkaMod;
+import com.lewandivka.campaign.Campaign;
+import com.lewandivka.campaign.PartyService;
+import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.world.WorldPlan;
 import com.lewandivka.core.world.gen.ChromaPlan;
 import com.lewandivka.core.world.gen.DistrictPlan;
+import com.lewandivka.quest.QuestInventory;
 import com.lewandivka.quest.Travel;
 import com.lewandivka.world.dimension.Dimensions;
 import com.lewandivka.world.dimension.PlanBlockView;
@@ -13,8 +17,11 @@ import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.network.NetworkSide;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -61,6 +68,7 @@ public final class SelfTest {
         guarded(report, "chromandivka against the plan", () -> compare(chroma, ChromaPlan.get(), -2, -2, 2, 2, 60, 140, report));
         guarded(report, "first arrival", () -> firstArrival(district, report));
         guarded(report, "crossing", () -> crossing(server, district, chroma, report));
+        guarded(report, "three players join", () -> threePlayers(server, report));
         return report;
     }
 
@@ -187,6 +195,49 @@ public final class SelfTest {
         if (!floor) {
             report.problems().add("nothing solid within four blocks under the first arrival " + feet.toShortString());
         }
+    }
+
+    // ------------------------------------------------------------------ three players join
+
+    /**
+     * Three players go through the real join of the server ({@code PlayerManager.onPlayerConnect}, with a connection that has
+     * no socket behind it): the first arrival, the notebook, the party of three, and the leave. What the clients would
+     * receive stays in the (never flushed) queue of their connections.
+     */
+    private static void threePlayers(MinecraftServer server, Report report) {
+        PlayerManager manager = server.getPlayerManager();
+        List<ServerPlayerEntity> joined = new ArrayList<>();
+        try {
+            for (int i = 1; i <= 3; i++) {
+                GameProfile profile = new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:LewBot" + i).getBytes(java.nio.charset.StandardCharsets.UTF_8)), "LewBot" + i);
+                ServerPlayerEntity player = new ServerPlayerEntity(server, server.getOverworld(), profile);
+                manager.onPlayerConnect(new ClientConnection(NetworkSide.SERVERBOUND), player);
+                joined.add(player);
+            }
+            for (ServerPlayerEntity p : joined) {
+                String who = p.getGameProfile().getName();
+                if (!Campaign.player(p).participating()) {
+                    report.problems().add(who + " does not take part in the campaign after joining");
+                }
+                if (!QuestInventory.has(p, QuestItems.NOTEBOOK)) {
+                    report.problems().add(who + " did not get the notebook");
+                }
+                if (!Dimensions.isOurs(p.getWorld())) {
+                    report.problems().add(who + " is not in one of the campaign dimensions after joining: " + where(p));
+                }
+            }
+            int size = PartyService.scale(server).size();
+            if (size != 3) {
+                report.problems().add("the party of three is scaled as " + size);
+            }
+            report.notes().add("three players joined: " + joined.stream().map(SelfTest::where).toList() + ", party scale " + size);
+        } finally {
+            for (ServerPlayerEntity p : joined) {
+                manager.remove(p);
+            }
+        }
+        int after = PartyService.scale(server).size();
+        report.notes().add("after they left the party scale is " + after);
     }
 
     // ------------------------------------------------------------------ crossing between the dimensions

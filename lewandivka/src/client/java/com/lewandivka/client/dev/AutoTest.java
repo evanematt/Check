@@ -369,6 +369,19 @@ public final class AutoTest {
         cmd(c, at(shaft.x() + 0.5, shaft.y(), shaft.z() + 0.5, 180, 0), 160);
         checkPosition(c, "the shaft hatch carries the climber to the glider deck", deck.x(), deck.y(), deck.z() + 1, 7, 1.6, 6.5);
 
+        // 3b. the hatch in the middle of the tower's fourth floor throws the climber up through the hole of the fifth floor onto
+        // its ledge (the wind of the shaft carries him sideways; he keeps walking east like a player who steers)
+        Marker f4 = marker("tower:hatch_f4_top");
+        Marker ledge = marker("tower:f4_ledge");
+        cmd(c, at(f4.x() + 0.5 - 2.0, f4.y(), f4.z() + 0.5, -90, 0), 4);
+        settle(c, "beside the tower hatch", 900);
+        trace(c, "tower hatch", 160);
+        add("walk onto the tower hatch", 1, () -> c.options.forwardKey.setPressed(true));
+        until("the throw of the tower hatch", 80, 1, () -> c.player.getY() > f4.y() + 3.0);
+        until("the landing on the ledge", 300, 5, () -> c.player.isOnGround() && c.player.getY() > ledge.y() - 0.5);
+        add("let go of the keys", 1, () -> c.options.forwardKey.setPressed(false));
+        checkPosition(c, "the tower hatch carries the climber to the ledge of the fifth floor", ledge.x() + 0.5, ledge.y(), ledge.z() + 0.5, 4.5, 0.3, 3.0);
+
         // 4. a dash opens the first door of the dash corridor
         Marker door = marker("tower_approach:dash_door_1");
         cmd(c, at(door.x() + 2.5, door.y(), door.z() + 3.6, 180, 0), 4);
@@ -435,6 +448,32 @@ public final class AutoTest {
 
 
     /**
+     * The sky tram: the climber steps onto the platform, the tram comes, takes him on board and really drives the two and a
+     * half minutes of the route (a hundred and fifty seconds of waiting for the script); on the other side he stands on the
+     * arrival rails of the depot and the story goes on.
+     */
+    private static void skyRide(MinecraftClient c) {
+        Marker platform = marker("sky_ascent:stop_platform");
+        Marker arrive = marker("sky_depot:tram_arrive");
+        cmd(c, "gamemode creative", 4);
+        cmd(c, "lewandivka step sky_ascent", 8);
+        cmd(c, atIn("lewandivka:chromandivka", platform.x() + 0.5, platform.y(), platform.z() + 0.5, 90, 0), 4);
+        settle(c, "on the sky platform", 900);
+        until("the tram carries the climber", 600, 1, () -> c.player.hasVehicle());
+        add("check the boarding", 1, () -> expect("the tram takes the player on board", c.player.hasVehicle(), "the player is not riding"));
+        until("the story knows the way", 100, 1, () -> ClientState.step == QuestStep.SKY_RIDE || ClientState.step.isAfter(QuestStep.SKY_RIDE));
+        trace(c, "sky ride", 120);
+        until("the arrival at the depot", 4800, 1, () -> ClientState.step == QuestStep.SKY_SWITCHES);
+        add("check the arrival", 20, () -> {
+            where(c, "the end of the sky ride");
+            expect("the sky ride ends at the depot", ClientState.step == QuestStep.SKY_SWITCHES, "the step is " + ClientState.step.key());
+            expect("the passenger is put on the arrival rails of the depot", c.player.squaredDistanceTo(arrive.x() + 0.5, arrive.y(), arrive.z() + 0.5) < 15 * 15,
+                    "the player is at " + c.player.getBlockPos().toShortString() + ", the rails at " + arrive.pos().toShortString());
+        });
+        shot(c, "sky_depot_arrival", 4);
+    }
+
+    /**
      * The five bosses in their own arenas: the campaign is moved to the step of the boss, the boss is summoned where the
      * dungeon flow would put it (the fight really starts, adds and all), then it is killed and the story must go on:
      * the next step, the ring fragment and, where there is one, the ability the boss gives.
@@ -486,6 +525,33 @@ public final class AutoTest {
         return false;
     }
 
+    /** Whether the player carries the item anywhere (hotbar, inventory, off hand). */
+    private static boolean has(MinecraftClient c, String itemId) {
+        var inventory = c.player.getInventory();
+        for (int i = 0; i < inventory.size(); i++) {
+            var stack = inventory.getStack(i);
+            if (!stack.isEmpty() && Registries.ITEM.getId(stack.getItem()).getPath().equals(itemId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The quest-item safety net must hand out what the step needs without being asked: checks that the item arrived and,
+     * when it did not, gives it so that the rest of the scenario can go on.
+     */
+    private static void expectDelivered(MinecraftClient c, String itemId, String why) {
+        add("check the safety net delivered " + itemId, 1, () -> {
+            boolean ok = has(c, itemId);
+            expect("the safety net hands out " + itemId + " " + why, ok, ok ? "it is in the inventory" : "it is missing");
+            if (!ok) {
+                c.player.networkHandler.sendChatCommand("give @s lewandivka:" + itemId);
+            }
+        });
+        add("let the item arrive", 6, () -> { });
+    }
+
     /** Right click in the air with the item. */
     private static void useItem(MinecraftClient c, String itemId) {
         add("use " + itemId, 12, () -> {
@@ -525,7 +591,10 @@ public final class AutoTest {
      */
     private static void crossing(MinecraftClient c) {
         cmd(c, "gamemode creative", 4);
+        // /clear takes everything: the notebook (needed at every step) has to come back by itself
         cmd(c, "clear @s", 4);
+        add("wait for the safety net", 120, () -> { });
+        expectDelivered(c, "district_notebook", "after /clear");
 
         // the kiosk: placed on the painted foundation it becomes the shop of Mr. Shlahbaum
         Marker spot = marker("district:kiosk_spot");
@@ -545,7 +614,8 @@ public final class AutoTest {
 
         // the Chroma tablet, swallowed by the whole (one-person) party, carries everybody over
         cmd(c, "lewandivka step chroma_take", 10);
-        cmd(c, "give @s lewandivka:chroma_tablet", 6);
+        add("wait for the safety net", 100, () -> { });
+        expectDelivered(c, "chroma_tablet", "(one for every participant)");
         useItem(c, "chroma_tablet");
         until("the crossing to Chromandivka", 1500, 30, () -> in(c, "lewandivka:chromandivka") && ClientState.step.isAtLeast(QuestStep.BASE_WAKE));
         add("check the crossing", 2, () -> expect("the Chroma tablet leads to the base of Chromandivka", in(c, "lewandivka:chromandivka") && ClientState.step.isAtLeast(QuestStep.BASE_WAKE),
@@ -556,9 +626,12 @@ public final class AutoTest {
         // the four pedestals of the base
         add("check the portal is closed", 1, () -> expect("the portal stays closed until the artifacts are placed", !ClientState.portal, "portal " + ClientState.portal));
         String[][] artifacts = {{"kettle", "magic_kettle"}, {"package", "package"}, {"composter", "ticket_composter"}, {"token", "district_token"}};
+        add("wait for the safety net", 100, () -> { });
+        for (String[] a : artifacts) {
+            expectDelivered(c, a[1], "for the pedestal");
+        }
         for (String[] a : artifacts) {
             Marker pedestal = marker("base:pedestal_" + a[0]);
-            cmd(c, "give @s lewandivka:" + a[1], 6);
             cmd(c, atIn("lewandivka:chromandivka", pedestal.x() + 0.5, pedestal.y(), pedestal.z() + 2.5, 180, 0), 6);
             useItemOn(c, a[1], pedestal.pos());
         }
@@ -648,6 +721,7 @@ public final class AutoTest {
         tour(c, "isle3", null);
         bossRewards(c);
         physics(c);
+        skyRide(c);
         crossing(c);
         // the postgame: free play, Garage No. 0 under the district
         cmd(c, "lewandivka step post_free", 8);

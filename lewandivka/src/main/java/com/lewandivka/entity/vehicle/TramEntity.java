@@ -6,6 +6,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -89,7 +90,11 @@ public class TramEntity extends Entity implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
-        if (getWorld().isClient || path.isEmpty()) {
+        if (getWorld().isClient) {
+            return;
+        }
+        if (path.isEmpty()) {
+            strayCheck();
             return;
         }
         if (delay > 0) {
@@ -125,6 +130,30 @@ public class TramEntity extends Entity implements GeoEntity {
                 }
             }
         }
+    }
+
+    /**
+     * A tram without a route is what is left of a ride that a server restart interrupted (the route is not saved, the
+     * dungeon flow starts over): whoever still sits on it is put back on the platform of the lower stop, and the tram
+     * goes away. Trams that an admin summoned to look at them stay for a minute.
+     */
+    private void strayCheck() {
+        if (age <= 100) {
+            return;
+        }
+        List<Entity> riders = new ArrayList<>(getPassengerList());
+        if (riders.isEmpty() && age <= 1200) {
+            return;
+        }
+        removeAllPassengers();
+        for (Entity rider : riders) {
+            if (rider instanceof ServerPlayerEntity player) {
+                com.lewandivka.quest.Travel.toMarker(player, "sky_ascent:stop_platform");
+            } else {
+                rider.discard();
+            }
+        }
+        discard();
     }
 
     @Override

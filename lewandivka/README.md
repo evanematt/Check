@@ -70,6 +70,7 @@ Admin commands (permission level 2):
 | `/lewandivka ability grant\|revoke <player> <dash\|spring_insoles\|glider>` | abilities |
 | `/lewandivka teleport <structure> [view]` | visit any structure of either dimension (tab completion lists them); `view` puts you on an aerial vantage point instead of the entrance |
 | `/lewandivka validate` | checks the generated structures against their blueprints |
+| `/lewandivka selftest` · `/lewandivka probe <x> <y1> <y2> <z>` | checks that need the running server: the generated chunks against the world plan, the first arrival, a fake player crossing between the dimensions, three players joining; and the blocks of a column (`execute in <dimension> run ...`) |
 
 ## Controls
 
