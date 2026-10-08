@@ -211,7 +211,10 @@ public final class Stations {
     // ------------------------------------------------------------------ springs and the grey void
 
     private static void spring(ServerWorld world, BlockPos pos, BlockState state, SpecBlock block, Entity entity) {
-        if (!(entity instanceof LivingEntity living) || entity.getVelocity().y > 0.2 || !Abilities.launched(entity, world.getTime())) {
+        // the server does not simulate the motion of a player (the client does), so its velocity can be stale: for players
+        // the cooldown alone decides, mobs must not be thrown again while they are still rising
+        if (!(entity instanceof LivingEntity living) || (!(entity instanceof ServerPlayerEntity) && entity.getVelocity().y > 0.2)
+                || !Abilities.launched(entity, world.getTime())) {
             return;
         }
         boolean hatch = block.spec.id.equals("spring_hatch");

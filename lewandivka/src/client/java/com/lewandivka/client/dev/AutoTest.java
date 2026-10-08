@@ -204,7 +204,7 @@ public final class AutoTest {
     }
 
     /** Writes the position and the velocity of the player every four ticks for a while (to understand a failed check). */
-    private static void trace(String name, int ticks) {
+    private static void trace(MinecraftClient c, String name, int ticks) {
         add("trace " + name, 0, () -> {
             traceName = name;
             traceLeft = ticks;

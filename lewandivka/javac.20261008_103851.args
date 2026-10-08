@@ -1,0 +1,8 @@
+-proc:none
+-d
+/tmp/claude-0/-home-user-Check/d507bd00-4318-5c15-986b-545c79b5a823/scratchpad/jc
+-cp
+core/build/classes/java/main
+-sourcepath
+src/main/java:src/client/java:core/src/main/java
+src/client/java/com/lewandivka/client/dev/AutoTest.java
