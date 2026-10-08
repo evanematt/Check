@@ -118,6 +118,13 @@ class LaunchTest {
     }
 
     @Test
+    void theGlideSettlesAtTheDesignedSpeedDespiteTheFrictionOfTheAir() {
+        assertEquals(Launch.GLIDE_SPEED, Launch.glideSpeed(0.3, 200), 0.005);
+        // from a standing start the speed comes up within about a second
+        assertTrue(Launch.glideSpeed(0.0, 20) > 0.75 * Launch.GLIDE_SPEED, "too slow to get going: " + Launch.glideSpeed(0.0, 20));
+    }
+
+    @Test
     void theGliderCrossesTheChasmOfTheTowerApproachWithEnergyToSpare() {
         Blueprint bp = Catalog.namedBlueprints().get("tower_approach");
         Blueprint.Marker start = bp.marker("glide_start");

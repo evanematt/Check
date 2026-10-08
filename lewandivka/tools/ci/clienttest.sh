@@ -70,14 +70,43 @@ mapfile -t CMDS < "$OUT/gallery-commands.txt"
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "${CMDS[@]}" > "$OUT/gallery-rcon.txt" 2>&1
 echo "gallery built: $(grep -c . "$OUT/gallery-rcon.txt") rcon lines"
 
+# A run takes half an hour: every few minutes what is known so far (the bot's result file, both logs, the screenshots as
+# small jpg files) goes to the pre-release ci-latest, so a problem at the start can be read long before the end.
+publish_partial() {
+  command -v gh >/dev/null 2>&1 || return 0
+  [ -n "${GH_TOKEN:-}" ] || return 0
+  local dir="$OUT/partial"
+  rm -rf "$dir"
+  mkdir -p "$dir"
+  cp "$CLI/autotest-result.txt" "$dir/autotest-result.txt" 2>/dev/null
+  cp "$SERVER_LOG" "$dir/clienttest-server.txt" 2>/dev/null
+  cp "$CLIENT_LOG" "$dir/clienttest-client.txt" 2>/dev/null
+  python3 - "$CLI/screenshots" "$dir" <<'PY' 2>/dev/null
+import sys
+from pathlib import Path
+try:
+    from PIL import Image
+except ImportError:
+    sys.exit(0)
+src, dst = Path(sys.argv[1]), Path(sys.argv[2])
+for p in sorted(src.glob("*.png")):
+    Image.open(p).convert("RGB").save(dst / (p.stem + ".jpg"), quality=75)
+PY
+  echo "run=${GITHUB_RUN_NUMBER:-?} sha=${GITHUB_SHA:-?} job-status=running state=partial at=$(date -u +%H:%M:%S)" > "$dir/info-client.txt"
+  gh release upload ci-latest "$dir"/* --clobber > /dev/null 2>&1 || true
+}
+( while true; do sleep 240; publish_partial; done ) &
+UPLOADER=$!
+
 export LEWANDIVKA_AUTOTEST=1
 export LIBGL_ALWAYS_SOFTWARE=1
 export MESA_GL_VERSION_OVERRIDE=4.5
 export MESA_GLSL_VERSION_OVERRIDE=450
-timeout 900 xvfb-run -a -s "-screen 0 1280x720x24" \
+timeout 2400 xvfb-run -a -s "-screen 0 1280x720x24" \
   ./gradlew runClient --console=plain --args="--username Tester --width 1280 --height 720 --quickPlayMultiplayer 127.0.0.1:25566" \
   > "$CLIENT_LOG" 2>&1
 CLIENT_EXIT=$?
+kill "$UPLOADER" 2>/dev/null
 echo "client exit code $CLIENT_EXIT"
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "stop" > /dev/null 2>&1
 wait "$SERVER_PID" 2>/dev/null

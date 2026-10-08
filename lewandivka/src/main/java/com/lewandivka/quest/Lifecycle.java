@@ -25,10 +25,22 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /** Joining, respawning and the reaction to every step of the campaign. */
 public final class Lifecycle {
+
+    /**
+     * Ticks between the join of a new player and the first arrival in the district: 0 moves the player inside the join event
+     * (the way it has always worked), more waits that many ticks. A knob of the join replay ({@code /lewandivka joinreplay}),
+     * which compares the two to find out what the client is sent in each case.
+     */
+    public static int arrivalDelayTicks = 0;
+    private static final Map<UUID, Integer> ARRIVALS = new HashMap<>();
 
     private Lifecycle() {
     }
@@ -43,6 +55,7 @@ public final class Lifecycle {
             Dialogues.tick(server);
             Abilities.tick(server);
             NpcSpawns.tick(server);
+            arrivals(server);
         });
         Campaign.addListener(Lifecycle::stepEntered);
     }
@@ -79,15 +92,42 @@ public final class Lifecycle {
                 TimeControl.set(server, TimeControl.DUSK);
                 holdDistrictTime(server, Campaign.step(server));
             }
-            arrive(player, server);
             QuestInventory.give(player, QuestItems.NOTEBOOK, 1);
-            player.networkHandler.sendPacket(new TitleS2CPacket(Text.translatable("title.lewandivka.district")));
-            player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.translatable("title.lewandivka.district.sub")));
-            player.sendMessage(Text.translatable("message.lewandivka.welcome"), false);
+            if (arrivalDelayTicks <= 0) {
+                arriveWithWelcome(player, server);
+            } else {
+                ARRIVALS.put(player.getUuid(), arrivalDelayTicks);
+            }
             Campaign.dirty(server);
         }
         Story.catchUp(player);
         Net.sendCampaign(player);
+    }
+
+    private static void arriveWithWelcome(ServerPlayerEntity player, MinecraftServer server) {
+        arrive(player, server);
+        player.networkHandler.sendPacket(new TitleS2CPacket(Text.translatable("title.lewandivka.district")));
+        player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.translatable("title.lewandivka.district.sub")));
+        player.sendMessage(Text.translatable("message.lewandivka.welcome"), false);
+    }
+
+    private static void arrivals(MinecraftServer server) {
+        if (ARRIVALS.isEmpty()) {
+            return;
+        }
+        Iterator<Map.Entry<UUID, Integer>> it = ARRIVALS.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<UUID, Integer> e = it.next();
+            ServerPlayerEntity player = server.getPlayerManager().getPlayer(e.getKey());
+            if (player == null) {
+                it.remove();
+            } else if (e.getValue() <= 1) {
+                it.remove();
+                arriveWithWelcome(player, server);
+            } else {
+                e.setValue(e.getValue() - 1);
+            }
+        }
     }
 
     /** The first arrival: the district at the start of the story, the base of Chromandivka when the party is already there. */

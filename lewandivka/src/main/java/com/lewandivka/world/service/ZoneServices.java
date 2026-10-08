@@ -15,7 +15,10 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Two kinds of marked regions that act on players every few ticks:
@@ -36,6 +39,8 @@ public final class ZoneServices {
 
     private static List<Wind> winds;
     private static List<Pit> pits;
+    /** Where every player was at the previous check: a pit only catches whoever is not on the way up (a spring throw crosses one). */
+    private static final Map<UUID, Double> LAST_Y = new HashMap<>();
 
     private ZoneServices() {
     }
@@ -85,17 +90,22 @@ public final class ZoneServices {
             }
             String dimension = Dimensions.idOf(player.getWorld());
             Vec3d at = player.getPos();
+            Double before = LAST_Y.put(player.getUuid(), at.y);
+            boolean rising = before != null && at.y > before + 0.05 && !player.isTouchingWater();
             for (Wind wind : winds) {
                 if (wind.dimension().equals(dimension) && wind.box().contains(at)) {
                     push(player, wind);
                 }
             }
             for (Pit pit : pits) {
-                if (pit.dimension().equals(dimension) && pit.box().contains(at)) {
+                if (!rising && pit.dimension().equals(dimension) && pit.box().contains(at)) {
                     recover(server, player, pit);
                     break;
                 }
             }
+        }
+        if (LAST_Y.size() > 64) {
+            LAST_Y.keySet().removeIf(id -> server.getPlayerManager().getPlayer(id) == null);
         }
     }
 

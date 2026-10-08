@@ -92,6 +92,19 @@ public final class LewCommands {
                                         .then(CommandManager.argument("z", IntegerArgumentType.integer())
                                                 .executes(c -> probe(c.getSource(), IntegerArgumentType.getInteger(c, "x"), IntegerArgumentType.getInteger(c, "y1"),
                                                         IntegerArgumentType.getInteger(c, "y2"), IntegerArgumentType.getInteger(c, "z"))))))));
+        // development tools: what a client is sent when it joins, how teleports and chunk watching behave, the server's view of a flight
+        root.then(CommandManager.literal("joinreplay")
+                .then(CommandManager.literal("start")
+                        .then(CommandManager.argument("label", StringArgumentType.word())
+                                .then(CommandManager.argument("delay", IntegerArgumentType.integer(0, 100))
+                                        .executes(c -> feedback(c.getSource(), JoinReplay.start(c.getSource().getServer(), StringArgumentType.getString(c, "label"), IntegerArgumentType.getInteger(c, "delay")))))))
+                .then(CommandManager.literal("report").executes(c -> joinReport(c.getSource())))
+                .then(CommandManager.literal("torture").executes(c -> feedback(c.getSource(), JoinReplay.torture(c.getSource().getServer()))))
+                .then(CommandManager.literal("result").executes(c -> feedback(c.getSource(), JoinReplay.tortureResult()))));
+        root.then(CommandManager.literal("trace")
+                .then(CommandManager.argument("player", StringArgumentType.word())
+                        .then(CommandManager.argument("ticks", IntegerArgumentType.integer(1, 2400))
+                                .executes(c -> feedback(c.getSource(), ServerTrace.start(c.getSource().getServer(), StringArgumentType.getString(c, "player"), IntegerArgumentType.getInteger(c, "ticks")))))));
         root.then(CommandManager.literal("checkpoint").executes(c -> checkpoint(c.getSource())));
         root.then(CommandManager.literal("reset")
                 .then(CommandManager.literal("encounter")
@@ -280,6 +293,24 @@ public final class LewCommands {
         String text = SelfTest.probe(source.getWorld(), x, Math.min(y1, y2), Math.max(y1, y2), z);
         source.sendFeedback(() -> Text.literal(text), false);
         return 1;
+    }
+
+    private static int feedback(ServerCommandSource source, String text) {
+        String shown = text.length() > 3500 ? text.substring(0, 3500) + " ..." : text;
+        source.sendFeedback(() -> Text.literal(shown), false);
+        return 1;
+    }
+
+    private static int joinReport(ServerCommandSource source) {
+        SelfTest.Report report = JoinReplay.report(source.getServer());
+        for (String note : report.notes()) {
+            com.lewandivka.LewandivkaMod.LOGGER.info("[joinreplay] {}", note);
+        }
+        for (String problem : report.problems()) {
+            com.lewandivka.LewandivkaMod.LOGGER.warn("[joinreplay] {}", problem);
+        }
+        String text = "joinreplay: " + (report.ok() ? "OK" : "PROBLEMS") + " - " + String.join(" ; ", report.ok() ? report.notes() : report.problems());
+        return feedback(source, text) * (report.ok() ? 1 : 0);
     }
 
     /** Checks only a running server with the real dimensions can do (see {@link SelfTest}). */

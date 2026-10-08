@@ -128,12 +128,26 @@ version and the loader version fit. Output: `.mrpack` (references only), server 
 scripts), TLauncher installer (downloads and hash-checks the same files), `THIRD_PARTY.md`, `resolved.json`. Fabric API
 and GeckoLib are never embedded in `lewandivka.jar`.
 
-## 10. CI (`.github/workflows/lewandivka.yml`)
+## 10. CI (`.github/workflows/lewandivka.yml` and `lewandivka-client.yml`)
 
-1. core unit tests → 2. `./gradlew build` → 3. Fabric GameTests (headless server; every registry entry, every entity is
-created, ticked and reloaded from NBT, the campaign NBT round trip) → 4. dedicated-server smoke test over rcon
-(`/lewandivka validate`, then a restart of the same world: the campaign step must survive) → 5. resource validation
-(including blockstate properties against the block catalog) → 6. client test (Xvfb, software GL: story-step soak of every
-dungeon, the night population, the physical jump checks, screenshots; any logged error of the mod fails it) → 7. modpack
-build → 8. boot the finished server pack. Every run publishes its logs, screenshots and artifacts to the pre-release
-`ci-latest`.
+Two workflows. `lewandivka.yml` has two jobs that run side by side. **server**: core unit tests → `./gradlew build` →
+(reading material, not a check) the vanilla classes that matter are decompiled with CFR and published as `vanilla-src.tgz`
+→ Fabric GameTests (headless server; every registry entry, every entity is created, ticked and reloaded from NBT, the
+campaign NBT round trip) → dedicated-server smoke test over rcon (`/lewandivka validate`, `/lewandivka selftest`, the join
+replay below, then a restart of the same world: the campaign step must survive, the generated world is read back and
+compared with the plan again, every encounter is rebuilt, reset and wiped) → resource validation (including blockstate
+properties against the block catalog). **package**: modpack build → boot the finished server pack.
+`lewandivka-client.yml` (its own workflow, because a run takes half an hour and a new push waits for it instead of
+cancelling it): the real client test (Xvfb, software GL: story-step soak of every dungeon, the night population, the
+physical jump checks, the sky tram ride, the end of the first act with real clicks, screenshots; any logged error of the
+mod fails it). Every job publishes its logs, screenshots and artifacts to the pre-release `ci-latest` when it ends
+(`info-server.txt`, `info-client.txt`, `info-package.txt` say which commit they belong to; the client job also publishes
+what it knows every four minutes, marked `state=partial`).
+
+**The join replay** (`/lewandivka joinreplay`, `JoinReplay`): a player is created and joined through the real
+`PlayerManager.onPlayerConnect` with a connection that has no socket behind it, so the packets the client would receive
+stay in a queue. They are read back in order, every chunk is decoded the way the client decodes it and compared with the
+chunks of the three worlds (a client once showed stone and diorite in the district for a while after the first arrival),
+and `torture` moves such a player the way the client test does (a forced gallery far away, teleports inside the district,
+crossings to Chromandivka and back) while the chunk watchers are updated as the movement packets of a client would do it,
+reporting the exceptions of the teleports and which ticket manager lists the player where.

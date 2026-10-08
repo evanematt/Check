@@ -140,11 +140,8 @@ public final class Abilities {
                 stopGlide(p, s, now);
                 continue;
             }
-            Vec3d v = p.getVelocity();
-            if (v.y < -0.1) {
-                p.setVelocity(v.x, -0.1, v.z);
-                p.velocityModified = true;
-            }
+            // the client simulates the glide (sink and speed); the velocity the server has for a player is stale, and every
+            // packet that carries it would throw the glider back to a standstill
             p.fallDistance = 0;
         }
     }

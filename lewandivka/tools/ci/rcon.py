@@ -4,6 +4,8 @@
     rcon.py HOST PORT PASSWORD "command" ["command" ...]
 
 Prints the response of every command. Waits up to 60 s for the server to accept the connection.
+Two pseudo commands run on this side: "!sleep SECONDS", and "!until SECONDS TEXT command ..." which repeats the command every
+two seconds until its answer contains TEXT (or the time is up) and prints the last answer.
 """
 import socket
 import struct
@@ -54,6 +56,26 @@ def run(host: str, port: int, password: str, commands: list) -> int:
     sock = connect(host, port, password)
     sock.settimeout(600)   # selftest generates chunks and can take a while
     for i, cmd in enumerate(commands):
+        if cmd.startswith("!sleep "):
+            time.sleep(float(cmd.split()[1]))
+            print(f"> {cmd}", flush=True)
+            continue
+        if cmd.startswith("!until "):
+            _, seconds, text, real = cmd.split(" ", 3)
+            deadline = time.time() + float(seconds)
+            body = ""
+            while True:
+                sock.sendall(packet(100 + i, 2, real))
+                try:
+                    _, _, body = read_packet(sock)
+                except (OSError, ConnectionError):
+                    body = "(connection closed)"
+                    break
+                if text in body or time.time() > deadline:
+                    break
+                time.sleep(2)
+            print(f"> {real}\n{body}", flush=True)
+            continue
         sock.sendall(packet(100 + i, 2, cmd))
         try:
             _, _, body = read_packet(sock)

@@ -1,7 +1,9 @@
 package com.lewandivka;
 
 import com.lewandivka.block.GameBlocks;
+import com.lewandivka.command.JoinReplay;
 import com.lewandivka.command.LewCommands;
+import com.lewandivka.command.ServerTrace;
 import com.lewandivka.config.LewandivkaConfig;
 import com.lewandivka.entity.GameEntities;
 import com.lewandivka.flow.FlowHost;
@@ -53,6 +55,8 @@ public final class LewandivkaMod implements ModInitializer {
         ZoneServices.register();
         Lifecycle.register();
         LewCommands.register();
+        JoinReplay.register();
+        ServerTrace.register();
         ServerLifecycleEvents.SERVER_STARTING.register(server -> Structures.warmUp());
         LOGGER.info("Левандівка: по той бік району is ready");
     }

@@ -22,10 +22,21 @@ public final class Launch {
     public static final double PAD_DRIFT = 1.8;
     public static final double HATCH_UP = 2.6;
     public static final double HOP = 0.42;
-    /** The glider (simulated by the client, validated by the server): horizontal target speed, how fast it is reached, sink speed. */
+    /**
+     * The glider (simulated by the client, validated by the server): blocks covered per tick once the speed has settled, how
+     * fast it settles (the share of the gap to the target that is closed every tick) and the sink speed (blocks per tick).
+     */
     public static final double GLIDE_SPEED = 0.42;
     public static final double GLIDE_BLEND = 0.12;
     public static final double GLIDE_SINK = 0.09;
+    /** The air slows a flying player by this factor every tick, after the move (vanilla). */
+    public static final double AIR_DRAG = 0.91;
+    /**
+     * The speed the glide asks for. The game moves the player by the speed that was set at the start of the tick and slows it
+     * down by {@link #AIR_DRAG} afterwards, so the settled speed is {@code target * blend / (1 - drag * (1 - blend))}: the
+     * target has to be higher than the speed the glider is meant to have.
+     */
+    public static final double GLIDE_TARGET = GLIDE_SPEED * (1.0 - AIR_DRAG * (1.0 - GLIDE_BLEND)) / GLIDE_BLEND;
 
     private static final double GRAVITY = 0.08;
     private static final double DRAG_Y = 0.98;
@@ -100,18 +111,34 @@ public final class Launch {
         return Double.NaN;
     }
 
-    /** Ticks of gliding needed to cover a horizontal distance from a start speed, or -1 when the energy would not last. */
+    /**
+     * Ticks of gliding needed to cover a horizontal distance from a start speed (the speed left after the friction of the
+     * tick before the glide), or -1 when the energy would not last. Every tick the client sets the speed {@code set}, the game
+     * moves the player by it and the air slows what is left down.
+     */
     public static int glideTicks(double distance, double startSpeed, int maxTicks) {
-        double v = startSpeed;
+        double left = startSpeed;
         double covered = 0;
         for (int t = 1; t <= maxTicks; t++) {
-            v += (GLIDE_SPEED - v) * GLIDE_BLEND;
-            covered += v;
+            double set = left + (GLIDE_TARGET - left) * GLIDE_BLEND;
+            covered += set;
+            left = set * AIR_DRAG;
             if (covered >= distance) {
                 return t;
             }
         }
         return -1;
+    }
+
+    /** The horizontal speed (blocks per tick) of a glide that has gone on for {@code ticks} ticks, from a start speed. */
+    public static double glideSpeed(double startSpeed, int ticks) {
+        double left = startSpeed;
+        double set = startSpeed;
+        for (int t = 1; t <= ticks; t++) {
+            set = left + (GLIDE_TARGET - left) * GLIDE_BLEND;
+            left = set * AIR_DRAG;
+        }
+        return set;
     }
 
     /** Ticks until the rider comes down through that height, or -1. */

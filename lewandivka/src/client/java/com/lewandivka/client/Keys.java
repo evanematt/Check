@@ -113,8 +113,9 @@ public final class Keys {
             double dx = flat < 1.0E-3 ? 0.0 : look.x / flat;
             double dz = flat < 1.0E-3 ? 0.0 : look.z / flat;
             Vec3d v = player.getVelocity();
-            double hx = v.x + (dx * Launch.GLIDE_SPEED - v.x) * Launch.GLIDE_BLEND;
-            double hz = v.z + (dz * Launch.GLIDE_SPEED - v.z) * Launch.GLIDE_BLEND;
+            // the game slows the player down after the move, so the speed asked for is higher than the one that is wanted
+            double hx = v.x + (dx * Launch.GLIDE_TARGET - v.x) * Launch.GLIDE_BLEND;
+            double hz = v.z + (dz * Launch.GLIDE_TARGET - v.z) * Launch.GLIDE_BLEND;
             player.setVelocity(hx, Math.max(v.y, -Launch.GLIDE_SINK), hz);
             player.fallDistance = 0.0f;
         } else if (edge && airborne && ClientState.cooldownLeft(Ability.GLIDER) <= 0 && player.getVelocity().y < 0.0 && player.fallDistance > 0.6f) {

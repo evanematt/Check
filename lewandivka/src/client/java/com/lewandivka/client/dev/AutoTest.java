@@ -8,6 +8,9 @@ import com.lewandivka.client.screen.NotebookScreen;
 import com.lewandivka.LewandivkaMod;
 import com.lewandivka.core.campaign.Ability;
 import com.lewandivka.core.campaign.QuestStep;
+import com.lewandivka.core.world.WorldPlan;
+import com.lewandivka.world.dimension.PlanBlockView;
+import com.lewandivka.world.dimension.Plans;
 import com.lewandivka.world.structure.Structures;
 import com.lewandivka.world.structure.Structures.Marker;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -25,6 +28,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -64,6 +68,9 @@ public final class AutoTest {
     private static boolean screenWanted;
     private static String traceName = "";
     private static int traceLeft;
+    /** The trace writes a line every this many ticks. */
+    private static int traceEvery = 4;
+    private static int traceSetEvery = 4;
 
     private AutoTest() {
     }
@@ -95,7 +102,7 @@ public final class AutoTest {
             c.setScreen(null);
         }
         if (traceLeft > 0) {
-            if (traceLeft % 4 == 0) {
+            if (traceLeft % traceEvery == 0) {
                 Vec3d v = c.player.getVelocity();
                 note(String.format(Locale.ROOT, "trace %s: %.2f %.2f %.2f v=(%.2f %.2f %.2f) ground=%s", traceName,
                         c.player.getX(), c.player.getY(), c.player.getZ(), v.x, v.y, v.z, c.player.isOnGround()));
@@ -131,6 +138,16 @@ public final class AutoTest {
             LewandivkaMod.LOGGER.error("autotest step failed", e);
         }
         wait = s.delay();
+        flush(c);
+    }
+
+    /** The result file is written as the script goes, so that CI can publish what is known long before the end. */
+    private static void flush(MinecraftClient c) {
+        try {
+            Files.writeString(Path.of(c.runDirectory.toURI()).resolve("autotest-result.txt"), LOG.toString(), StandardCharsets.UTF_8);
+        } catch (IOException | RuntimeException e) {
+            // the write at the end reports a real problem
+        }
     }
 
     private static void finish(MinecraftClient c, boolean ok) {
@@ -182,6 +199,70 @@ public final class AutoTest {
         return sb.toString().trim();
     }
 
+    /** The column as the client knows it, runs of the same block together (the form of the server's {@code /lewandivka probe}). */
+    private static String rle(MinecraftClient c, int x, int z, int y0, int y1) {
+        StringBuilder sb = new StringBuilder();
+        String last = null;
+        int from = y0;
+        BlockPos.Mutable p = new BlockPos.Mutable();
+        for (int y = y0; y <= y1 + 1; y++) {
+            String now = y <= y1 ? Registries.BLOCK.getId(c.world.getBlockState(p.set(x, y, z)).getBlock()).toString() : null;
+            if (now == null ? last != null : !now.equals(last)) {
+                if (last != null) {
+                    sb.append(from == y - 1 ? String.valueOf(from) : from + ".." + (y - 1)).append('=').append(last).append(' ');
+                }
+                last = now;
+                from = y;
+            }
+        }
+        return sb.toString().trim();
+    }
+
+    /**
+     * Which chunks around the player hold the blocks of the plan: '#' the plan, '+' mostly, 'x' something else, '.' not loaded.
+     * The client once showed stone where the plan has air; this says which chunks, and (at another time) whether they heal.
+     */
+    private static void chunkGrid(MinecraftClient c, String when) {
+        WorldPlan plan = Plans.byDimension(c.world.getRegistryKey().getValue().toString());
+        if (plan == null) {
+            note("chunk grid " + when + ": " + c.world.getRegistryKey().getValue() + " has no plan");
+            return;
+        }
+        PlanBlockView view = new PlanBlockView(plan, c.world.getRegistryManager());
+        int pcx = c.player.getBlockPos().getX() >> 4;
+        int pcz = c.player.getBlockPos().getZ() >> 4;
+        StringBuilder sb = new StringBuilder("chunk grid " + when + " around chunk " + pcx + "," + pcz + " ('#' plan, '+' mostly, 'x' other, '.' not loaded):");
+        BlockPos.Mutable p = new BlockPos.Mutable();
+        for (int dz = -4; dz <= 4; dz++) {
+            sb.append("\n   ");
+            for (int dx = -4; dx <= 4; dx++) {
+                int cx = pcx + dx;
+                int cz = pcz + dz;
+                WorldChunk chunk = c.world.getChunkManager().getWorldChunk(cx, cz);
+                if (chunk == null || chunk.isEmpty()) {
+                    sb.append('.');
+                    continue;
+                }
+                int total = 0;
+                int same = 0;
+                for (int ox = 1; ox < 16; ox += 4) {
+                    for (int oz = 1; oz < 16; oz += 4) {
+                        for (int y = 56; y <= 96; y++) {
+                            p.set((cx << 4) + ox, y, (cz << 4) + oz);
+                            total++;
+                            if (c.world.getBlockState(p) == view.getBlockState(p)) {
+                                same++;
+                            }
+                        }
+                    }
+                }
+                int percent = same * 100 / total;
+                sb.append(percent >= 98 ? '#' : percent >= 80 ? '+' : 'x');
+            }
+        }
+        note(sb.toString());
+    }
+
     // ------------------------------------------------------------------ script
 
     private static void add(String name, int wait, Runnable action) {
@@ -227,9 +308,15 @@ public final class AutoTest {
 
     /** Writes the position and the velocity of the player every four ticks for a while (to understand a failed check). */
     private static void trace(MinecraftClient c, String name, int ticks) {
+        trace(c, name, ticks, 4);
+    }
+
+    /** The same with a line every {@code every} ticks (1: the whole flight tick by tick). */
+    private static void trace(MinecraftClient c, String name, int ticks, int every) {
         add("trace " + name, 0, () -> {
             traceName = name;
             traceLeft = ticks;
+            traceEvery = every;
         });
     }
 
@@ -304,6 +391,11 @@ public final class AutoTest {
         return "execute in " + dimension + " run " + at(x, y, z, yaw, pitch);
     }
 
+    /** A teleport into Chromandivka (the physical checks all happen there, whatever dimension the server thinks the player is in). */
+    private static String atC(double x, double y, double z, float yaw, float pitch) {
+        return atIn("lewandivka:chromandivka", x, y, z, yaw, pitch);
+    }
+
     private static Marker marker(String id) {
         Marker m = Structures.marker(id);
         if (m == null) {
@@ -337,7 +429,7 @@ public final class AutoTest {
         for (String[] j : jumps) {
             Marker pad = marker("sky_ascent:" + j[0]);
             Marker target = marker("sky_ascent:" + j[1]);
-            cmd(c, at(pad.x() + 0.5 - 2.0, pad.y(), pad.z() + 0.5, -90, 0), 4);
+            cmd(c, atC(pad.x() + 0.5 - 2.0, pad.y(), pad.z() + 0.5, -90, 0), 4);
             settle(c, "beside " + j[0], 600);
             trace(c, j[0], 90);
             add("walk onto " + j[0], 1, () -> c.options.forwardKey.setPressed(true));
@@ -351,9 +443,21 @@ public final class AutoTest {
         // walking east (a human steers a little in the air; the wind of the tube helps)
         Marker bottom = marker("sky_ascent:tunnel_bottom");
         Marker top = marker("sky_ascent:tunnel_top");
-        cmd(c, at(bottom.x() + 0.5, bottom.y(), bottom.z() + 0.5, -90, 0), 4);
+        Marker hatch = marker("sky_ascent:hatch_up");
+        cmd(c, atC(bottom.x() + 0.5, bottom.y(), bottom.z() + 0.5, -90, 0), 4);
         settle(c, "beside the tunnel hatch", 600);
-        trace(c, "tunnel hatch", 160);
+        // the hatch launches for a moment and then the climber is back at the bottom: what does the world look like there,
+        // for the server and for the client, and what does the server think of the player tick by tick
+        for (int dx = -1; dx <= 1; dx++) {
+            cmd(c, "execute in lewandivka:chromandivka run lewandivka probe " + (hatch.x() + dx) + " " + (hatch.y() - 2) + " " + (hatch.y() + 45) + " " + hatch.z(), 2);
+        }
+        add("the columns of the client at the tunnel hatch", 1, () -> {
+            for (int dx = -1; dx <= 1; dx++) {
+                note("  client column at " + (hatch.x() + dx) + "," + hatch.z() + ": " + rle(c, hatch.x() + dx, hatch.z(), hatch.y() - 2, hatch.y() + 45));
+            }
+        });
+        cmd(c, "lewandivka trace Tester 100", 1);
+        trace(c, "tunnel hatch", 100, 1);
         add("walk onto the hatch", 1, () -> c.options.forwardKey.setPressed(true));
         until("the throw of the hatch", 80, 1, () -> c.player.getY() > bottom.y() + 2.0);
         until("the landing on the platform", 260, 5, () -> c.player.isOnGround() && c.player.getY() > top.y() - 0.5);
@@ -363,17 +467,17 @@ public final class AutoTest {
         // 3. the spring shaft of the tower approach ends on the glider deck
         Marker shaft = marker("tower_approach:shaft_bottom");
         Marker deck = marker("tower_approach:glide_start");
-        cmd(c, at(shaft.x() + 0.5, shaft.y(), shaft.z() + 2.5, 180, 0), 4);
+        cmd(c, atC(shaft.x() + 0.5, shaft.y(), shaft.z() + 2.5, 180, 0), 4);
         settle(c, "beside the shaft hatch", 600);
         trace(c, "shaft hatch", 120);
-        cmd(c, at(shaft.x() + 0.5, shaft.y(), shaft.z() + 0.5, 180, 0), 160);
+        cmd(c, atC(shaft.x() + 0.5, shaft.y(), shaft.z() + 0.5, 180, 0), 160);
         checkPosition(c, "the shaft hatch carries the climber to the glider deck", deck.x(), deck.y(), deck.z() + 1, 7, 1.6, 6.5);
 
         // 3b. the hatch in the middle of the tower's fourth floor throws the climber up through the hole of the fifth floor onto
         // its ledge (the wind of the shaft carries him sideways; he keeps walking east like a player who steers)
         Marker f4 = marker("tower:hatch_f4_top");
         Marker ledge = marker("tower:f4_ledge");
-        cmd(c, at(f4.x() + 0.5 - 2.0, f4.y(), f4.z() + 0.5, -90, 0), 4);
+        cmd(c, atC(f4.x() + 0.5 - 2.0, f4.y(), f4.z() + 0.5, -90, 0), 4);
         settle(c, "beside the tower hatch", 900);
         trace(c, "tower hatch", 160);
         add("walk onto the tower hatch", 1, () -> c.options.forwardKey.setPressed(true));
@@ -384,7 +488,7 @@ public final class AutoTest {
 
         // 4. a dash opens the first door of the dash corridor
         Marker door = marker("tower_approach:dash_door_1");
-        cmd(c, at(door.x() + 2.5, door.y(), door.z() + 3.6, 180, 0), 4);
+        cmd(c, atC(door.x() + 2.5, door.y(), door.z() + 3.6, 180, 0), 4);
         settle(c, "in front of the first dash door", 600);
         trace(c, "dash door", 40);
         add("dash", 40, () -> ClientNet.requestAbility(Ability.DASH, true));
@@ -398,7 +502,7 @@ public final class AutoTest {
         Marker near = marker("shelter:platform_a");
         Marker far = marker("shelter:platform_b");
         Marker pit = marker("shelter:pit");
-        cmd(c, at(near.x() + 0.5, near.y(), near.z() + 0.5, 0, 0), 4);
+        cmd(c, atC(near.x() + 0.5, near.y(), near.z() + 0.5, 0, 0), 4);
         settle(c, "before the dash pit", 600);
         add("wait for the dash to recharge", 80, () -> { });
         add("run to the pit", 1, () -> {
@@ -415,12 +519,13 @@ public final class AutoTest {
             c.options.forwardKey.setPressed(false);
             c.options.sprintKey.setPressed(false);
         });
-        checkPosition(c, "the dash carries the player over the pit of the shelter", far.x(), far.y(), far.z() + 0.5, 9, 1.6, 3.0);
+        // behind the pit the platform goes on for a good twelve blocks: landing anywhere on it is crossing the pit
+        checkPosition(c, "the dash carries the player over the pit of the shelter", far.x(), far.y(), far.z() + 5.5, 9, 1.6, 6.5);
 
         // 6. the glider carries the player over the chasm to the far platform: run, jump, jump again in mid-air
         Marker start = marker("tower_approach:glide_start");
         Marker end = marker("tower_approach:glide_end");
-        cmd(c, at(start.x() + 0.5, start.y(), start.z() + 0.5, 180, 0), 4);
+        cmd(c, atC(start.x() + 0.5, start.y(), start.z() + 0.5, 180, 0), 4);
         settle(c, "on the glider deck", 600);
         add("run to the edge", 1, () -> {
             c.options.forwardKey.setPressed(true);
@@ -650,12 +755,16 @@ public final class AutoTest {
     private static void build(MinecraftClient c) {
         add("settle", 180, () -> { });
         cmd(c, "gamemode creative", 10);
+        int[] spawn = com.lewandivka.core.world.gen.DistrictPlan.get().spawn();
         add("where is the player", 1, () -> {
             where(c, "the first arrival");
+            note("  client column at the spawn " + spawn[0] + "," + spawn[2] + ": " + rle(c, spawn[0], spawn[2], 0, 140));
+            chunkGrid(c, "at the first arrival");
             expect("the first arrival is not inside a block", !c.player.isInsideWall(), "the player is at " + c.player.getBlockPos().toShortString());
         });
-        int[] spawn = com.lewandivka.core.world.gen.DistrictPlan.get().spawn();
-        cmd(c, "execute in lewandivka:district run lewandivka probe " + spawn[0] + " " + (spawn[1] - 3) + " " + (spawn[1] + 4) + " " + spawn[2], 4);
+        // what the server has in the same column in the district and (to tell stale overworld chunks from anything else) in the overworld
+        cmd(c, "execute in lewandivka:district run lewandivka probe " + spawn[0] + " 0 140 " + spawn[2], 4);
+        cmd(c, "execute in minecraft:overworld run lewandivka probe " + spawn[0] + " -64 140 " + spawn[2], 4);
         shot(c, "01_district_spawn", 10);
         cmd(c, "lewandivka status", 10);
         add("notebook", 14, () -> {
@@ -679,6 +788,7 @@ public final class AutoTest {
         cmd(c, "effect give @s minecraft:night_vision 99999 0 true", 6);
         tour(c, "tram_stop", "tram_fight");
         tour(c, "old_shop", null);
+        add("grid at the old shop", 1, () -> chunkGrid(c, "at the old shop"));
         tour(c, "garage13", "garage_panels");
         for (String s : List.of("block_a", "house_ne0", "kindergarten", "playground_north", "tram_depot")) {
             tour(c, s, null);
@@ -698,15 +808,6 @@ public final class AutoTest {
         show(c, "conductor", "conductor");
         show(c, "colorless_head", "colorless_head");
 
-        // the block gallery (built by the CI script through rcon)
-        cmd(c, "tp @s 1020 154 997 0 24", 20);
-        settle(c, "gallery", 2400);
-        shot(c, "gallery_1", 6);
-        cmd(c, "tp @s 1020 154 1010 0 24", 60);
-        shot(c, "gallery_2", 6);
-        cmd(c, "tp @s 1020 154 1022 0 24", 60);
-        shot(c, "gallery_3", 6);
-
         // the other side
         tour(c, "base", "base_pedestals");
         cmd(c, "tp @s ~ ~ ~ 200 -32", 30);
@@ -720,9 +821,24 @@ public final class AutoTest {
         tour(c, "tower", "tower_climb");
         tour(c, "isle3", null);
         bossRewards(c);
+        // the final boss ends with a cutscene that carries the party to the base: the script must not race it
+        until("the rescued party arrives at the base", 900, 20, () -> in(c, "lewandivka:chromandivka") && ClientState.cinematic.isEmpty()
+                && c.player.squaredDistanceTo(marker("base:spawn").x() + 0.5, marker("base:spawn").y(), marker("base:spawn").z() + 0.5) < 15 * 15);
+        cmd(c, "lewandivka step tower_climb", 10);
         physics(c);
         skyRide(c);
         crossing(c);
+        // the block gallery (built by the CI script through rcon) far from the district, in a chunk that is forced to stay
+        // loaded; the first teleport out of there used to throw (see JoinReplay), so it is played last
+        cmd(c, "tp @s 1020 154 997 0 24", 20);
+        settle(c, "gallery", 2400);
+        shot(c, "gallery_1", 6);
+        cmd(c, "tp @s 1020 154 1010 0 24", 60);
+        shot(c, "gallery_2", 6);
+        cmd(c, "tp @s 1020 154 1022 0 24", 60);
+        shot(c, "gallery_3", 6);
+        cmd(c, "lewandivka trace Tester 100", 2);
+        tour(c, "base", null);
         // the postgame: free play, Garage No. 0 under the district
         cmd(c, "lewandivka step post_free", 8);
         inside(c, "garage0", null);

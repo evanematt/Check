@@ -72,11 +72,11 @@ public final class SelfTest {
         return report;
     }
 
-    private interface Check {
+    interface Check {
         void run() throws Exception;
     }
 
-    private static void guarded(Report report, String what, Check check) {
+    static void guarded(Report report, String what, Check check) {
         try {
             check.run();
         } catch (Throwable t) {

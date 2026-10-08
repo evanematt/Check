@@ -5,9 +5,11 @@ name: Lewandivka CI
 #   2. Loom build: compiles and remaps the mod against Minecraft 1.20.1
 #   3. Fabric GameTests on a headless dedicated server (registries, both dimensions, structures, campaign)
 #   4. static resource validation
-#   5. real client test under Xvfb with software OpenGL: joins a dedicated server and tours both dimensions (screenshots)
-#   6. modpack: .mrpack, server pack (booted and validated), TLauncher installer, THIRD_PARTY.md
-# Logs of every run are attached to the pre-release "ci-latest" so they can be read without opening the Actions UI.
+#   5. modpack: .mrpack, server pack (booted and validated), TLauncher installer, THIRD_PARTY.md
+# The real client test (Xvfb, software OpenGL, joins a dedicated server, tours both dimensions, plays the physical parts)
+# takes half an hour and lives in its own workflow, lewandivka-client.yml, so that a new push does not cancel it.
+# The jobs "server" and "package" run side by side. The logs of every job are attached to the pre-release "ci-latest"
+# (info-server.txt / info-package.txt say which commit they belong to) so they can be read without opening the Actions UI.
 on:
   push:
     branches: ['claude/determined-clarke-eigmli']
@@ -25,11 +27,12 @@ permissions:
   contents: write
 
 concurrency:
-  group: lewandivka-${{ github.ref }}
+  group: lewandivka-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  # ---------------------------------------------------------------- unit tests, build, GameTests, dedicated server
+  server:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     defaults:
@@ -54,11 +57,17 @@ jobs:
         run: mkdir -p ../logs
 
       - name: Core unit tests (pure Java, no Minecraft)
-        run: ./gradlew -p core test --console=plain 2>&1 | tee ../logs/core-test.txt
+        run: ./gradlew -p core test --console=plain 2>&1 | tee ../logs/core-test.txt; exit ${PIPESTATUS[0]}
 
       - name: Compile and remap the mod
         if: always()
-        run: ./gradlew build --console=plain 2>&1 | tee ../logs/compile.txt
+        run: ./gradlew build --console=plain 2>&1 | tee ../logs/compile.txt; exit ${PIPESTATUS[0]}
+
+      - name: Decompile the vanilla classes that matter (reading material, not a check)
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 10
+        run: bash tools/ci/decompile.sh ../logs/vanilla-src 2>&1 | tee ../logs/decompile.txt
 
       - name: Fabric GameTests (headless dedicated server)
         if: always()
@@ -66,56 +75,19 @@ jobs:
         run: |
           mkdir -p build/gametest
           echo "eula=true" > build/gametest/eula.txt
-          ./gradlew runGametest --console=plain 2>&1 | tee ../logs/gametest.txt
+          ./gradlew runGametest --console=plain 2>&1 | tee ../logs/gametest.txt; exit ${PIPESTATUS[0]}
 
       - name: Dedicated server smoke test (fresh world, both dimensions, rcon)
+        id: smoke
         if: always()
         timeout-minutes: 20
-        run: bash tools/ci/smoke.sh ../logs/server.txt 2>&1 | tee ../logs/smoke.txt
+        run: bash tools/ci/smoke.sh ../logs/server.txt 2>&1 | tee ../logs/smoke.txt; exit ${PIPESTATUS[0]}
 
       - name: Static resource validation
         if: always()
         run: |
           python3 -m pip install --quiet pillow numpy
-          python3 tools/validate_resources.py 2>&1 | tee ../logs/validate.txt
-
-      - name: Install Xvfb and software OpenGL
-        if: always()
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libgl1 libopenal1 libxrandr2 libxcursor1 libxi6 libxxf86vm1 >/dev/null
-
-      - name: Client test (real client, software OpenGL, joins a dedicated server)
-        id: clienttest
-        if: always()
-        continue-on-error: true
-        timeout-minutes: 35
-        run: bash tools/ci/clienttest.sh ../logs 2>&1 | tee ../logs/clienttest.txt; exit ${PIPESTATUS[0]}
-
-      - name: Shrink the screenshots
-        if: always()
-        run: |
-          python3 -m pip install --quiet pillow
-          mkdir -p ../logs/shots-jpg
-          python3 - <<'PY'
-          from pathlib import Path
-          from PIL import Image
-          for p in sorted(Path("../logs/shots").glob("*.png")):
-              Image.open(p).convert("RGB").save(Path("../logs/shots-jpg") / (p.stem + ".jpg"), quality=80)
-          PY
-
-      - name: Package the modpack (mrpack, server pack, TLauncher installer, THIRD_PARTY.md)
-        id: package
-        if: always()
-        continue-on-error: true
-        run: |
-          mkdir -p ../dist
-          python3 tools/modpack/build_modpack.py --jar "$(ls build/libs/lewandivka-*[0-9].jar | head -1)" --out ../dist 2>&1 | tee ../logs/package.txt; exit ${PIPESTATUS[0]}
-
-      - name: Boot the finished server pack
-        if: always() && steps.package.outcome == 'success'
-        timeout-minutes: 20
-        run: bash tools/ci/serverpack-smoke.sh "../dist/Lewandivka-Server-1.0.0.zip" ../logs/serverpack.txt tools/ci/rcon.py 2>&1 | tee ../logs/serverpack-result.txt
+          python3 tools/validate_resources.py 2>&1 | tee ../logs/validate.txt; exit ${PIPESTATUS[0]}
 
       - name: Upload jar
         if: always()
@@ -125,27 +97,79 @@ jobs:
           path: lewandivka/build/libs/*.jar
           if-no-files-found: ignore
 
-      - name: Publish logs to the pre-release ci-latest
+      - name: Publish the logs to the pre-release ci-latest
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd "$GITHUB_WORKSPACE"
           rm -rf ci-out && mkdir -p ci-out
-          cp logs/*.txt logs/*.rcon ci-out/ 2>/dev/null || true
-          cp logs/shots-jpg/*.jpg ci-out/ 2>/dev/null || true
-          cp dist/* ci-out/ 2>/dev/null || true
+          cp logs/*.txt logs/*.rcon logs/vanilla-src.tgz ci-out/ 2>/dev/null || true
           cp lewandivka/build/junit.xml ci-out/ 2>/dev/null || true
           (cd lewandivka/build/gametest && tar czf "$GITHUB_WORKSPACE/ci-out/gametest-run.tgz" logs crash-reports 2>/dev/null) || true
           cp lewandivka/build/libs/lewandivka-*[0-9].jar ci-out/lewandivka-ci.jar 2>/dev/null || true
-          echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} clienttest=${{ steps.clienttest.outcome }} package=${{ steps.package.outcome }}" > ci-out/info.txt
+          echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} state=final" > ci-out/info-server.txt
           find ci-out -type f -empty -delete          # GitHub refuses empty release assets and aborts the whole upload
           gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
           gh release upload ci-latest ci-out/* --clobber
 
-      # Manual run with "release" ticked: the finished files as a GitHub pre-release v1.0.0 (the README links to it).
-      - name: Publish the release v1.0.0 (manual runs only)
-        if: github.event_name == 'workflow_dispatch' && inputs.release && steps.package.outcome == 'success'
+  # ---------------------------------------------------------------- the modpack, the server pack, the installer
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+        working-directory: lewandivka
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare log folder
+        run: mkdir -p ../logs
+
+      - name: Build the mod
+        run: ./gradlew build --console=plain 2>&1 | tee ../logs/package-build.txt; exit ${PIPESTATUS[0]}
+
+      - name: Package the modpack (mrpack, server pack, TLauncher installer, THIRD_PARTY.md)
+        id: package
+        run: |
+          mkdir -p ../dist
+          python3 tools/modpack/build_modpack.py --jar "$(ls build/libs/lewandivka-*[0-9].jar | head -1)" --out ../dist 2>&1 | tee ../logs/package.txt; exit ${PIPESTATUS[0]}
+
+      - name: Boot the finished server pack
+        if: always() && steps.package.outcome == 'success'
+        timeout-minutes: 20
+        run: bash tools/ci/serverpack-smoke.sh "../dist/Lewandivka-Server-1.0.0.zip" ../logs/serverpack.txt tools/ci/rcon.py 2>&1 | tee ../logs/serverpack-result.txt; exit ${PIPESTATUS[0]}
+
+      - name: Publish the logs and the files to the pre-release ci-latest
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          rm -rf ci-out && mkdir -p ci-out
+          cp logs/package*.txt logs/serverpack*.txt logs/serverpack*.rcon ci-out/ 2>/dev/null || true
+          cp dist/* ci-out/ 2>/dev/null || true
+          echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} state=final package=${{ steps.package.outcome }}" > ci-out/info-package.txt
+          find ci-out -type f -empty -delete
+          gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
+          gh release upload ci-latest ci-out/* --clobber
+
+      # A manual run with "release" ticked, or a push whose commit message contains [release]: the finished files as a
+      # GitHub pre-release v1.0.0 (the README links to it).
+      - name: Publish the release v1.0.0 (only when asked for)
+        if: steps.package.outcome == 'success' && ((github.event_name == 'workflow_dispatch' && inputs.release) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[release]')))
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

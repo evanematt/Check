@@ -48,14 +48,17 @@ session() {
   echo "SMOKE-EXIT $? ($log)"
 }
 
-# every encounter is created, rebuilt, reset and wiped once: constructors, rebuild() and reset() of all twelve flows run
-# against the real world (unknown markers and gates are logged as warnings, which fail this test below)
+# every encounter is created, rebuilt, reset and wiped once (unknown markers and gates are logged as warnings, which fail
+# this test below)
 FLOWS="garage13 tram_stop base rainbow_garage shelter aquapark sky_ascent sky_depot tower_approach tower garage0 district"
 RESETS=()
 for n in $FLOWS; do
   RESETS+=("lewandivka reset encounter $n" "lewandivka reset encounter $n full")
 done
 
+# the join replay (see JoinReplay): two players join through the real join, the first moved to the district inside the
+# join event (as the mod does), the second three ticks later; a third one is moved around like the client test does; the
+# packets each of them would have been sent are decoded and compared with the worlds of the server
 session "$LOG" \
   "lewandivka status" \
   "execute in lewandivka:district run forceload add 0 0 31 31" \
@@ -63,12 +66,18 @@ session "$LOG" \
   "lewandivka validate" \
   "lewandivka selftest" \
   "execute in lewandivka:district run lewandivka probe 2 60 72 -3" \
-  "${RESETS[@]}" \
+  "lewandivka joinreplay start A 0" \
+  "lewandivka joinreplay start B 3" \
+  "lewandivka joinreplay torture" \
+  "!until 150 DONE lewandivka joinreplay result" \
+  "lewandivka joinreplay report" \
   "lewandivka step $STEP" \
   "lewandivka status" \
   "save-all flush" \
   "stop"
 
+# the second session reads the world back from the region files (it must still be the plan), then rebuilds, resets and wipes
+# every encounter once: constructors, rebuild() and reset() of all twelve flows run against the real world
 echo "=== restart on the same world ==="
 session "$LOG2" \
   "lewandivka status" \
@@ -76,6 +85,7 @@ session "$LOG2" \
   "execute in lewandivka:chromandivka run forceload add 0 0 31 31" \
   "lewandivka validate" \
   "lewandivka selftest" \
+  "${RESETS[@]}" \
   "stop"
 
 ok=1
@@ -92,6 +102,8 @@ grep -h "selftest:" "$LOG.rcon" "$LOG2.rcon" 2>/dev/null | cut -c1-1800
 grep -q "selftest: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the self test failed in the first session"; ok=0; }
 grep -q "selftest: OK" "$LOG2.rcon" 2>/dev/null || { echo "SMOKE: the self test failed after the restart"; ok=0; }
 grep -h "^lewandivka:district 2,-3:" "$LOG.rcon" 2>/dev/null | head -2
+echo "--- join replay (informational)"
+grep -h "joinreplay:\|joined (\|torture started\|RUNNING\|DONE" "$LOG.rcon" 2>/dev/null | cut -c1-3000
 # the first status line of the second session is the one printed right after the restart
 if head -n 3 "$LOG2.rcon" 2>/dev/null | grep -q "step=$STEP"; then
   echo "SMOKE: the campaign step survived the restart ($STEP)"
