@@ -70,7 +70,7 @@ public final class QuestTexts {
                 "Записка в інвентарі. Клацніть нею.", "The note is in your inventory. Use it.");
         step(QuestStep.DEBTOR_CLUES, "Боржник", "The Debtor",
                 "Знайдіть сліди Боржника (%s/%s)", "Find the Debtor's traces (%s/%s)",
-                "Пакет від чаю — біля старого магазину. Лавка — північний двір. Майданчик — південний двір. Смітники — південний схід. Дах гаражів — далекий південний захід, цегляні сходи в алеї.",
+                "Пакет від чаю — біля магазину. Лавка — північний двір. Майданчик — південний двір. Смітники — південний схід. Дах гаражів — південний захід, цегляні сходи в алеї.",
                 "Tea package: by the old shop. Bench: north courtyard. Playground: south courtyard. Bins: south-east. Garage roof: far south-west, brick stairs in the alley.");
         step(QuestStep.DEBTOR_CHASE, "Боржник", "The Debtor",
                 "Наздожени Боржника", "Catch the Debtor",

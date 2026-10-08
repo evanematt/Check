@@ -39,8 +39,18 @@ public final class ZoneServices {
 
     private static List<Wind> winds;
     private static List<Pit> pits;
-    /** Where every player was at the previous check: a pit only catches whoever is not on the way up (a spring throw crosses one). */
-    private static final Map<UUID, Double> LAST_Y = new HashMap<>();
+    /** Where a player was at the previous check, and when. */
+    private record Sample(Vec3d pos, long tick, String dimension) {
+    }
+
+    /**
+     * The previous checks of every player. The server does not simulate the motion of a player (the client does), so
+     * {@code getVelocity()} is stale: a wind that built on it sent a rising rider the velocity of a standing one and
+     * killed the throw of a spring hatch. The real velocity is estimated from the movement between two checks.
+     */
+    private static final Map<UUID, Sample> LAST = new HashMap<>();
+    /** Until when a player counts as "on the way up": a pit only catches whoever is not (a spring throw crosses one, and stops for a moment at the top). */
+    private static final Map<UUID, Long> CLIMBING_UNTIL = new HashMap<>();
 
     private ZoneServices() {
     }
@@ -90,33 +100,47 @@ public final class ZoneServices {
             }
             String dimension = Dimensions.idOf(player.getWorld());
             Vec3d at = player.getPos();
-            Double before = LAST_Y.put(player.getUuid(), at.y);
-            boolean rising = before != null && at.y > before + 0.05 && !player.isTouchingWater();
+            long now = server.getTicks();
+            Sample before = LAST.put(player.getUuid(), new Sample(at, now, dimension));
+            Vec3d velocity = player.getVelocity();
+            if (before != null && before.dimension().equals(dimension) && now - before.tick() <= 4) {
+                Vec3d moved = at.subtract(before.pos());
+                // a teleport is not a flight
+                if (moved.lengthSquared() < 64.0) {
+                    double ticks = Math.max(1, now - before.tick());
+                    velocity = moved.multiply(1.0 / ticks);
+                    if (moved.y > 0.05 * ticks && !player.isTouchingWater()) {
+                        CLIMBING_UNTIL.put(player.getUuid(), now + 10);
+                    }
+                }
+            }
+            boolean climbing = CLIMBING_UNTIL.getOrDefault(player.getUuid(), 0L) > now;
             for (Wind wind : winds) {
                 if (wind.dimension().equals(dimension) && wind.box().contains(at)) {
-                    push(player, wind);
+                    push(player, wind, velocity);
                 }
             }
             for (Pit pit : pits) {
-                if (!rising && pit.dimension().equals(dimension) && pit.box().contains(at)) {
+                if (!climbing && pit.dimension().equals(dimension) && pit.box().contains(at)) {
                     recover(server, player, pit);
                     break;
                 }
             }
         }
-        if (LAST_Y.size() > 64) {
-            LAST_Y.keySet().removeIf(id -> server.getPlayerManager().getPlayer(id) == null);
+        if (LAST.size() > 64) {
+            LAST.keySet().removeIf(id -> server.getPlayerManager().getPlayer(id) == null);
+            CLIMBING_UNTIL.keySet().removeIf(id -> server.getPlayerManager().getPlayer(id) == null);
         }
     }
 
-    private static void push(ServerPlayerEntity player, Wind wind) {
-        Vec3d v = player.getVelocity();
+    /** Blends the motion of the player towards the wind; whoever rises fast keeps the rise (v is the real velocity, see {@link #LAST}). */
+    private static void push(ServerPlayerEntity player, Wind wind, Vec3d v) {
         double tx = wind.dx() * wind.speed();
         double tz = wind.dz() * wind.speed();
         double ny = v.y < 0.32 ? Math.min(0.42, v.y + 0.11) : v.y;
         player.setVelocity(v.x + (tx - v.x) * 0.25, ny, v.z + (tz - v.z) * 0.25);
-        player.velocityModified = true;
         player.fallDistance = 0.0f;
+        // one packet and no tracker update: the tracker would send the same numbers a tick later, when they are already out of date
         player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(player));
     }
 
