@@ -29,6 +29,8 @@ public final class BaseFlow implements Flow {
 
     private final FlowEnv env;
     private long wakeAt = -1;
+    /** The compass was handed out for this wake-up (the story has moved on, or is about to). */
+    private boolean woken;
 
     public BaseFlow(FlowEnv env) {
         this.env = env;
@@ -57,9 +59,8 @@ public final class BaseFlow implements Flow {
     @Override
     public void playerEntered(UUID player) {
         QuestStep step = env.world().step();
-        if (step == QuestStep.BASE_WAKE && wakeAt < 0) {
-            wakeAt = env.now() + 140;
-            env.dialogue("base_wake");
+        if (step == QuestStep.BASE_WAKE) {
+            startWaking();
         } else if (step == QuestStep.EPI_RETURN && env.record().setFlag("epilogue.seen")) {
             env.dialogue("epilogue_cats");
             wakeAt = env.now() + 200;
@@ -96,12 +97,26 @@ public final class BaseFlow implements Flow {
         return true;
     }
 
+    /** Waking up takes a moment: the dialogue, then the compass. Starts once per wake-up. */
+    private void startWaking() {
+        if (wakeAt < 0 && !woken) {
+            wakeAt = env.now() + 140;
+            env.dialogue("base_wake");
+        }
+    }
+
     @Override
     public void tick() {
+        // the transition carries the party into the base first and moves the story to the waking up a moment later, so
+        // nobody "enters" after the step began; the flow only ticks while somebody is inside
+        if (env.world().step() == QuestStep.BASE_WAKE) {
+            startWaking();
+        }
         if (wakeAt >= 0 && env.now() >= wakeAt) {
             wakeAt = -1;
             QuestStep step = env.world().step();
             if (step == QuestStep.BASE_WAKE) {
+                woken = true;
                 env.event(Events.BASE_COMPASS);
             } else if (step == QuestStep.EPI_RETURN) {
                 env.event(Events.EPILOGUE_BASE);
@@ -121,6 +136,7 @@ public final class BaseFlow implements Flow {
     @Override
     public void reset() {
         wakeAt = -1;
+        woken = false;
     }
 
     @Override

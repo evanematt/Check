@@ -183,6 +183,23 @@ class CampaignDirectorTest {
     }
 
     @Test
+    void countedObjectivesDoneInAdvanceCountWhenTheStoryArrives() {
+        WorldProgress w = new WorldProgress();
+        Rec fx = new Rec();
+        CampaignDirector d = new CampaignDirector(w, fx);
+        play(d, w, QuestStep.BASE_WAKE);
+        // the party puts the artifacts on the pedestals before the compass has arrived; a filled pedestal cannot be filled again
+        for (int i = 0; i < 4; i++) {
+            d.event(Events.BASE_PEDESTAL);
+        }
+        assertEquals(QuestStep.BASE_WAKE, w.step());
+        assertFalse(fx.portal);
+        d.event(Events.BASE_COMPASS);
+        assertEquals(QuestStep.RG_TRAVEL, w.step(), "the four pedestals counted the moment their step began");
+        assertTrue(fx.portal);
+    }
+
+    @Test
     void bossRewardsAreGrantedByTheRightBosses() {
         WorldProgress w = new WorldProgress();
         Rec fx = new Rec();

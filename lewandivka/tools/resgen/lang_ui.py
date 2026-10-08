@@ -210,6 +210,11 @@ UI = {
     "command.lewandivka.no_permission": ("Недостатньо прав", "Not enough permission"),
     # ---- services batch
     "message.lewandivka.debtor.clue_seen": ("Цей слід уже знайдено", "You have already found this trace"),
+    "message.lewandivka.debtor.last.0": ("Лишився один слід: пакет від чаю біля старого магазину, на північному сході.", "One trace left: the tea package by the old shop, in the north-east."),
+    "message.lewandivka.debtor.last.1": ("Лишився один слід: на лавці в північному дворі.", "One trace left: on the bench in the north courtyard."),
+    "message.lewandivka.debtor.last.2": ("Лишився один слід: на дитячому майданчику в південному дворі.", "One trace left: on the playground in the south courtyard."),
+    "message.lewandivka.debtor.last.3": ("Лишився один слід: біля смітників на південному сході.", "One trace left: by the bins in the south-east."),
+    "message.lewandivka.debtor.last.4": ("Лишився один слід: на даху гаражів, далеко на південному заході. Цегляні сходи в алеї.", "One trace left: on the garage roof, far in the south-west. Brick stairs in the alley."),
     "message.lewandivka.compass.none": ("Стрілка крутиться без мети", "The needle spins without a target"),
     "message.lewandivka.compass.other_world": ("Стрілка вказує в інший світ", "The needle points into another world"),
     "message.lewandivka.compass.reading": ("Стрілка: %s  %s м", "Needle: %s  %s m"),

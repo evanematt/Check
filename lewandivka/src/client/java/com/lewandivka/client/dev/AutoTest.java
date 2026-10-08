@@ -545,7 +545,9 @@ public final class AutoTest {
             c.options.forwardKey.setPressed(false);
             c.options.sprintKey.setPressed(false);
         });
-        checkPosition(c, "the glider crosses the chasm", end.x(), end.y(), end.z(), 9, 2.5, 11);
+        // the script holds the forward key all the way (a glide is faster that way), so the glider carries him past the platform
+        // and down the stairs to the gate: anywhere on the far side, not in the chasm, is crossing it
+        checkPosition(c, "the glider carries the player over the chasm to the far side", end.x(), end.y() - 3, end.z() - 8, 9, 6.0, 12.0);
 
         cmd(c, "gamemode creative", 4);
         cmd(c, "effect clear @s minecraft:resistance", 4);
@@ -709,6 +711,7 @@ public final class AutoTest {
         cmd(c, "give @s lewandivka:abandoned_kiosk", 6);
         useItemOn(c, "abandoned_kiosk", spot.pos());   // the marker is the painted foundation block itself
         add("let the shopkeeper arrive", 60, () -> { });
+        cmd(c, "lewandivka creatures", 6);
         add("check the kiosk", 2, () -> {
             expect("the placed kiosk starts the talk with Mr. Shlahbaum", ClientState.step == QuestStep.TALK_SHLAHBAUM,
                     "the step is " + ClientState.step.key());

@@ -19,7 +19,9 @@ import java.util.function.Consumer;
  * <ul>
  *   <li>A rule only fires in its own step. Events that arrive early are remembered ("pending") and fire the moment the
  *       campaign reaches the step, so doing things in an unexpected order never blocks the story.</li>
- *   <li>Counted rules (clues, waves, pedestals) need {@code counterMax} events of the step.</li>
+ *   <li>Counted rules (clues, waves, pedestals) need {@code counterMax} events of the step; the ones that arrive early
+ *       are remembered one by one and counted when the step begins (the pedestals may be filled before the compass
+ *       arrives, and a filled pedestal cannot be filled again).</li>
  *   <li>Everything is plain data on top of {@link WorldProgress}; the table is also the source of docs/QUEST_FLOW.md.</li>
  * </ul>
  */
@@ -210,12 +212,23 @@ public final class CampaignDirector {
         for (Rule r : rules) {
             if (world.step() == r.from()) {
                 changed |= fire(r);
-            } else if (world.step().isBefore(r.from()) && !r.counted()) {
+            } else if (world.step().isBefore(r.from())) {
                 // too early: remember it, it counts as soon as the story gets there
-                changed |= world.setFlag(pendingFlag(id));
+                changed |= r.counted() ? rememberOccurrence(r) : world.setFlag(pendingFlag(id));
             }
         }
         return changed;
+    }
+
+    /** One flag per occurrence of a counted event done in advance, up to what the step asks for. */
+    private boolean rememberOccurrence(Rule r) {
+        int max = Math.max(1, r.from().counterMax);
+        for (int i = 1; i <= max; i++) {
+            if (world.setFlag(pendingFlag(r.event()) + "#" + i)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean fire(Rule r) {
@@ -248,6 +261,9 @@ public final class CampaignDirector {
                 }
             }
             if (next == null) {
+                if (recallOccurrences()) {
+                    continue;
+                }
                 return;
             }
             world.clearFlag(pendingFlag(next.event()));
@@ -257,6 +273,41 @@ public final class CampaignDirector {
             fx.entered(next.to());
             next.effect().accept(fx);
         }
+    }
+
+    /**
+     * Counts what was done in advance for the current step.
+     *
+     * @return true when that completed the step (the loop in {@link #settle()} then looks at the next one)
+     */
+    private boolean recallOccurrences() {
+        for (Rule r : RULES) {
+            if (r.from() != world.step() || !r.counted()) {
+                continue;
+            }
+            int max = Math.max(1, r.from().counterMax);
+            int n = 0;
+            for (int i = 1; i <= max; i++) {
+                if (world.clearFlag(pendingFlag(r.event()) + "#" + i)) {
+                    n++;
+                }
+            }
+            if (n == 0) {
+                continue;
+            }
+            int total = world.addStepCounter(n);
+            if (total < max) {
+                fx.counter(total, max);
+                return false;
+            }
+            if (!world.advanceTo(r.to())) {
+                return false;
+            }
+            fx.entered(r.to());
+            r.effect().accept(fx);
+            return true;
+        }
+        return false;
     }
 
     public static String pendingFlag(String event) {

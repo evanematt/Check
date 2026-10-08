@@ -70,7 +70,11 @@ public final class Keys {
             return;
         }
         Text hintText = Text.translatable(ClientState.step.hintKey());
-        player.sendMessage(hintText.getString().isEmpty() ? Text.translatable("screen.lewandivka.notebook.no_hint") : hintText, true);
+        Text shown = hintText.getString().isEmpty() ? Text.translatable("screen.lewandivka.notebook.no_hint") : hintText;
+        // the action bar does not wrap: a hint wider than the window goes to the chat instead
+        MinecraftClient client = MinecraftClient.getInstance();
+        boolean fits = client.textRenderer.getWidth(shown) <= client.getWindow().getScaledWidth() - 40;
+        player.sendMessage(shown, fits);
     }
 
     /** The drop key (Q) passes the chromatic charge while you hold it; otherwise it drops items as always. */

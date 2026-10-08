@@ -93,7 +93,8 @@ for p in sorted(src.glob("*.png")):
     Image.open(p).convert("RGB").save(dst / (p.stem + ".jpg"), quality=75)
 PY
   echo "run=${GITHUB_RUN_NUMBER:-?} sha=${GITHUB_SHA:-?} job-status=running state=partial at=$(date -u +%H:%M:%S)" > "$dir/info-client.txt"
-  gh release upload ci-latest "$dir"/* --clobber > /dev/null 2>&1 || true
+  gh release upload ci-latest $(find "$dir" -type f ! -name 'info-*') --clobber > /dev/null 2>&1 || true
+  gh release upload ci-latest "$dir/info-client.txt" --clobber > /dev/null 2>&1 || true
 }
 ( while true; do sleep 240; publish_partial; done ) &
 UPLOADER=$!

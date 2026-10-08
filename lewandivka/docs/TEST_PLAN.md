@@ -40,7 +40,7 @@ should be walked through once with real players. Tick per party size.
 | 2 | Explore 4 of 6 places | ☐ | ☐ | ☐ | counter 1/4 … 4/4, step advances |
 | 3 | First night: gopniks appear; neutral groups ask "Сємки є?"; seeds make them friendly; 4 tokens (drops, stashes, gifts) | ☐ | ☐ | ☐ | hostile cap 3 / 5 / 7; never a swarm |
 | 4 | Kiosk: stashes give 6 planks, 2 iron ingots, a sign; craft; place on the painted foundation | ☐ | ☐ | ☐ | wrong place gives the block back; Mr. Shlahbaum appears |
-| 5 | Debtor: note, 5 clues, chase, caught, three ways to settle (3 emeralds / tokens or reputation / 8 seeds) | ☐ | ☐ | ☐ | solo: he stumbles more; kettle given |
+| 5 | Debtor: note, 5 traces (tea package `66 64 -23`, bench `15 65 -36`, playground `-21 64 37`, bins `128 64 49`, garage roof `-135 69 90`: gate `-111 64 76`, brick stairs at the west end of the alley), chase, caught, three ways to settle (3 emeralds / tokens or reputation / 8 seeds) | ☐ | ☐ | ☐ | after the 4th trace the chat names the last one; solo: he stumbles more; kettle given |
 | 6 | Kettle with water placed: water turns pink + sound | ☐ | ☐ | ☐ | garage note given |
 | 7 | Garage №13: breakers in note order, two switch boxes, three levers, plate 13, package, guards, growls, tunnels, exit | ☐ | ☐ | ☐ | window 80 / ~144 / ~288 ticks; package slows the carrier; delivered to Mr. Shlahbaum |
 | 8 | Last tram: night, three waves, validators, composter reward | ☐ | ☐ | ☐ | checkpoint after each wave |

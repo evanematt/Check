@@ -111,7 +111,9 @@ jobs:
           echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} state=final" > ci-out/info-server.txt
           find ci-out -type f -empty -delete          # GitHub refuses empty release assets and aborts the whole upload
           gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
-          gh release upload ci-latest ci-out/* --clobber
+          # the file that says which commit the logs belong to goes last: whoever waits for it finds the rest already there
+          gh release upload ci-latest $(find ci-out -type f ! -name 'info-*') --clobber
+          gh release upload ci-latest ci-out/info-*.txt --clobber
 
   # ---------------------------------------------------------------- the modpack, the server pack, the installer
   package:
@@ -164,7 +166,9 @@ jobs:
           echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} state=final package=${{ steps.package.outcome }}" > ci-out/info-package.txt
           find ci-out -type f -empty -delete
           gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
-          gh release upload ci-latest ci-out/* --clobber
+          # the file that says which commit the logs belong to goes last: whoever waits for it finds the rest already there
+          gh release upload ci-latest $(find ci-out -type f ! -name 'info-*') --clobber
+          gh release upload ci-latest ci-out/info-*.txt --clobber
 
       # A manual run with "release" ticked, or a push whose commit message contains [release]: the finished files as a
       # GitHub pre-release v1.0.0 (the README links to it).

@@ -81,4 +81,6 @@ jobs:
           echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} state=final clienttest=${{ steps.clienttest.outcome }}" > ci-out/info-client.txt
           find ci-out -type f -empty -delete
           gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
-          gh release upload ci-latest ci-out/* --clobber
+          # the file that says which commit the logs belong to goes last: whoever waits for it finds the rest already there
+          gh release upload ci-latest $(find ci-out -type f ! -name 'info-*') --clobber
+          gh release upload ci-latest ci-out/info-*.txt --clobber

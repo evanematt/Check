@@ -20,6 +20,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -105,6 +108,7 @@ public final class LewCommands {
                 .then(CommandManager.argument("player", StringArgumentType.word())
                         .then(CommandManager.argument("ticks", IntegerArgumentType.integer(1, 2400))
                                 .executes(c -> feedback(c.getSource(), ServerTrace.start(c.getSource().getServer(), StringArgumentType.getString(c, "player"), IntegerArgumentType.getInteger(c, "ticks")))))));
+        root.then(CommandManager.literal("creatures").executes(c -> creatures(c.getSource())));
         root.then(CommandManager.literal("checkpoint").executes(c -> checkpoint(c.getSource())));
         root.then(CommandManager.literal("reset")
                 .then(CommandManager.literal("encounter")
@@ -293,6 +297,23 @@ public final class LewCommands {
         String text = SelfTest.probe(source.getWorld(), x, Math.min(y1, y2), Math.max(y1, y2), z);
         source.sendFeedback(() -> Text.literal(text), false);
         return 1;
+    }
+
+    /** Development tool: every creature of the mod that lives in any world, with its position (the server's view, not the client's). */
+    private static int creatures(ServerCommandSource source) {
+        StringBuilder sb = new StringBuilder();
+        for (ServerWorld world : source.getServer().getWorlds()) {
+            for (Entity e : world.iterateEntities()) {
+                Identifier id = Registries.ENTITY_TYPE.getId(e.getType());
+                if (id.getNamespace().equals("lewandivka")) {
+                    sb.append(Dimensions.idOf(world)).append(' ').append(id.getPath())
+                            .append(String.format(Locale.ROOT, " %.0f %.0f %.0f", e.getX(), e.getY(), e.getZ())).append(e.isAlive() ? "" : " dead").append("; ");
+                }
+            }
+        }
+        String text = sb.length() == 0 ? "no creatures of the mod" : sb.toString();
+        com.lewandivka.LewandivkaMod.LOGGER.info("[creatures] {}", text);
+        return feedback(source, text);
     }
 
     private static int feedback(ServerCommandSource source, String text) {

@@ -12,6 +12,7 @@ import com.lewandivka.core.flow.dungeon.Garage13Flow;
 import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.quest.StashLoot;
 import com.lewandivka.core.registry.BlockSpec.Behaviour;
+import com.lewandivka.core.story.DebtorClues;
 import com.lewandivka.core.story.Events;
 import com.lewandivka.core.world.Launch;
 import com.lewandivka.flow.FlowHost;
@@ -34,6 +35,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -102,10 +104,34 @@ public final class Stations {
         if (w.setFlag("clue." + m.id())) {
             player.getServerWorld().playSound(null, player.getBlockPos(), GameSounds.get("ui.quest_update"), SoundCategory.PLAYERS, 0.8f, 1.0f);
             Story.event(server, Events.DEBTOR_CLUE);
+            tellLastTrace(server, w);
         } else {
             player.sendMessage(Text.translatable("message.lewandivka.debtor.clue_seen"), true);
         }
         return ActionResult.SUCCESS;
+    }
+
+    /** With one trace left the whole party learns where it is: the one on the garage roof is easy to overlook. */
+    private static void tellLastTrace(MinecraftServer server, WorldProgress w) {
+        if (w.step() != QuestStep.DEBTOR_CLUES) {
+            return;
+        }
+        int left = -1;
+        for (int i = 0; i < DebtorClues.MARKERS.size(); i++) {
+            if (!w.flag(DebtorClues.flag(DebtorClues.MARKERS.get(i)))) {
+                if (left >= 0) {
+                    return;
+                }
+                left = i;
+            }
+        }
+        if (left < 0) {
+            return;
+        }
+        Text where = Text.translatable(DebtorClues.lastKey(left)).formatted(Formatting.GOLD);
+        for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+            p.sendMessage(where, false);
+        }
     }
 
     // ------------------------------------------------------------------ notes and stashes
@@ -225,10 +251,13 @@ public final class Stations {
         // an arrow pad throws the rider along its facing, a flat one and the hatch straight up
         boolean along = full && facing.getAxis().isHorizontal();
         entity.setVelocity(along ? facing.getOffsetX() * Launch.PAD_DRIFT : v.x, vy, along ? facing.getOffsetZ() * Launch.PAD_DRIFT : v.z);
-        entity.velocityModified = true;
         entity.fallDistance = 0.0f;
         if (entity instanceof ServerPlayerEntity sp) {
+            // exactly one packet, with the launch speed: the tracker would send the velocity of the server's own (slightly
+            // later, so already slowed) physics a tick afterwards and take a part of the throw away from the player
             sp.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(sp));
+        } else {
+            entity.velocityModified = true;
         }
         world.playSound(null, pos, GameSounds.get("spring.boing"), SoundCategory.BLOCKS, 0.8f, full ? 1.0f : 0.7f);
         living.fallDistance = 0.0f;

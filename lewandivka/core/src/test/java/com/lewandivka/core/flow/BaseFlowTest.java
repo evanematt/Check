@@ -33,6 +33,29 @@ class BaseFlowTest {
     }
 
     @Test
+    void aPartyThatWasCarriedIntoTheBaseBeforeTheStepBeganStillWakesUp() {
+        // the transition teleports everybody into the base and moves the story to the waking up 60 ticks later:
+        // nobody "enters" after that, yet the compass must come
+        FakeEnv env = new FakeEnv("base", 2);
+        env.world.forceStep(QuestStep.TRANSITION);
+        BaseFlow f = new BaseFlow(env);
+        f.playerEntered(A);
+        f.tick();
+        assertTrue(env.dialogues.isEmpty(), "nothing to say while the transition is still running");
+        env.advance(60);
+        env.world.forceStep(QuestStep.BASE_WAKE);
+        f.tick();
+        assertTrue(env.dialogues.contains("base_wake"));
+        assertEquals(0, env.eventCount(Events.BASE_COMPASS));
+        env.advance(150);
+        f.tick();
+        assertEquals(1, env.eventCount(Events.BASE_COMPASS));
+        f.tick();
+        assertEquals(1, env.eventCount(Events.BASE_COMPASS), "only once");
+        assertEquals(1, env.dialogues.stream().filter("base_wake"::equals).count(), "the dialogue is not repeated");
+    }
+
+    @Test
     void pedestalsTakeTheMatchingArtifactAndNothingElse() {
         FakeEnv env = new FakeEnv("base", 3);
         env.world.forceStep(QuestStep.BASE_PEDESTALS);

@@ -53,7 +53,38 @@ import java.util.UUID;
  */
 public final class JoinReplay {
 
-    private record Session(String label, ServerPlayerEntity player, ClientConnection connection) {
+    /** A joined player and what has been read of its queue: the world the client believes it is in and the chunks seen so far. */
+    private static final class Session {
+        private final String label;
+        private final ServerPlayerEntity player;
+        private final ClientConnection connection;
+        private int scanned;
+        private RegistryKey<World> current = World.OVERWORLD;
+        private boolean respawned;
+        private int unloads;
+        private final List<String> events = new ArrayList<>();
+        /** Chunks sent after the first respawn, by the world their blocks belong to. */
+        private final Map<String, Integer> byOrigin = new LinkedHashMap<>();
+        /** The ones among them that belong to another world than the one the client was in when it received them. */
+        private final Map<String, Integer> foreign = new LinkedHashMap<>();
+
+        private Session(String label, ServerPlayerEntity player, ClientConnection connection) {
+            this.label = label;
+            this.player = player;
+            this.connection = connection;
+        }
+
+        private String label() {
+            return label;
+        }
+
+        private ServerPlayerEntity player() {
+            return player;
+        }
+
+        private ClientConnection connection() {
+            return connection;
+        }
     }
 
     private record Step(int at, String name, Runnable action) {
@@ -136,61 +167,74 @@ public final class JoinReplay {
         return out;
     }
 
-    private static void analyse(MinecraftServer server, Session s, SelfTest.Report report) throws ReflectiveOperationException {
+    /**
+     * Reads what was queued since the last scan. The chunks are compared with the worlds as they are now, so a player that
+     * moves between worlds is scanned before every move; each chunk is judged by the world the client was in when it got it.
+     */
+    private static void scan(MinecraftServer server, Session s) throws ReflectiveOperationException {
         List<Packet<?>> packets = queued(s.connection());
-        RegistryKey<World> current = World.OVERWORLD;
-        List<String> events = new ArrayList<>();
-        int unloads = 0;
-        Map<String, Integer> contamination = new LinkedHashMap<>();
-        boolean respawned = false;
-        for (Packet<?> packet : packets) {
+        for (; s.scanned < packets.size(); s.scanned++) {
+            Packet<?> packet = packets.get(s.scanned);
             String event = null;
             if (packet instanceof GameJoinS2CPacket join) {
-                current = join.dimensionId();
-                event = "join(" + current.getValue() + ")";
+                s.current = join.dimensionId();
+                event = "join(" + s.current.getValue() + ")";
             } else if (packet instanceof PlayerRespawnS2CPacket respawn) {
-                current = respawn.getDimension();
-                respawned = true;
-                event = "respawn(" + current.getValue() + ")";
+                s.current = respawn.getDimension();
+                s.respawned = true;
+                event = "respawn(" + s.current.getValue() + ")";
             } else if (packet instanceof ChunkRenderDistanceCenterS2CPacket center) {
                 event = "center(" + center.getChunkX() + "," + center.getChunkZ() + ")";
             } else if (packet instanceof PlayerPositionLookS2CPacket look) {
                 event = String.format(Locale.ROOT, "look(%.1f,%.1f,%.1f)", look.getX(), look.getY(), look.getZ());
             } else if (packet instanceof UnloadChunkS2CPacket) {
-                unloads++;
+                s.unloads++;
                 event = "unload";
             } else if (packet instanceof ChunkDataS2CPacket chunk) {
-                String from = classify(server, current, chunk);
-                event = "chunk[client in " + current.getValue() + ", data of " + from + "]";
-                if (respawned) {
-                    contamination.merge(from, 1, Integer::sum);
+                String from = classify(server, s.current, chunk);
+                event = "chunk[client in " + s.current.getValue() + ", data of " + from + "]";
+                if (s.respawned) {
+                    s.byOrigin.merge(from, 1, Integer::sum);
+                    if (!isOwn(from, s.current)) {
+                        s.foreign.merge("client in " + s.current.getValue() + ", blocks of " + from, 1, Integer::sum);
+                    }
                 }
             }
             if (event == null) {
                 continue;
             }
-            int last = events.size() - 1;
-            if (last >= 0 && events.get(last).replaceAll(" x\\d+$", "").equals(event)) {
-                String previous = events.get(last);
+            int last = s.events.size() - 1;
+            if (last >= 0 && s.events.get(last).replaceAll(" x\\d+$", "").equals(event)) {
+                String previous = s.events.get(last);
                 int n = previous.matches(".* x\\d+$") ? Integer.parseInt(previous.substring(previous.lastIndexOf('x') + 1)) : 1;
-                events.set(last, event + " x" + (n + 1));
+                s.events.set(last, event + " x" + (n + 1));
             } else {
-                events.add(event);
+                s.events.add(event);
             }
         }
+    }
+
+    /**
+     * Whether the blocks of a chunk are those of the world the client is in. A chunk that was changed since it was sent, or
+     * that no world holds any more, proves nothing; blocks that look like another world are the bug.
+     */
+    private static boolean isOwn(String origin, RegistryKey<World> client) {
+        String id = client.getValue().toString();
+        return origin.equals(id) || origin.startsWith("no world (best none") || origin.startsWith("no world (best " + id + " ");
+    }
+
+    private static void analyse(MinecraftServer server, Session s, SelfTest.Report report) throws ReflectiveOperationException {
+        scan(server, s);
         String who = s.label();
-        report.notes().add(who + ": " + packets.size() + " packets, " + events);
-        report.notes().add(who + ": chunks sent after the respawn, by the world their data come from: " + contamination + ", unloads " + unloads);
+        report.notes().add(who + ": " + s.scanned + " packets, " + s.events);
+        report.notes().add(who + ": chunks sent after the respawn, by the world their data come from: " + s.byOrigin + ", unloads " + s.unloads);
         report.notes().add(who + ": now " + where(s.player()) + " " + registrations(server, s.player()));
         int listedIn = worldsListing(server, s.player());
         if (listedIn != 1) {
             report.problems().add(who + ": the player is listed by " + listedIn + " worlds, " + registrations(server, s.player()));
         }
-        for (Map.Entry<String, Integer> e : contamination.entrySet()) {
-            if (!e.getKey().equals(Dimensions.idOf(s.player().getWorld()))) {
-                report.problems().add(who + ": " + e.getValue() + " chunks the client received after the respawn carry the blocks of " + e.getKey()
-                        + " while the player is in " + Dimensions.idOf(s.player().getWorld()));
-            }
+        for (Map.Entry<String, Integer> e : s.foreign.entrySet()) {
+            report.problems().add(who + ": " + e.getValue() + " chunks the client received after the respawn: " + e.getKey());
         }
     }
 
@@ -374,6 +418,16 @@ public final class JoinReplay {
                 scriptPlayer.getServerWorld().getChunkManager().updatePosition(scriptPlayer);
             } catch (RuntimeException e) {
                 log("updatePosition threw " + e);
+            }
+        }
+        Session watched = SESSIONS.get("T");
+        if (watched != null && SCRIPT.stream().anyMatch(st -> st.at() == scriptTick)) {
+            // judge the chunks of the last phase while the player is still there and the worlds still hold them
+            try {
+                scan(server, watched);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                log("scan threw " + e);
+                scriptProblems++;
             }
         }
         for (Step step : SCRIPT) {

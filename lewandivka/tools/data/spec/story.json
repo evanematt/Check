@@ -74,8 +74,8 @@
       "titleEn": "The Debtor",
       "objectiveUk": "Знайдіть сліди Боржника (%s/%s)",
       "objectiveEn": "Find the Debtor's traces (%s/%s)",
-      "hintUk": "Пакет від чаю, лавка, майданчик, смітник, дах гаражів.",
-      "hintEn": "A tea package, a bench, the playground, the bins, a garage roof."
+      "hintUk": "Пакет від чаю — біля старого магазину. Лавка — північний двір. Майданчик — південний двір. Смітники — південний схід. Дах гаражів — далекий південний захід, цегляні сходи в алеї.",
+      "hintEn": "Tea package: by the old shop. Bench: north courtyard. Playground: south courtyard. Bins: south-east. Garage roof: far south-west, brick stairs in the alley."
     },
     "debtor_chase": {
       "id": 7,

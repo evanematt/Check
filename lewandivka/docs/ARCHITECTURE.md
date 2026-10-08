@@ -55,6 +55,10 @@ cannot drift apart.
   decodes them as 16-section district chunks (stone, ore and an ocean 64 blocks too high around the first arrival), and
   the next teleport to another dimension throws in `ChunkTicketManager.handleChunkLeave` and leaves a ghost player. The
   arrival therefore waits three ticks (`Lifecycle.DEFAULT_ARRIVAL_DELAY`); `/lewandivka joinreplay` proves it on every CI run.
+* A flow must not rely on seeing the players walk in while the right step is active: the transition carries the party
+  into the base first and moves the story to the waking up 60 ticks later, so `BaseFlow` starts the wake-up from its
+  tick (the client test found that the compass never came; `BaseFlowTest` pins it). Counted objectives done in advance
+  (pedestals filled before the compass) are remembered one by one and counted when their step begins.
 
 ## 4. Dungeons: flows
 
@@ -156,4 +160,6 @@ stay in a queue. They are read back in order, every chunk is decoded the way the
 chunks of the three worlds (a client once showed stone and diorite in the district for a while after the first arrival),
 and `torture` moves such a player the way the client test does (a forced gallery far away, teleports inside the district,
 crossings to Chromandivka and back) while the chunk watchers are updated as the movement packets of a client would do it,
-reporting the exceptions of the teleports and which ticket manager lists the player where.
+reporting the exceptions of the teleports and which ticket manager lists the player where. The chunks of each phase are
+judged by the world the client was in when it received them, and while the worlds still hold them (the player is scanned
+before every move).
