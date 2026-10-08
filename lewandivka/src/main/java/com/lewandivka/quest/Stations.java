@@ -229,6 +229,9 @@ public final class Stations {
         }
         world.playSound(null, pos, GameSounds.get("spring.boing"), SoundCategory.BLOCKS, 0.8f, full ? 1.0f : 0.7f);
         living.fallDistance = 0.0f;
+        if (entity instanceof ServerPlayerEntity sp) {
+            com.lewandivka.LewandivkaMod.LOGGER.info("spring {} at {} launched {} (full={}, up={}, facing={})", block.spec.id, pos.toShortString(), sp.getGameProfile().getName(), full, vy, facing);
+        }
     }
 
     private static void greyVoid(ServerWorld world, BlockPos pos, BlockState state, SpecBlock block, Entity entity) {

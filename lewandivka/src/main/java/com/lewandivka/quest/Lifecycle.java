@@ -42,6 +42,7 @@ public final class Lifecycle {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             Dialogues.tick(server);
             Abilities.tick(server);
+            NpcSpawns.tick(server);
         });
         Campaign.addListener(Lifecycle::stepEntered);
     }
@@ -49,9 +50,18 @@ public final class Lifecycle {
     private static void serverStarted(MinecraftServer server) {
         if (Campaign.world(server).started()) {
             Portals.apply(server);
-            NpcSpawns.ensure(server);
+            holdDistrictTime(server, Campaign.step(server));
         }
         LewandivkaMod.LOGGER.info("Campaign: {} / {}", Campaign.stage(server), Campaign.step(server));
+    }
+
+    /**
+     * The first evening lasts as long as the district is explored, the first night as long as the tokens are collected
+     * (the gopniks only come out at night); after that the day and the night run as usual.
+     */
+    private static void holdDistrictTime(MinecraftServer server, QuestStep step) {
+        TimeControl.holdTime(Dimensions.DISTRICT_ID, "evening", TimeControl.DUSK, step == QuestStep.EXPLORE_DISTRICT);
+        TimeControl.holdTime(Dimensions.DISTRICT_ID, "first_night", TimeControl.NIGHT, step == QuestStep.COLLECT_TOKENS);
     }
 
     // ------------------------------------------------------------------ joining
@@ -65,6 +75,9 @@ public final class Lifecycle {
             if (!world.started()) {
                 world.setStarted(true);
                 Advancements.grant(player, "terminus");
+                // "players spawn near an old tram stop at dusk": the evening stays as long as the district is explored
+                TimeControl.set(server, TimeControl.DUSK);
+                holdDistrictTime(server, Campaign.step(server));
             }
             arrive(player, server);
             QuestInventory.give(player, QuestItems.NOTEBOOK, 1);
@@ -75,9 +88,6 @@ public final class Lifecycle {
         }
         Story.catchUp(player);
         Net.sendCampaign(player);
-        if (world.started()) {
-            NpcSpawns.ensure(server);
-        }
     }
 
     /** The first arrival: the district at the start of the story, the base of Chromandivka when the party is already there. */
@@ -108,6 +118,7 @@ public final class Lifecycle {
             p.getServerWorld().playSound(null, p.getBlockPos(), GameSounds.get("ui.quest_update"), SoundCategory.PLAYERS, 0.8f, 1.0f);
         }
         Net.broadcastCampaign(server);
+        holdDistrictTime(server, step);
         String advancement = switch (step) {
             case TALK_SHLAHBAUM -> "kiosk";
             case KETTLE_TEST -> "debtor";

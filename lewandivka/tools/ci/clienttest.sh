@@ -89,8 +89,8 @@ echo "screenshots: $(ls "$OUT/shots" 2>/dev/null | wc -l)"
 # flows that threw, missing sounds. (The sound device and the narrator do not exist on the CI machine.)
 PROBLEMS="$OUT/clienttest-problems.txt"
 {
-  grep -nE "/ERROR\]|Exception loading entity|Exception ticking|Ticking entity|\(lewandivka\).*/WARN\]" "$SERVER_LOG" | sed 's/^/server: /'
-  grep -nE "/ERROR\]|\(lewandivka\).*/WARN\]|(Unable to bake model|Exception evaluating model definition|Missing sound for event|Unable to load|Failed to load).*lewandivka" "$CLIENT_LOG" \
+  grep -nE "/ERROR\]|Exception loading entity|Exception ticking|Ticking entity|/WARN\] \(lewandivka\)" "$SERVER_LOG" | sed 's/^/server: /'
+  grep -nE "/ERROR\]|/WARN\] \(lewandivka\)|(Unable to bake model|Exception evaluating model definition|Missing sound for event|Unable to load|Failed to load).*lewandivka" "$CLIENT_LOG" \
     | grep -v "Error starting SoundSystem\|Error while loading the narrator" | sed 's/^/client: /'
 } > "$PROBLEMS" 2>/dev/null
 N_PROBLEMS=$(wc -l < "$PROBLEMS" 2>/dev/null | tr -d ' ')

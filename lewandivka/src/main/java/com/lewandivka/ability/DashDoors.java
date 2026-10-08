@@ -50,6 +50,7 @@ final class DashDoors {
         }
         for (Marker m : Structures.withPrefix(structure, "dash_door_")) {
             if (m.contains(pos)) {
+                com.lewandivka.LewandivkaMod.LOGGER.info("dash door {} hit by {}", m.id(), player.getGameProfile().getName());
                 var flow = FlowHost.flow(world.getServer(), structure);
                 if (flow != null) {
                     flow.use(m.name(), player.getUuid());

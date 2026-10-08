@@ -261,6 +261,8 @@ public class SpecBlock extends Block {
         switch (spec.behaviour) {
             case PORTAL -> BlockActions.portal(sw, pos, state, this, entity);
             case VOID -> BlockActions.greyVoid(sw, pos, entity);
+            // a spring pad is a thin plate without collision: the rider stands in its cell, not on top of it
+            case SPRING -> BlockActions.spring(sw, pos, state, this, entity);
             default -> { }
         }
     }

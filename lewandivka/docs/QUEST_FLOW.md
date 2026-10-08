@@ -18,6 +18,10 @@ story reaches its step, so doing things in an unexpected order can never block t
 | **III. The tower** | Tower, Final fight | The ring is whole and the Colorless Head calls the players. Traversal exam (dash doors, cats' passage, spring shaft, glider chasm), five floors that reuse earlier mechanics, the Chromatic Charge fight in three phases | 45-60 min |
 | **Epilogue and postgame** | Epilogue, After everything | The ring carries the party home, morning in the district, credits, free play (twelve cats, the vanishing seeds, the wrong tram, Garage №0, what was in the package) | 15 min + optional |
 
+The clock of the district follows the story: the players arrive at **dusk** and the evening stays as long as the district
+is being explored; when the fourth place is found night falls in a few seconds of time-lapse and stays while the tokens are
+collected (the gopniks only come out at night); after that the day and the night run as usual (`TimeControl`).
+
 ## Steps
 
 | # | Step | Stage | Objective (uk) | Objective (en) | Needs | Completed by | Then |

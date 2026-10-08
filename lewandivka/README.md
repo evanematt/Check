@@ -32,8 +32,8 @@ English translation (`en_us`).
 
 1. Install [TLauncher](https://tlauncher.org) and start it **once** with any 1.20.1 version, then close it
    (this creates the `.minecraft` folder; TLauncher downloads Java 17 for you).
-2. Download `Lewandivka-TLauncher-Installer-1.0.0.zip` from the release, unzip it and run **`install.ps1`**
-   (right click → *Run with PowerShell*). It
+2. Download `Lewandivka-TLauncher-Installer-1.0.0.zip` from the release, unzip it and double-click **`install.bat`**
+   (or right click `install.ps1` → *Run with PowerShell*). It
    * downloads the Fabric Loader and the listed mods from Modrinth (each file is hash-checked),
    * copies `lewandivka-1.0.0.jar` into `mods/`,
    * adds the graphics presets.

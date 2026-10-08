@@ -39,8 +39,22 @@ class PostgameFlowTest {
         FakeEnv env = free(2);
         PostgameFlow f = new PostgameFlow(env);
         f.tick();
+        assertTrue(env.spawned.isEmpty(), "nobody is near a cat: nothing is guessed about chunks that may be unloaded");
+        for (int i = 1; i <= 12; i++) {
+            env.playersAtMarker.put("cat_spot_" + i, List.of(A));
+        }
+        env.advance(100);
+        f.tick();
+        assertTrue(env.spawned.isEmpty(), "one empty look is not enough (the entities of a fresh chunk arrive a moment later)");
+        env.advance(100);
+        f.tick();
         for (int i = 1; i <= 12; i++) {
             assertEquals(1, env.alive("post.cat." + i), "cat " + i);
+        }
+        env.advance(100);
+        f.tick();
+        for (int i = 1; i <= 12; i++) {
+            assertEquals(1, env.alive("post.cat." + i), "no second cat at a later look: " + i);
         }
         for (int i = 1; i <= 12; i++) {
             assertTrue(f.use("cat_" + i, A));

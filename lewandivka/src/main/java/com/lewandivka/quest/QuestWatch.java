@@ -88,8 +88,9 @@ public final class QuestWatch {
             p.sendMessage(Text.translatable("message.lewandivka.restored", QuestInventory.item(g.item()).getName()), true);
         }
         if (!grants.isEmpty()) {
+            // only the numbers behind the HUD and the notebook are refreshed: the notebook itself never pops up on its own
             for (ServerPlayerEntity p : PartyService.players(server)) {
-                Net.sendNotebook(p);
+                Net.sendCampaign(p);
             }
         }
     }

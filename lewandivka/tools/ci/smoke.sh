@@ -48,11 +48,20 @@ session() {
   echo "SMOKE-EXIT $? ($log)"
 }
 
+# every encounter is created, rebuilt, reset and wiped once: constructors, rebuild() and reset() of all twelve flows run
+# against the real world (unknown markers and gates are logged as warnings, which fail this test below)
+FLOWS="garage13 tram_stop base rainbow_garage shelter aquapark sky_ascent sky_depot tower_approach tower garage0 district"
+RESETS=()
+for n in $FLOWS; do
+  RESETS+=("lewandivka reset encounter $n" "lewandivka reset encounter $n full")
+done
+
 session "$LOG" \
   "lewandivka status" \
   "execute in lewandivka:district run forceload add 0 0 31 31" \
   "execute in lewandivka:chromandivka run forceload add 0 0 31 31" \
   "lewandivka validate" \
+  "${RESETS[@]}" \
   "lewandivka step $STEP" \
   "lewandivka status" \
   "save-all flush" \
@@ -67,6 +76,12 @@ session "$LOG2" \
   "stop"
 
 ok=1
+# whatever the mod logged as a warning or an error on the server is a defect
+if grep -E "/ERROR\]|/WARN\] \(lewandivka\)|Exception loading entity|Exception ticking|Ticking entity|unexpected exception" "$LOG" "$LOG2" > "${LOG%.txt}-problems.txt" 2>/dev/null; then
+  echo "SMOKE: the mod logged problems:"; head -20 "${LOG%.txt}-problems.txt"; ok=0
+else
+  rm -f "${LOG%.txt}-problems.txt"
+fi
 grep -q "validate: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: first session did not validate"; ok=0; }
 grep -q "validate: OK" "$LOG2.rcon" 2>/dev/null || { echo "SMOKE: the restarted server did not validate"; ok=0; }
 # the first status line of the second session is the one printed right after the restart

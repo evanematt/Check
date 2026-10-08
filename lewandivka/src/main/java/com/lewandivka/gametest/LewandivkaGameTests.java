@@ -26,6 +26,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
@@ -155,6 +156,34 @@ public final class LewandivkaGameTests implements FabricGameTest {
         });
     }
 
+    // ------------------------------------------------------------------ springs
+
+    /**
+     * A spring pad is a plate without collision (the rider stands in its cell), a hatch is a full block (the rider stands
+     * on it): both must throw whatever touches them, the pad also along its arrow.
+     */
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 60)
+    public void springsThrowWhateverTouchesThem(TestContext context) {
+        for (int x = 1; x <= 7; x++) {
+            context.setBlockState(new BlockPos(x, 1, 2), Blocks.STONE.getDefaultState());
+        }
+        context.setBlockState(new BlockPos(2, 2, 2), StateResolver.parse("lewandivka:spring_pad[facing=east]"));
+        context.setBlockState(new BlockPos(6, 2, 2), StateResolver.parse("lewandivka:spring_hatch"));
+        PigEntity onPad = context.spawnMob(EntityType.PIG, new BlockPos(2, 2, 2));
+        PigEntity onHatch = context.spawnMob(EntityType.PIG, new BlockPos(6, 3, 2));
+        double padX = onPad.getX();
+        double padY = onPad.getY();
+        double hatchY = onHatch.getY();
+        context.runAtTick(12, () -> {
+            check(onPad.getY() > padY + 6, "the pad did not throw the pig up: y " + padY + " -> " + onPad.getY());
+            check(onPad.getX() > padX + 4, "the pad did not throw the pig along its arrow: x " + padX + " -> " + onPad.getX());
+            check(onHatch.getY() > hatchY + 8, "the hatch did not throw the pig up: y " + hatchY + " -> " + onHatch.getY());
+            onPad.discard();
+            onHatch.discard();
+            context.complete();
+        });
+    }
+
     // ------------------------------------------------------------------ structures and markers
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
@@ -193,6 +222,12 @@ public final class LewandivkaGameTests implements FabricGameTest {
             int[] spawn = plan.spawn();
             BlockState below = view.getBlockState(new BlockPos(spawn[0], spawn[1] - 4, spawn[2]));
             check(!below.isAir(), dimension + ": nothing solid under the spawn point " + spawn[0] + "," + spawn[1] + "," + spawn[2]);
+            // the first arrival must not put anybody inside a block
+            for (int dy = 0; dy <= 1; dy++) {
+                BlockPos at = new BlockPos(spawn[0], spawn[1] + dy, spawn[2]);
+                BlockState inside = view.getBlockState(at);
+                check(inside.getCollisionShape(view, at).isEmpty(), dimension + ": the spawn point is inside " + Registries.BLOCK.getId(inside.getBlock()) + " at " + at.toShortString());
+            }
         }
         StructureValidator.Report report = StructureValidator.validate(views::get, 40);
         check(report.sampled() > 500, "too few sampled cells: " + report.summary());

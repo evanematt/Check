@@ -70,11 +70,43 @@ public final class NpcSpawns {
         return e;
     }
 
-    /** Called when a server starts or a player joins: story npcs that should exist but do not are created again. */
-    public static void ensure(MinecraftServer server) {
-        var step = com.lewandivka.campaign.Campaign.step(server);
-        if (step.isAtLeast(com.lewandivka.core.campaign.QuestStep.TALK_SHLAHBAUM)) {
-            once(server, "pan_shlahbaum", "district:shlahbaum_spot");
+    private static final java.util.Map<String, Integer> MISSING = new java.util.HashMap<>();
+
+    /**
+     * Story npcs that must always stand somewhere are looked after every five seconds while somebody is near: one that
+     * has gone is created again, a second one is removed. The check only counts what is loaded, so it needs a player in
+     * the neighbourhood and two empty looks in a row (entities of a freshly loaded chunk arrive a moment later); without
+     * that every server restart would add one more shopkeeper.
+     */
+    public static void tick(MinecraftServer server) {
+        if (server.getTicks() % 100 != 7) {
+            return;
+        }
+        if (com.lewandivka.campaign.Campaign.step(server).isAtLeast(com.lewandivka.core.campaign.QuestStep.TALK_SHLAHBAUM)) {
+            keep(server, "pan_shlahbaum", "district:shlahbaum_spot");
+        }
+    }
+
+    private static void keep(MinecraftServer server, String entityId, String markerId) {
+        Marker m = Structures.marker(markerId);
+        ServerWorld world = m == null ? null : Dimensions.world(server, m.dimension());
+        if (world == null || !GameEntities.has(entityId)) {
+            return;
+        }
+        net.minecraft.util.math.Vec3d at = m.stand();
+        if (world.getPlayers(p -> p.squaredDistanceTo(at) < 80 * 80).isEmpty()) {
+            MISSING.remove(entityId);
+            return;
+        }
+        java.util.List<? extends Entity> found = world.getEntitiesByType(GameEntities.type(entityId), Box.of(at, 320, 200, 320), Entity::isAlive);
+        for (int i = 1; i < found.size(); i++) {
+            found.get(i).discard();
+        }
+        if (!found.isEmpty()) {
+            MISSING.remove(entityId);
+        } else if (MISSING.merge(entityId, 1, Integer::sum) >= 2) {
+            MISSING.remove(entityId);
+            once(server, entityId, markerId);
         }
     }
 

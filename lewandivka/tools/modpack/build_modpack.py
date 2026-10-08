@@ -519,6 +519,8 @@ PS1 = r"""# Lewandivka installer for TLauncher (and any launcher that uses the .
 # Run: right click > Run with PowerShell, or:  powershell -ExecutionPolicy Bypass -File install.ps1 [-Dir "C:\path\.minecraft"]
 param([string]$Dir = "$env:APPDATA\.minecraft", [switch]$NoFabric)
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"      # the progress bar makes Invoke-WebRequest very slow in Windows PowerShell 5.1
+try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $index = Get-Content -Raw -Encoding UTF8 (Join-Path $here "modrinth.index.json") | ConvertFrom-Json
 Write-Host "Game folder: $Dir"
@@ -541,6 +543,12 @@ if (-not $NoFabric) {
   & java -jar $jar client -dir $Dir -mcversion {minecraft} -loader {loader} -noprofile
 }
 Write-Host "Done. In TLauncher choose the version 'fabric-loader-{loader}-{minecraft}' and press Play."
+"""
+
+INSTALL_BAT = """@echo off
+rem Double-click to install Lewandivka for TLauncher (runs install.ps1 without changing the PowerShell policy of the machine)
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0install.ps1" %*
+pause
 """
 
 SH = r"""#!/bin/sh
@@ -579,7 +587,7 @@ What you need: TLauncher (https://tlauncher.org), Java 17 (TLauncher downloads i
 
 Windows
   1. Start TLauncher once with any 1.20.1 version, then close it (this creates the .minecraft folder).
-  2. Unzip this archive and run install.ps1 (right click > Run with PowerShell).
+  2. Unzip this archive and double-click install.bat (or right click install.ps1 > Run with PowerShell).
      It downloads the mods from Modrinth (hash checked), copies lewandivka-{version}.jar, and installs Fabric Loader.
   3. In TLauncher choose the version  fabric-loader-{loader}-{minecraft}  and press Play.
      (TLauncher also lists "Fabric 1.20.1" in its version list: that works too, then copy the jars from mods/ yourself.)
@@ -636,6 +644,7 @@ def write_tlauncher(path: Path, config, index, jar_path: Path, jar_name: str, sh
         z.writestr(root + "overrides/config/iris.properties", PRESETS["PERFORMANCE"]["config/iris.properties"])
         for rel, text in preset_files(shader_name).items():
             z.writestr(root + f"overrides/{rel}", text)
+        z.writestr(root + "install.bat", INSTALL_BAT)
         z.writestr(root + "install.ps1", PS1.replace("{installer_url}", installer_url).replace("{minecraft}", fields["minecraft"]).replace("{loader}", fields["loader"]))
         info = zipfile.ZipInfo(root + "install.sh")
         info.compress_type = zipfile.ZIP_DEFLATED

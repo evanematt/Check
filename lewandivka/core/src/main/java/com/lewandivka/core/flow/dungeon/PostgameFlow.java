@@ -207,9 +207,26 @@ public final class PostgameFlow implements Flow {
         }
     }
 
+    /** Distance within which somebody has the cat's chunk loaded: only there can a missing cat be told from an unloaded one. */
+    public static final double CAT_RANGE = 70;
+    private final int[] missing = new int[CATS + 1];
+
+    /**
+     * Cats that were not found yet sit at their spots. A cat is only brought back where somebody stands near and after two
+     * empty looks in a row: an entity of a chunk that is not loaded cannot be counted, and guessing would add a cat at
+     * every look (or every server restart).
+     */
     private void ensureCats() {
         for (int i = 1; i <= CATS; i++) {
-            if (!env.record().flag("cat." + i) && env.alive(CAT_TAG + i) == 0) {
+            if (env.record().flag("cat." + i)) {
+                continue;
+            }
+            if (env.playersAt("cat_spot_" + i, CAT_RANGE).isEmpty() || env.alive(CAT_TAG + i) > 0) {
+                missing[i] = 0;
+                continue;
+            }
+            if (++missing[i] >= 2) {
+                missing[i] = 0;
                 env.spawn(i % 2 == 0 ? "chinazik" : "metadonna", "cat_spot_" + i, 1, CAT_TAG + i);
             }
         }

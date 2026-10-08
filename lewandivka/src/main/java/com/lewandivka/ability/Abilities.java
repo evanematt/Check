@@ -74,6 +74,7 @@ public final class Abilities {
         if (dir.lengthSquared() < 1.0E-4) {
             return;
         }
+        com.lewandivka.LewandivkaMod.LOGGER.info("dash by {} towards {}", p.getGameProfile().getName(), p.getHorizontalFacing());
         s.dashReadyAt = now + Ability.DASH.cooldownTicks;
         s.dashActiveUntil = now + 8;
         dir = dir.normalize();

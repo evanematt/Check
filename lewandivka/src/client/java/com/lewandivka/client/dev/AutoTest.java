@@ -11,6 +11,7 @@ import com.lewandivka.world.structure.Structures;
 import com.lewandivka.world.structure.Structures.Marker;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registries;
@@ -53,6 +54,10 @@ public final class AutoTest {
     private static boolean awaitingTerrain;
     private static int timeouts;
     private static int failures;
+    /** True while the script itself has a screen open (notebook, settings, credits); any other screen is closed. */
+    private static boolean screenWanted;
+    private static String traceName = "";
+    private static int traceLeft;
 
     private AutoTest() {
     }
@@ -78,6 +83,18 @@ public final class AutoTest {
             built = true;
             build(c);
             note("script has " + STEPS.size() + " steps");
+        }
+        if (!screenWanted && c.currentScreen != null && !(c.currentScreen instanceof DownloadingTerrainScreen)) {
+            note("closed a screen nobody asked for: " + c.currentScreen.getClass().getSimpleName());
+            c.setScreen(null);
+        }
+        if (traceLeft > 0) {
+            if (traceLeft % 4 == 0) {
+                Vec3d v = c.player.getVelocity();
+                note(String.format(Locale.ROOT, "trace %s: %.2f %.2f %.2f v=(%.2f %.2f %.2f) ground=%s", traceName,
+                        c.player.getX(), c.player.getY(), c.player.getZ(), v.x, v.y, v.z, c.player.isOnGround()));
+            }
+            traceLeft--;
         }
         if (wait > 0) {
             wait--;
@@ -137,9 +154,10 @@ public final class AutoTest {
     /** What the camera sees: position, the block at the eye, the light there (to understand dark or blocked shots). */
     private static void where(MinecraftClient c, String name) {
         BlockPos eye = BlockPos.ofFloored(c.player.getEyePos());
-        note(String.format("at %s: %s %.1f %.1f %.1f yaw %.0f pitch %.0f eye=%s sky=%d block=%d", name,
+        note(String.format("at %s: %s %.1f %.1f %.1f yaw %.0f pitch %.0f eye=%s inWall=%s sky=%d block=%d time=%d", name,
                 c.world.getRegistryKey().getValue(), c.player.getX(), c.player.getY(), c.player.getZ(), c.player.getYaw(), c.player.getPitch(),
-                c.world.getBlockState(eye).getBlock().getTranslationKey(), c.world.getLightLevel(LightType.SKY, eye), c.world.getLightLevel(LightType.BLOCK, eye)));
+                c.world.getBlockState(eye).getBlock().getTranslationKey(), c.player.isInsideWall(), c.world.getLightLevel(LightType.SKY, eye),
+                c.world.getLightLevel(LightType.BLOCK, eye), c.world.getTimeOfDay()));
     }
 
     // ------------------------------------------------------------------ script
@@ -182,6 +200,14 @@ public final class AutoTest {
             stable = 0;
             stableNeeded = needed;
             awaitingTerrain = false;
+        });
+    }
+
+    /** Writes the position and the velocity of the player every four ticks for a while (to understand a failed check). */
+    private static void trace(String name, int ticks) {
+        add("trace " + name, 0, () -> {
+            traceName = name;
+            traceLeft = ticks;
         });
     }
 
@@ -283,6 +309,7 @@ public final class AutoTest {
             Marker target = marker("sky_ascent:" + j[1]);
             cmd(c, at(pad.x() + 0.5, pad.y() + 1.2, pad.z() + 2.5, -90, 0), 4);
             settle(c, "beside " + j[0], 600);
+            trace(c, j[0], 80);
             cmd(c, at(pad.x() + 0.5, pad.y() + 0.13, pad.z() + 0.5, -90, 0), 110);
             checkPosition(c, "spring " + j[0] + " carries the climber to " + j[1], target.x(), target.y(), target.z(), Double.parseDouble(j[2]), 1.6, 4.5);
         }
@@ -292,6 +319,7 @@ public final class AutoTest {
         Marker top = marker("sky_ascent:tunnel_top");
         cmd(c, at(hatch.x() - 1.5, hatch.y(), hatch.z() + 0.5, -90, 0), 4);
         settle(c, "beside the tunnel hatch", 600);
+        trace(c, "tunnel hatch", 100);
         cmd(c, at(hatch.x() + 0.5, hatch.y(), hatch.z() + 0.5, -90, 0), 140);
         checkPosition(c, "the tunnel hatch carries the climber to the platform", top.x() + 4, top.y(), top.z(), 9, 1.6, 5.0);
 
@@ -300,6 +328,7 @@ public final class AutoTest {
         Marker deck = marker("tower_approach:glide_start");
         cmd(c, at(shaft.x() + 0.5, shaft.y(), shaft.z() + 2.5, 180, 0), 4);
         settle(c, "beside the shaft hatch", 600);
+        trace(c, "shaft hatch", 120);
         cmd(c, at(shaft.x() + 0.5, shaft.y(), shaft.z() + 0.5, 180, 0), 160);
         checkPosition(c, "the shaft hatch carries the climber to the glider deck", deck.x(), deck.y(), deck.z() + 1, 7, 1.6, 6.5);
 
@@ -307,8 +336,10 @@ public final class AutoTest {
         Marker door = marker("tower_approach:dash_door_1");
         cmd(c, at(door.x() + 2.5, door.y(), door.z() + 3.6, 180, 0), 4);
         settle(c, "in front of the first dash door", 600);
+        trace(c, "dash door", 40);
         add("dash", 40, () -> ClientNet.requestAbility(Ability.DASH, true));
         add("check the first dash door", 2, () -> {
+            where(c, "after the dash");
             BlockPos middle = new BlockPos(door.x() + 2, door.y() + 1, door.z());
             expect("a dash opens the first door", c.world.getBlockState(middle).isAir(), "block at the door: " + c.world.getBlockState(middle).getBlock().getTranslationKey());
         });
@@ -316,6 +347,7 @@ public final class AutoTest {
         // 5. the dash pit of the shelter is seven blocks wide: sprint, jump, dash in mid-air
         Marker near = marker("shelter:platform_a");
         Marker far = marker("shelter:platform_b");
+        Marker pit = marker("shelter:pit");
         cmd(c, at(near.x() + 0.5, near.y(), near.z() + 0.5, 0, 0), 4);
         settle(c, "before the dash pit", 600);
         add("wait for the dash to recharge", 80, () -> { });
@@ -323,11 +355,12 @@ public final class AutoTest {
             c.options.forwardKey.setPressed(true);
             c.options.sprintKey.setPressed(true);
         });
-        until("the edge of the pit", 140, 1, () -> c.player.getZ() > 6.75);
+        trace(c, "pit", 60);
+        until("the edge of the pit", 140, 1, () -> c.player.getZ() > pit.z() - 0.5);
         add("jump over the pit", 3, () -> c.options.jumpKey.setPressed(true));
         add("release the jump", 1, () -> c.options.jumpKey.setPressed(false));
         add("dash in mid-air", 1, () -> ClientNet.requestAbility(Ability.DASH, true));
-        until("the landing behind the pit", 300, 5, () -> c.player.isOnGround() && c.player.getZ() > 7.5);
+        until("the landing behind the pit", 300, 5, () -> c.player.isOnGround() && c.player.getZ() > pit.z() + 0.5);
         add("stop running", 1, () -> {
             c.options.forwardKey.setPressed(false);
             c.options.sprintKey.setPressed(false);
@@ -343,7 +376,10 @@ public final class AutoTest {
             c.options.forwardKey.setPressed(true);
             c.options.sprintKey.setPressed(true);
         });
-        until("the edge of the deck", 140, 1, () -> c.player.getZ() < 60.6);
+        // the deck ends two blocks in front of the marker (north is -z)
+        double edgeZ = start.z() - 2.0;
+        trace(c, "glide", 240);
+        until("the edge of the deck", 140, 1, () -> c.player.getZ() < edgeZ + 0.5);
         add("jump", 2, () -> c.options.jumpKey.setPressed(true));
         add("release the jump", 1, () -> c.options.jumpKey.setPressed(false));
         until("the fall begins", 80, 1, () -> c.player.getVelocity().y < -0.05 && c.player.fallDistance > 0.7f);
@@ -363,11 +399,18 @@ public final class AutoTest {
     private static void build(MinecraftClient c) {
         add("settle", 180, () -> { });
         cmd(c, "gamemode creative", 10);
+        add("where is the player", 1, () -> where(c, "the first arrival"));
         shot(c, "01_district_spawn", 10);
         cmd(c, "lewandivka status", 10);
-        add("notebook", 14, () -> c.setScreen(new NotebookScreen()));
+        add("notebook", 14, () -> {
+            screenWanted = true;
+            c.setScreen(new NotebookScreen());
+        });
         shot(c, "02_notebook", 4);
-        add("close", 6, () -> c.setScreen(null));
+        add("close", 6, () -> {
+            c.setScreen(null);
+            screenWanted = false;
+        });
 
         // the first night: the district fills with gopniks around the player (the service that spawns them runs for real)
         cmd(c, "lewandivka step collect_tokens", 8);
@@ -451,13 +494,17 @@ public final class AutoTest {
         add("screens", 4, () -> {
             ClientState.cinematic = "";
             ClientState.cinematicLength = 0;
+            screenWanted = true;
             c.setScreen(new ConfigScreen(null));
         });
         add("config shot wait", 10, () -> { });
         shot(c, "config", 4);
         add("credits", 40, () -> c.setScreen(new CreditsScreen(null)));
         shot(c, "credits", 4);
-        add("end", 4, () -> c.setScreen(null));
+        add("end", 4, () -> {
+            c.setScreen(null);
+            screenWanted = false;
+        });
         cmd(c, "lewandivka status", 20);
         add("dimension check", 2, () -> note("final dimension " + c.world.getRegistryKey().getValue() + " " + (c.world.getRegistryKey() == World.OVERWORLD ? "overworld" : "campaign")));
     }
