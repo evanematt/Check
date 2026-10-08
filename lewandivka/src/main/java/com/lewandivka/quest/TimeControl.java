@@ -3,13 +3,16 @@ package com.lewandivka.quest;
 import com.lewandivka.world.dimension.Dimensions;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameRules;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,7 +65,31 @@ public final class TimeControl {
         clock.setTimeOfDay(Math.floorDiv(clock.getTimeOfDay(), 24000L) * 24000L + timeOfDay);
     }
 
+    /**
+     * Beds work in the open country. The world wakes everybody up when all of them have slept long enough, but it cannot move
+     * the clock of a campaign dimension (it is the clock of the overworld, see above), so the night would simply go on: the
+     * clock is moved here, to the next morning.
+     */
+    private static void sleep(MinecraftServer server) {
+        if (server.getTicks() % 4 != 0) {
+            return;
+        }
+        ServerWorld world = Dimensions.district(server);
+        if (world == null || !world.getGameRules().getBoolean(GameRules.DO_DAYLIGHT_CYCLE)) {
+            return;
+        }
+        List<ServerPlayerEntity> players = world.getPlayers(p -> !p.isSpectator());
+        if (players.isEmpty() || !players.stream().allMatch(PlayerEntity::canResetTimeBySleeping)) {
+            return;
+        }
+        ServerWorld clock = server.getOverworld();
+        long now = clock.getTimeOfDay();
+        clock.setTimeOfDay(now - Math.floorMod(now, 24000L) + 24000L);
+        server.getPlayerManager().sendToDimension(new WorldTimeUpdateS2CPacket(world.getTime(), clock.getTimeOfDay(), true), world.getRegistryKey());
+    }
+
     private static void tick(MinecraftServer server) {
+        sleep(server);
         if (HELD.isEmpty() || server.getTicks() % 2 != 0) {
             return;
         }

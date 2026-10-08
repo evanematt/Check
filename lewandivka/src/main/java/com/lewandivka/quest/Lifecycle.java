@@ -11,8 +11,10 @@ import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.world.gen.DistrictPlan;
 import com.lewandivka.network.Net;
 import com.lewandivka.sound.GameSounds;
+import com.lewandivka.util.Scheduler;
 import com.lewandivka.world.dimension.Dimensions;
 import com.lewandivka.world.structure.Structures;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -24,6 +26,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -55,6 +58,17 @@ public final class Lifecycle {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> join(handler.player, server));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> Abilities.forget(handler.player.getUuid()));
         ServerPlayerEvents.AFTER_RESPAWN.register((old, player, alive) -> respawned(player));
+        // a Nether portal of the open country leads back to the overworld of the ordinary game, which is another world than the district:
+        // whoever comes out of the Nether is brought home to the district at the same coordinates (the Nether scales them by 8 as usual)
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> {
+            if (origin.getRegistryKey() == World.NETHER && destination.getRegistryKey() == World.OVERWORLD) {
+                Scheduler.later(3, () -> {
+                    if (!player.isRemoved() && player.getWorld().getRegistryKey() == World.OVERWORLD) {
+                        Travel.toSurface(player, Dimensions.DISTRICT_ID, player.getX(), player.getZ());
+                    }
+                });
+            }
+        });
         ServerLifecycleEvents.SERVER_STARTED.register(Lifecycle::serverStarted);
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             Dialogues.tick(server);

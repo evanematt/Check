@@ -7,6 +7,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.Heightmap;
 
 /** Teleports between the two dimensions and to markers, always onto a free spot. */
 public final class Travel {
@@ -35,6 +36,19 @@ public final class Travel {
             return;
         }
         Vec3d at = safe(world, wanted);
+        player.teleport(world, at.x, at.y, at.z, player.getYaw(), 0.0f);
+        player.fallDistance = 0.0f;
+    }
+
+    /** Stands the player on the ground of a dimension at (x, z); the chunk is generated if it has to be. */
+    public static void toSurface(ServerPlayerEntity player, String dimension, double x, double z) {
+        ServerWorld world = Dimensions.world(player.getServer(), dimension);
+        if (world == null) {
+            return;
+        }
+        world.getChunk(BlockPos.ofFloored(x, 64, z));
+        int y = world.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, (int) Math.floor(x), (int) Math.floor(z));
+        Vec3d at = safe(world, new Vec3d(x, y, z));
         player.teleport(world, at.x, at.y, at.z, player.getYaw(), 0.0f);
         player.fallDistance = 0.0f;
     }

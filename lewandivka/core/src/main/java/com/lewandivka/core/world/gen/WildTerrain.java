@@ -34,6 +34,7 @@ public final class WildTerrain {
     private static final long S_CAVE_C = SEED + 22;
     private static final long S_ENTRANCE = SEED + 23;
     private static final long S_WARP = SEED + 30;
+    private static final long S_MICRO = SEED + 31;
 
     /** Every biome the wilderness can produce (the biome source of the dimension has to know them all). */
     public static final String[] BIOMES = {
@@ -113,6 +114,8 @@ public final class WildTerrain {
         double landHeight = SEA + 2.5 + 2.5 * hills + 1.2 * detail
                 + hillMask * (0.5 + 0.5 * hills) * 20.0
                 + mountains * (ridge * 72.0 + hills * 9.0);
+        // small bumps (a block or so) that break the long straight contour lines of a slowly rising land into a ragged, natural edge
+        landHeight += 0.75 * Noise.perlin2(S_MICRO, px / 9.0, pz / 9.0) + 0.4 * Noise.perlin2(S_MICRO + 1, px / 3.9, pz / 3.9);
         double seaFloor = SEA - 5 - 26.0 * (1.0 - land) * (1.0 - land) + 2 * detail;
         double h = Noise.lerp(seaFloor, landHeight, Noise.smoothstep(0.30, 0.62, land));
 
