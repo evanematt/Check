@@ -52,7 +52,7 @@ def connect(host: str, port: int, password: str, wait: float = 60.0) -> socket.s
 
 def run(host: str, port: int, password: str, commands: list) -> int:
     sock = connect(host, port, password)
-    sock.settimeout(120)
+    sock.settimeout(600)   # selftest generates chunks and can take a while
     for i, cmd in enumerate(commands):
         sock.sendall(packet(100 + i, 2, cmd))
         try:

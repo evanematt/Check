@@ -44,19 +44,15 @@ final class DashDoors {
     }
 
     private static void open(ServerPlayerEntity player, ServerWorld world, BlockPos pos) {
-        String structure = Structures.structureAt(Dimensions.idOf(world), pos);
-        if (structure == null) {
+        // the door marker decides which structure it belongs to (the boxes of two structures can overlap)
+        Marker m = Structures.regionAt(Dimensions.idOf(world), pos, "dash_door_");
+        if (m == null) {
             return;
         }
-        for (Marker m : Structures.withPrefix(structure, "dash_door_")) {
-            if (m.contains(pos)) {
-                com.lewandivka.LewandivkaMod.LOGGER.info("dash door {} hit by {}", m.id(), player.getGameProfile().getName());
-                var flow = FlowHost.flow(world.getServer(), structure);
-                if (flow != null) {
-                    flow.use(m.name(), player.getUuid());
-                }
-                return;
-            }
+        com.lewandivka.LewandivkaMod.LOGGER.info("dash door {} hit by {}", m.id(), player.getGameProfile().getName());
+        var flow = FlowHost.flow(world.getServer(), m.structure());
+        if (flow != null) {
+            flow.use(m.name(), player.getUuid());
         }
     }
 }

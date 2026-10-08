@@ -90,12 +90,20 @@ reachability of the quest points inside the blueprints at build time (core tests
 
 ### Calibrated physics
 
-The dungeons are built for exact launch numbers: `core/.../world/Launch.java` holds the speed of the spring pads (apex about
-+20 blocks, drift 1.4 along the arrow), of the hatches (apex about +31) and of the glider (0.42 blocks/tick, sink 0.09).
-`LaunchTest` simulates vanilla movement and proves that every pad of the sky ascent lands on the next island, that the hatch
-reaches the platform of the sky tram and that the glider crosses the chasm of the tower approach with energy to spare. The
-server (`Stations.spring`, `Abilities`) and the client (`Keys.glide`) use the same constants, and the CI client test repeats
-the jumps with a real player in survival mode (`AutoTest.physics`).
+The dungeons are built for exact launch numbers: `core/.../world/Launch.java` holds the speed of the spring pads (vertical
+2.4, apex about +27 blocks; horizontal 1.8 along the arrow), of the hatches (apex about +31) and of the glider
+(0.42 blocks/tick, sink 0.09). `FlightSim` reproduces the vanilla tick of a player without input (gravity, drag, the
+first tick slowed by the ground, collision of the 0.6 x 1.8 box with unit cubes) and `LaunchTest` flies every pad of the
+sky ascent through the finished blueprint: the rider has to pass the edge of the next island while still rising (an
+early design with weaker throws carried him into the underside of the island, which the client test showed), and has to
+come down on it. The islands are placed from the same numbers (`SkyAscent.islandCentre`), so changing a constant moves
+the level with it. The server (`Stations.spring`, `Abilities`) and the client (`Keys.glide`) use the same constants, and
+the CI client test repeats the jumps with a real player in survival mode (`AutoTest.physics`).
+
+The same care goes for the chase of the Debtor: a mob's pace grows with the square of attribute x multiplier (the
+product is the movement speed *and* the forward input), so `ChasePace` derives the navigation multiplier from the pace
+the chase should have (4.4 blocks/s alone, 5.0 for a party, a sprinting player does 5.6) and tires him after a long
+pursuit; a GameTest measures the real navigation.
 
 ## 7. Client
 

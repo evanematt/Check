@@ -5,6 +5,7 @@ import com.lewandivka.campaign.NbtStore;
 import com.lewandivka.core.campaign.Ability;
 import com.lewandivka.core.campaign.CampaignModel;
 import com.lewandivka.core.campaign.QuestStep;
+import com.lewandivka.core.puzzle.ChasePace;
 import com.lewandivka.core.registry.BlockSpec;
 import com.lewandivka.core.registry.EntitySpec;
 import com.lewandivka.core.registry.ItemSpec;
@@ -16,6 +17,7 @@ import com.lewandivka.core.registry.SoundSpec;
 import com.lewandivka.core.world.WorldPlan;
 import com.lewandivka.util.Ids;
 import com.lewandivka.world.dimension.Dimensions;
+import com.lewandivka.world.dimension.PlanBlockView;
 import com.lewandivka.world.dimension.Plans;
 import com.lewandivka.world.structure.StateResolver;
 import com.lewandivka.world.structure.StructureValidator;
@@ -26,6 +28,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
@@ -39,6 +43,7 @@ import net.minecraft.world.BlockView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -180,6 +185,75 @@ public final class LewandivkaGameTests implements FabricGameTest {
             check(onHatch.getY() > hatchY + 8, "the hatch did not throw the pig up: y " + hatchY + " -> " + onHatch.getY());
             onPad.discard();
             onHatch.discard();
+            context.complete();
+        });
+    }
+
+    // ------------------------------------------------------------------ the chase of the Debtor
+
+    /**
+     * The chase is only a chase if a sprinting player gains on the Debtor and a strolling one cannot simply walk him down.
+     * His pace comes from the multiplier of the navigation call (see {@link ChasePace}); the real navigation runs along a
+     * straight road at three multipliers and the measured blocks per second are compared with the model and the design.
+     */
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, batchId = "debtor_pace", tickLimit = 160)
+    public void theDebtorRunsAtThePaceOfTheChase(TestContext context) {
+        ServerWorld world = context.getWorld();
+        EntityType<?> type = Registries.ENTITY_TYPE.get(Ids.of("debtor"));
+        MobEntity[] runners = new MobEntity[3];
+        BlockPos[] goals = new BlockPos[3];
+        double[] multipliers = new double[3];
+        for (int lane = 0; lane < 3; lane++) {
+            int z = lane * 4 + 1;
+            for (int x = -1; x <= 40; x++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    context.setBlockState(new BlockPos(x, 1, z + dz), Blocks.STONE.getDefaultState());
+                    for (int y = 2; y <= 4; y++) {
+                        context.setBlockState(new BlockPos(x, y, z + dz), Blocks.AIR.getDefaultState());
+                    }
+                }
+            }
+            Entity e = type.create(world);
+            check(e instanceof MobEntity, "the debtor is not a mob");
+            MobEntity mob = (MobEntity) e;
+            BlockPos start = context.getAbsolutePos(new BlockPos(0, 2, z));
+            mob.refreshPositionAndAngles(start.getX() + 0.5, start.getY(), start.getZ() + 0.5, -90.0f, 0.0f);
+            check(world.spawnEntity(mob), "the debtor was not spawned");
+            runners[lane] = mob;
+            goals[lane] = context.getAbsolutePos(new BlockPos(40, 2, z));
+            double attribute = mob.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+            multipliers[lane] = lane == 0 ? ChasePace.multiplierFor(attribute, ChasePace.SOLO)
+                    : lane == 1 ? ChasePace.multiplierFor(attribute, ChasePace.PARTY) : 1.0;
+        }
+        for (int t = 1; t <= 110; t += 5) {
+            context.runAtTick(t, () -> {
+                for (int lane = 0; lane < 3; lane++) {
+                    runners[lane].getNavigation().startMovingTo(goals[lane].getX() + 0.5, goals[lane].getY(), goals[lane].getZ() + 0.5, multipliers[lane]);
+                }
+            });
+        }
+        double[] started = new double[3];
+        context.runAtTick(25, () -> {
+            for (int lane = 0; lane < 3; lane++) {
+                started[lane] = runners[lane].getX();
+            }
+        });
+        context.runAtTick(105, () -> {
+            double[] pace = new double[3];
+            double[] model = new double[3];
+            for (int lane = 0; lane < 3; lane++) {
+                pace[lane] = (runners[lane].getX() - started[lane]) / 80.0 * 20.0;
+                model[lane] = ChasePace.blocksPerSecond(runners[lane].getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED), multipliers[lane]);
+                runners[lane].discard();
+            }
+            String report = String.format(Locale.ROOT, "solo %.2f (model %.2f), party %.2f (model %.2f), full speed %.2f (model %.2f) blocks per second",
+                    pace[0], model[0], pace[1], model[1], pace[2], model[2]);
+            com.lewandivka.LewandivkaMod.LOGGER.info("Debtor pace: {}", report);
+            for (int lane = 0; lane < 3; lane++) {
+                check(Math.abs(pace[lane] - model[lane]) <= 0.15 * model[lane] + 0.2, "the model of the pace is wrong: " + report);
+            }
+            check(pace[0] >= 3.8 && pace[0] <= 5.0, "the lone pursuer's Debtor must be about as fast as a walking player and slower than a sprinting one: " + report);
+            check(pace[1] > pace[0] && pace[1] >= 4.4 && pace[1] <= 5.4, "the party's Debtor must be faster, but slower than a sprinting player: " + report);
             context.complete();
         });
     }

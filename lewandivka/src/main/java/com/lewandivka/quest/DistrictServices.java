@@ -4,6 +4,7 @@ import com.lewandivka.campaign.Campaign;
 import com.lewandivka.campaign.PartyService;
 import com.lewandivka.core.campaign.QuestStep;
 import com.lewandivka.core.campaign.Reputation;
+import com.lewandivka.core.puzzle.ChasePace;
 import com.lewandivka.core.puzzle.FleePlanner;
 import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.story.Events;
@@ -15,6 +16,7 @@ import com.lewandivka.world.dimension.Dimensions;
 import com.lewandivka.world.structure.Structures;
 import com.lewandivka.world.structure.Structures.Marker;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -38,6 +40,8 @@ public final class DistrictServices {
     private static long stumbleUntil = -1;
     private static long nextTaunt;
     private static int taunts;
+    /** Ticks of active pursuit (a player near, the Debtor not stumbling): the longer it lasts, the more tired he gets. */
+    private static long pursuit;
 
     private DistrictServices() {
     }
@@ -170,8 +174,12 @@ public final class DistrictServices {
 
     private static void tick(MinecraftServer server) {
         long now = server.getTicks();
-        if (now % 5 == 0 && Campaign.step(server) == QuestStep.DEBTOR_CHASE) {
-            chase(server, now);
+        if (now % 5 == 0) {
+            if (Campaign.step(server) == QuestStep.DEBTOR_CHASE) {
+                chase(server, now);
+            } else {
+                pursuit = 0;
+            }
         }
         if (now % 20 == 0) {
             visits(server);
@@ -237,7 +245,10 @@ public final class DistrictServices {
             Dialogues.play(server, "debtor_taunt_" + (1 + taunts++ % 3), world.getPlayers(), debtor);
         }
         FleePlanner.Node n = fp.node(target);
-        double speed = pursuers.size() > 1 ? 0.72 : 0.62;
+        // the pace is the one the chase asks for (see ChasePace); a long pursuit tires him, so nobody is stuck here
+        pursuit += 5;
+        double pace = ChasePace.pace(pursuers.size()) * ChasePace.freshness(pursuit);
+        double speed = ChasePace.multiplierFor(debtor.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED), pace);
         debtor.getNavigation().startMovingTo(n.x(), debtor.getY(), n.z(), speed);
     }
 

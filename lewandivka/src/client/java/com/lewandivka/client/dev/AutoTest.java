@@ -7,15 +7,21 @@ import com.lewandivka.client.screen.CreditsScreen;
 import com.lewandivka.client.screen.NotebookScreen;
 import com.lewandivka.LewandivkaMod;
 import com.lewandivka.core.campaign.Ability;
+import com.lewandivka.core.campaign.QuestStep;
 import com.lewandivka.world.structure.Structures;
 import com.lewandivka.world.structure.Structures.Marker;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.DownloadingTerrainScreen;
 import net.minecraft.client.util.ScreenshotRecorder;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registries;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
@@ -158,6 +164,22 @@ public final class AutoTest {
                 c.world.getRegistryKey().getValue(), c.player.getX(), c.player.getY(), c.player.getZ(), c.player.getYaw(), c.player.getPitch(),
                 c.world.getBlockState(eye).getBlock().getTranslationKey(), c.player.isInsideWall(), c.world.getLightLevel(LightType.SKY, eye),
                 c.world.getLightLevel(LightType.BLOCK, eye), c.world.getTimeOfDay()));
+        if (c.player.isInsideWall()) {
+            // the blocks of the column under and over the camera as the client knows them (name#raw state id): compare with
+            // the server's answer to /lewandivka probe to tell a generation problem from a client-side one
+            note("  column of the client at " + eye.getX() + "," + eye.getZ() + ": " + column(c, eye, 4, 3)
+                    + " chunkEmpty=" + c.world.getChunk(eye.getX() >> 4, eye.getZ() >> 4).isEmpty());
+        }
+    }
+
+    private static String column(MinecraftClient c, BlockPos at, int below, int above) {
+        StringBuilder sb = new StringBuilder();
+        for (int dy = -below; dy <= above; dy++) {
+            BlockPos p = at.up(dy);
+            BlockState state = c.world.getBlockState(p);
+            sb.append(p.getY()).append('=').append(Registries.BLOCK.getId(state.getBlock())).append('#').append(Block.getRawIdFromState(state)).append(' ');
+        }
+        return sb.toString().trim();
     }
 
     // ------------------------------------------------------------------ script
@@ -229,6 +251,8 @@ public final class AutoTest {
         }
         cmd(c, "lewandivka teleport " + structure + " view", 20);
         settle(c, structure, 2400);
+        add("check the camera at " + structure, 1, () -> expect("the camera over " + structure + " is not inside a block", !c.player.isInsideWall(),
+                "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
         shot(c, "tour_" + structure, 6);
     }
 
@@ -275,6 +299,11 @@ public final class AutoTest {
         return String.format(Locale.ROOT, "tp @s %.3f %.3f %.3f %.1f %.1f", x, y, z, yaw, pitch);
     }
 
+    /** The same teleport, but into a dimension (the script may be anywhere when it needs to be somewhere else). */
+    private static String atIn(String dimension, double x, double y, double z, float yaw, float pitch) {
+        return "execute in " + dimension + " run " + at(x, y, z, yaw, pitch);
+    }
+
     private static Marker marker(String id) {
         Marker m = Structures.marker(id);
         if (m == null) {
@@ -302,26 +331,34 @@ public final class AutoTest {
         cmd(c, "effect give @s minecraft:resistance 99999 4 true", 4);
         cmd(c, "gamemode survival", 2);
 
-        // 1. the four spring pads of the sky ascent, island by island
-        String[][] jumps = {{"pad_0", "isle_1", "6"}, {"pad_1", "isle_2", "5"}, {"pad_2", "isle_3", "5"}, {"pad_3", "tunnel_bottom", "6"}};
+        // 1. the four spring pads of the sky ascent, island by island: the climber walks onto the pad (so he stands when the
+        // spring fires) and lets himself be thrown
+        String[][] jumps = {{"pad_0", "isle_1", "6"}, {"pad_1", "isle_2", "5"}, {"pad_2", "isle_3", "5"}, {"pad_3", "isle_4", "2.5"}};
         for (String[] j : jumps) {
             Marker pad = marker("sky_ascent:" + j[0]);
             Marker target = marker("sky_ascent:" + j[1]);
-            cmd(c, at(pad.x() + 0.5, pad.y() + 1.2, pad.z() + 2.5, -90, 0), 4);
+            cmd(c, at(pad.x() + 0.5 - 2.0, pad.y(), pad.z() + 0.5, -90, 0), 4);
             settle(c, "beside " + j[0], 600);
-            trace(c, j[0], 80);
-            cmd(c, at(pad.x() + 0.5, pad.y() + 0.13, pad.z() + 0.5, -90, 0), 110);
-            checkPosition(c, "spring " + j[0] + " carries the climber to " + j[1], target.x(), target.y(), target.z(), Double.parseDouble(j[2]), 1.6, 4.5);
+            trace(c, j[0], 90);
+            add("walk onto " + j[0], 1, () -> c.options.forwardKey.setPressed(true));
+            until("the throw of " + j[0], 80, 1, () -> c.player.getY() > pad.y() + 1.5);
+            add("let go of the keys", 1, () -> c.options.forwardKey.setPressed(false));
+            until("the landing after " + j[0], 200, 5, () -> c.player.isOnGround());
+            checkPosition(c, "spring " + j[0] + " carries the climber to " + j[1], target.x() + 0.5, target.y(), target.z() + 0.5, Double.parseDouble(j[2]), 0.3, 2.5);
         }
 
-        // 2. the hatch of the glass tunnel throws the climber up to the platform of the sky tram
-        Marker hatch = marker("sky_ascent:tunnel_bottom");
+        // 2. the hatch of the glass tunnel throws the climber up to the platform of the sky tram: he walks onto it and keeps
+        // walking east (a human steers a little in the air; the wind of the tube helps)
+        Marker bottom = marker("sky_ascent:tunnel_bottom");
         Marker top = marker("sky_ascent:tunnel_top");
-        cmd(c, at(hatch.x() - 1.5, hatch.y(), hatch.z() + 0.5, -90, 0), 4);
+        cmd(c, at(bottom.x() + 0.5, bottom.y(), bottom.z() + 0.5, -90, 0), 4);
         settle(c, "beside the tunnel hatch", 600);
-        trace(c, "tunnel hatch", 100);
-        cmd(c, at(hatch.x() + 0.5, hatch.y(), hatch.z() + 0.5, -90, 0), 140);
-        checkPosition(c, "the tunnel hatch carries the climber to the platform", top.x() + 4, top.y(), top.z(), 9, 1.6, 5.0);
+        trace(c, "tunnel hatch", 160);
+        add("walk onto the hatch", 1, () -> c.options.forwardKey.setPressed(true));
+        until("the throw of the hatch", 80, 1, () -> c.player.getY() > bottom.y() + 2.0);
+        until("the landing on the platform", 260, 5, () -> c.player.isOnGround() && c.player.getY() > top.y() - 0.5);
+        add("let go of the keys", 1, () -> c.options.forwardKey.setPressed(false));
+        checkPosition(c, "the tunnel hatch carries the climber to the platform", top.x() + 1.5, top.y(), top.z() + 0.5, 3.5, 0.3, 2.5);
 
         // 3. the spring shaft of the tower approach ends on the glider deck
         Marker shaft = marker("tower_approach:shaft_bottom");
@@ -396,10 +433,156 @@ public final class AutoTest {
         cmd(c, "effect clear @s minecraft:resistance", 4);
     }
 
+
+    /**
+     * The five bosses in their own arenas: the campaign is moved to the step of the boss, the boss is summoned where the
+     * dungeon flow would put it (the fight really starts, adds and all), then it is killed and the story must go on:
+     * the next step, the ring fragment and, where there is one, the ability the boss gives.
+     */
+    private static void bossRewards(MinecraftClient c) {
+        // structure, boss, step before, step after, ability (or "")
+        String[][] chain = {
+                {"rainbow_garage", "garage_king", "rg_boss", "sh_dash", "DASH"},
+                {"shelter", "collar_collector", "sh_boss", "aq_find", ""},
+                {"aquapark", "lady_vortex", "aq_boss", "sky_ascent", "SPRING_INSOLES"},
+                {"sky_depot", "conductor", "sky_boss", "tower_ring", "GLIDER"},
+                {"tower", "colorless_head", "final_fight", "epi_return", ""},
+        };
+        for (String[] b : chain) {
+            Marker spawn = marker(b[0] + ":boss_spawn");
+            int[] rings = new int[1];
+            cmd(c, "lewandivka step " + b[2], 10);
+            cmd(c, "lewandivka teleport " + b[0] + " view", 20);
+            settle(c, b[1] + " arena", 900);
+            add("remember the ring", 1, () -> rings[0] = ClientState.rings);
+            cmd(c, String.format(Locale.ROOT, "summon lewandivka:%s %.1f %.1f %.1f", b[1], spawn.x() + 0.5, (double) spawn.y(), spawn.z() + 0.5), 100);
+            shot(c, "boss_" + b[1], 4);
+            cmd(c, "kill @e[type=lewandivka:" + b[1] + "]", 60);
+            add("check the reward of " + b[1], 2, () -> {
+                expect(b[1] + " leads to " + b[3], ClientState.step.key().equals(b[3]), "the step is " + ClientState.step.key());
+                if (!b[4].isEmpty()) {
+                    expect(b[1] + " gives " + b[4], ClientState.has(Ability.valueOf(b[4])), "ability mask " + ClientState.abilityMask);
+                }
+                if (!b[1].equals("colorless_head")) {
+                    expect(b[1] + " restores a ring fragment", ClientState.rings == rings[0] + 1, "rings " + rings[0] + " -> " + ClientState.rings);
+                }
+            });
+        }
+    }
+
+
+    // ------------------------------------------------------------------ playing the story with hands
+
+    /** Puts the item of the mod into the hand (it was given with /give, so it is in the hotbar). */
+    private static boolean hold(MinecraftClient c, String itemId) {
+        var inventory = c.player.getInventory();
+        for (int i = 0; i < 9; i++) {
+            var stack = inventory.getStack(i);
+            if (!stack.isEmpty() && Registries.ITEM.getId(stack.getItem()).getPath().equals(itemId)) {
+                inventory.selectedSlot = i;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Right click in the air with the item. */
+    private static void useItem(MinecraftClient c, String itemId) {
+        add("use " + itemId, 12, () -> {
+            expect("the hotbar holds " + itemId, hold(c, itemId), "the player has no " + itemId + " in the hotbar");
+            c.interactionManager.interactItem(c.player, Hand.MAIN_HAND);
+        });
+    }
+
+    /** Right click on the block at a position with the item (the real packet, the real server-side checks). */
+    private static void useItemOn(MinecraftClient c, String itemId, BlockPos pos) {
+        add("use " + itemId + " on " + pos.toShortString(), 14, () -> {
+            expect("the hotbar holds " + itemId, hold(c, itemId), "the player has no " + itemId + " in the hotbar");
+            BlockHitResult hit = new BlockHitResult(Vec3d.ofCenter(pos).add(0, 0.5, 0), Direction.UP, pos, false);
+            c.interactionManager.interactBlock(c.player, Hand.MAIN_HAND, hit);
+        });
+    }
+
+    /** How many creatures of the mod with this id the client knows about. */
+    private static int count(MinecraftClient c, String entityId) {
+        int n = 0;
+        for (Entity e : c.world.getEntities()) {
+            var id = Registries.ENTITY_TYPE.getId(e.getType());
+            if (id.getNamespace().equals("lewandivka") && id.getPath().equals(entityId)) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    private static boolean in(MinecraftClient c, String dimension) {
+        return c.world != null && c.world.getRegistryKey().getValue().toString().equals(dimension);
+    }
+
+    /**
+     * The end of the first act with real clicks: build the kiosk on its foundation, swallow the Chroma tablet (the crossing
+     * to Chromandivka, the compass), put the four artifacts on the pedestals of the base, walk through the coloured portal.
+     */
+    private static void crossing(MinecraftClient c) {
+        cmd(c, "gamemode creative", 4);
+        cmd(c, "clear @s", 4);
+
+        // the kiosk: placed on the painted foundation it becomes the shop of Mr. Shlahbaum
+        Marker spot = marker("district:kiosk_spot");
+        cmd(c, "lewandivka step place_kiosk", 10);
+        cmd(c, atIn("lewandivka:district", spot.x() + 0.5, spot.y() + 1.0, spot.z() + 3.5, 180, 0), 4);
+        settle(c, "at the kiosk foundation", 900);
+        cmd(c, "give @s lewandivka:abandoned_kiosk", 6);
+        useItemOn(c, "abandoned_kiosk", spot.pos());   // the marker is the painted foundation block itself
+        add("let the shopkeeper arrive", 60, () -> { });
+        add("check the kiosk", 2, () -> {
+            expect("the placed kiosk starts the talk with Mr. Shlahbaum", ClientState.step == QuestStep.TALK_SHLAHBAUM,
+                    "the step is " + ClientState.step.key());
+            expect("Mr. Shlahbaum appears next to the kiosk exactly once", count(c, "pan_shlahbaum") == 1,
+                    "there are " + count(c, "pan_shlahbaum"));
+        });
+        census(c, "after the kiosk");
+
+        // the Chroma tablet, swallowed by the whole (one-person) party, carries everybody over
+        cmd(c, "lewandivka step chroma_take", 10);
+        cmd(c, "give @s lewandivka:chroma_tablet", 6);
+        useItem(c, "chroma_tablet");
+        until("the crossing to Chromandivka", 1500, 30, () -> in(c, "lewandivka:chromandivka") && ClientState.step.isAtLeast(QuestStep.BASE_WAKE));
+        add("check the crossing", 2, () -> expect("the Chroma tablet leads to the base of Chromandivka", in(c, "lewandivka:chromandivka") && ClientState.step.isAtLeast(QuestStep.BASE_WAKE),
+                "dimension " + c.world.getRegistryKey().getValue() + ", step " + ClientState.step.key()));
+        until("the compass arrives", 600, 1, () -> ClientState.step == QuestStep.BASE_PEDESTALS);
+        add("check the compass", 2, () -> expect("the base gives the compass and asks for the artifacts", ClientState.step == QuestStep.BASE_PEDESTALS, "the step is " + ClientState.step.key()));
+
+        // the four pedestals of the base
+        add("check the portal is closed", 1, () -> expect("the portal stays closed until the artifacts are placed", !ClientState.portal, "portal " + ClientState.portal));
+        String[][] artifacts = {{"kettle", "magic_kettle"}, {"package", "package"}, {"composter", "ticket_composter"}, {"token", "district_token"}};
+        for (String[] a : artifacts) {
+            Marker pedestal = marker("base:pedestal_" + a[0]);
+            cmd(c, "give @s lewandivka:" + a[1], 6);
+            cmd(c, atIn("lewandivka:chromandivka", pedestal.x() + 0.5, pedestal.y(), pedestal.z() + 2.5, 180, 0), 6);
+            useItemOn(c, a[1], pedestal.pos());
+        }
+        add("let the portal open", 60, () -> { });
+        add("check the portal", 2, () -> expect("four artifacts open the coloured portal", ClientState.portal && ClientState.step == QuestStep.RG_TRAVEL,
+                "portal " + ClientState.portal + ", step " + ClientState.step.key()));
+
+        // through the portal, back to Lewandivka
+        Marker plane = marker("base:portal_plane");
+        cmd(c, atIn("lewandivka:chromandivka", plane.x() + 0.5, plane.y() + 0.1, plane.z() + 0.5, 90, 0), 10);
+        until("the way back to Lewandivka", 400, 5, () -> in(c, "lewandivka:district"));
+        add("check the portal trip", 2, () -> expect("the coloured portal leads back to Lewandivka", in(c, "lewandivka:district"),
+                "dimension " + c.world.getRegistryKey().getValue()));
+    }
+
     private static void build(MinecraftClient c) {
         add("settle", 180, () -> { });
         cmd(c, "gamemode creative", 10);
-        add("where is the player", 1, () -> where(c, "the first arrival"));
+        add("where is the player", 1, () -> {
+            where(c, "the first arrival");
+            expect("the first arrival is not inside a block", !c.player.isInsideWall(), "the player is at " + c.player.getBlockPos().toShortString());
+        });
+        int[] spawn = com.lewandivka.core.world.gen.DistrictPlan.get().spawn();
+        cmd(c, "execute in lewandivka:district run lewandivka probe " + spawn[0] + " " + (spawn[1] - 3) + " " + (spawn[1] + 4) + " " + spawn[2], 4);
         shot(c, "01_district_spawn", 10);
         cmd(c, "lewandivka status", 10);
         add("notebook", 14, () -> {
@@ -463,7 +646,9 @@ public final class AutoTest {
         tour(c, "tower_approach", "tower_approach");
         tour(c, "tower", "tower_climb");
         tour(c, "isle3", null);
+        bossRewards(c);
         physics(c);
+        crossing(c);
         // the postgame: free play, Garage No. 0 under the district
         cmd(c, "lewandivka step post_free", 8);
         inside(c, "garage0", null);

@@ -418,9 +418,10 @@ public final class ChromaPlan implements WorldPlan {
             placements.add(new StructurePlacement("isle" + i[4], bp, i[0] - half, i[1] - depth - fall, i[2] - half));
         }
         marker("spawn", BASE_X, BASE_Y, BASE_Z + 2, "");
-        // the route of the sky tram from the lower stop (x -18..5 at z -70) to the depot's arrival rails
+        // the route of the sky tram from the lower stop (the cabin waits east of the exit of the tube, x -11..5 at z -70)
+        // to the depot's arrival rails
         double[][] ride = {
-                {-14, 163.1, -70}, {5, 163.1, -70}, {30, 166, -73}, {58, 172, -76}, {88, 180, -86}, {112, 190, -112},
+                {-11, 163.1, -70}, {5, 163.1, -70}, {30, 166, -73}, {58, 172, -76}, {88, 180, -86}, {112, 190, -112},
                 {118, 198, -150}, {112, 203.1, -176}, {122, 203.1, -181}, {138, 203.1, -181}
         };
         for (int i = 0; i < ride.length; i++) {

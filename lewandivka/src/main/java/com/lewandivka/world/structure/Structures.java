@@ -185,11 +185,36 @@ public final class Structures {
         return points == null ? null : points.get(pos.asLong());
     }
 
-    /** The structure whose bounding box contains the position, or null. */
+    /**
+     * The structure whose bounding box contains the position, or null. Boxes may overlap (the way up to the sky tram runs
+     * through the dash corridor of the tower approach): the smallest box is the most specific one.
+     */
     public static String structureAt(String dimension, BlockPos pos) {
+        String best = null;
+        long bestVolume = Long.MAX_VALUE;
         for (Site s : index().sites.values()) {
-            if (s.dimension().equals(dimension) && s.placement().contains(pos.getX(), pos.getY(), pos.getZ())) {
-                return s.placement().id();
+            StructurePlacement p = s.placement();
+            if (s.dimension().equals(dimension) && p.contains(pos.getX(), pos.getY(), pos.getZ())) {
+                long volume = (long) (p.maxX() - p.x() + 1) * (p.maxY() - p.y() + 1) * (p.maxZ() - p.z() + 1);
+                if (volume < bestVolume) {
+                    bestVolume = volume;
+                    best = p.id();
+                }
+            }
+        }
+        return best;
+    }
+
+    /** The region marker of any structure of the dimension whose name starts with the prefix and that contains the position, or null. */
+    public static Marker regionAt(String dimension, BlockPos pos, String namePrefix) {
+        for (Site s : index().sites.values()) {
+            if (!s.dimension().equals(dimension)) {
+                continue;
+            }
+            for (Marker m : withPrefix(s.placement().id(), namePrefix)) {
+                if (m.isRegion() && m.contains(pos)) {
+                    return m;
+                }
             }
         }
         return null;

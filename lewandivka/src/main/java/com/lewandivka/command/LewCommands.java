@@ -84,6 +84,14 @@ public final class LewCommands {
                         .executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure"), false))
                         .then(CommandManager.literal("view").executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure"), true)))));
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
+        root.then(CommandManager.literal("selftest").executes(c -> selftest(c.getSource())));
+        root.then(CommandManager.literal("probe")
+                .then(CommandManager.argument("x", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("y1", IntegerArgumentType.integer())
+                                .then(CommandManager.argument("y2", IntegerArgumentType.integer())
+                                        .then(CommandManager.argument("z", IntegerArgumentType.integer())
+                                                .executes(c -> probe(c.getSource(), IntegerArgumentType.getInteger(c, "x"), IntegerArgumentType.getInteger(c, "y1"),
+                                                        IntegerArgumentType.getInteger(c, "y2"), IntegerArgumentType.getInteger(c, "z"))))))));
         root.then(CommandManager.literal("checkpoint").executes(c -> checkpoint(c.getSource())));
         root.then(CommandManager.literal("reset")
                 .then(CommandManager.literal("encounter")
@@ -201,6 +209,7 @@ public final class LewCommands {
         PlayerProgress p = Campaign.player(player);
         boolean changed = grant ? p.grant(a) : p.revoke(a);
         Campaign.dirty(source.getServer());
+        com.lewandivka.network.Net.sendCampaign(player);                       // the HUD and the glider key read the mask
         source.sendFeedback(() -> Text.literal((grant ? "granted " : "revoked ") + a.key() + (changed ? "" : " (no change)")), true);
         return 1;
     }
@@ -209,6 +218,17 @@ public final class LewCommands {
 
     /** Development tool: to the entrance of a structure, or ({@code view}) to an aerial vantage point looking at it. */
     private static int teleport(ServerCommandSource source, String structure, boolean view) {
+        try {
+            return teleportUnchecked(source, structure, view);
+        } catch (RuntimeException e) {
+            // the chat only says "an unexpected error occurred": the log must say which
+            com.lewandivka.LewandivkaMod.LOGGER.error("/lewandivka teleport {} failed", structure, e);
+            source.sendError(Text.literal("teleport failed: " + e));
+            return 0;
+        }
+    }
+
+    private static int teleportUnchecked(ServerCommandSource source, String structure, boolean view) {
         ServerPlayerEntity player = source.getPlayer();
         Structures.Site site = Structures.site(structure);
         if (player == null || site == null) {
@@ -237,6 +257,9 @@ public final class LewCommands {
             double cy = b.minY + (b.maxY - b.minY) * 0.35;
             double back = Math.max(16, Math.max(b.getXLength(), b.getZLength()) * 0.9 + 8);
             double eyeY = b.maxY + 6 + back * 0.35;
+            // never inside the terrain or a neighbouring building: at least eight blocks above whatever stands at the camera
+            int top = world.getTopY(net.minecraft.world.Heightmap.Type.WORLD_SURFACE, (int) Math.floor(cx), (int) Math.floor(cz + back));
+            eyeY = Math.max(eyeY, top + 8);
             double dy = cy - eyeY;
             float yaw = 180.0f;
             float pitch = (float) Math.toDegrees(Math.atan2(-dy, back));
@@ -250,6 +273,31 @@ public final class LewCommands {
         }
         source.sendFeedback(() -> Text.literal("teleported to " + structure), true);
         return 1;
+    }
+
+    /** The blocks of a column of the world the command runs in ({@code execute in <dimension> run lewandivka probe ...}). */
+    private static int probe(ServerCommandSource source, int x, int y1, int y2, int z) {
+        String text = SelfTest.probe(source.getWorld(), x, Math.min(y1, y2), Math.max(y1, y2), z);
+        source.sendFeedback(() -> Text.literal(text), false);
+        return 1;
+    }
+
+    /** Checks only a running server with the real dimensions can do (see {@link SelfTest}). */
+    private static int selftest(ServerCommandSource source) {
+        SelfTest.Report report = SelfTest.run(source.getServer());
+        for (String note : report.notes()) {
+            com.lewandivka.LewandivkaMod.LOGGER.info("[selftest] {}", note);
+        }
+        for (String problem : report.problems()) {
+            com.lewandivka.LewandivkaMod.LOGGER.warn("[selftest] {}", problem);
+        }
+        String text = "selftest: " + (report.ok() ? "OK" : "PROBLEMS") + " - " + String.join(" ; ", report.ok() ? report.notes() : report.problems());
+        if (text.length() > 3500) {
+            text = text.substring(0, 3500) + " ...";
+        }
+        String shown = text;
+        source.sendFeedback(() -> Text.literal(shown), false);
+        return report.ok() ? 1 : 0;
     }
 
     private static int validate(ServerCommandSource source) {

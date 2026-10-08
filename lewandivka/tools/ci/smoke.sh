@@ -61,6 +61,8 @@ session "$LOG" \
   "execute in lewandivka:district run forceload add 0 0 31 31" \
   "execute in lewandivka:chromandivka run forceload add 0 0 31 31" \
   "lewandivka validate" \
+  "lewandivka selftest" \
+  "execute in lewandivka:district run lewandivka probe 2 60 72 -3" \
   "${RESETS[@]}" \
   "lewandivka step $STEP" \
   "lewandivka status" \
@@ -73,6 +75,7 @@ session "$LOG2" \
   "execute in lewandivka:district run forceload add 0 0 31 31" \
   "execute in lewandivka:chromandivka run forceload add 0 0 31 31" \
   "lewandivka validate" \
+  "lewandivka selftest" \
   "stop"
 
 ok=1
@@ -84,6 +87,11 @@ else
 fi
 grep -q "validate: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: first session did not validate"; ok=0; }
 grep -q "validate: OK" "$LOG2.rcon" 2>/dev/null || { echo "SMOKE: the restarted server did not validate"; ok=0; }
+# the self test needs the real dimensions: generated world = plan, free first arrival, players can cross (see SelfTest)
+grep -h "selftest:" "$LOG.rcon" "$LOG2.rcon" 2>/dev/null | cut -c1-1800
+grep -q "selftest: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the self test failed in the first session"; ok=0; }
+grep -q "selftest: OK" "$LOG2.rcon" 2>/dev/null || { echo "SMOKE: the self test failed after the restart"; ok=0; }
+grep -h "^lewandivka:district 2,-3:" "$LOG.rcon" 2>/dev/null | head -2
 # the first status line of the second session is the one printed right after the restart
 if head -n 3 "$LOG2.rcon" 2>/dev/null | grep -q "step=$STEP"; then
   echo "SMOKE: the campaign step survived the restart ($STEP)"

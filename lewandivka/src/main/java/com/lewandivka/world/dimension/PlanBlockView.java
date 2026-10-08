@@ -1,7 +1,6 @@
-package com.lewandivka.gametest;
+package com.lewandivka.world.dimension;
 
 import com.lewandivka.core.world.WorldPlan;
-import com.lewandivka.world.dimension.ChunkPainter;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -22,16 +21,17 @@ import java.util.Map;
 
 /**
  * A world that exists only as the chunks the plan paints. GameTests run on a vanilla test server that does not load the
- * custom dimensions, so this view lets them check the chunk painter without a dimension.
+ * custom dimensions, so this view lets them check the chunk painter without a dimension; the in-server self test
+ * ({@code /lewandivka selftest}) compares it with the chunks the real dimension generated.
  */
-final class PlanBlockView implements BlockView {
+public final class PlanBlockView implements BlockView {
 
     private final WorldPlan plan;
     private final DynamicRegistryManager registries;
     private final HeightLimitView limits;
     private final Map<Long, Chunk> chunks = new HashMap<>();
 
-    PlanBlockView(WorldPlan plan, DynamicRegistryManager registries) {
+    public PlanBlockView(WorldPlan plan, DynamicRegistryManager registries) {
         this.plan = plan;
         this.registries = registries;
         this.limits = HeightLimitView.create(plan.minY(), plan.height());
