@@ -186,17 +186,21 @@ class LaunchTest {
         assertEquals("east", data(wind, "dir"));
         int c = hatch.x();
         FlightSim.Wind push = windOf(wind);
-        for (int parity = 0; parity <= 1; parity++) {
-            FlightSim.Flight f = FlightSim.fly(solid(bp), hatch.x() + 0.5, hatch.y(), hatch.z() + 0.5, 0, Launch.HATCH_UP, 0, FlightSim.WIDTH, FlightSim.HEIGHT, 200, push, parity);
-            String what = "service shaft, wind on the ticks of parity " + parity;
+        // a rider who lets go of the keys, one who keeps walking east all the way (the client test does) and one who sprints
+        for (double steer : new double[] {0.0, FlightSim.AIR_STEERING, 1.3 * FlightSim.AIR_STEERING}) {
+          for (int parity = 0; parity <= 1; parity++) {
+            FlightSim.Flight f = FlightSim.fly(solid(bp), hatch.x() + 0.5, hatch.y(), hatch.z() + 0.5, 0, Launch.HATCH_UP, 0, FlightSim.WIDTH, FlightSim.HEIGHT, 200, push, parity, steer);
+            String what = "service shaft, steering " + steer + ", wind on the ticks of parity " + parity;
             assertTrue(f.landed, what + ": never comes down");
-            assertTrue(f.sideTick < 0, what + ": runs into a wall at tick " + f.sideTick + " " + java.util.Arrays.toString(f.sideAt));
+            // only a rider who keeps steering may meet the parapet (that is what it is for), and only at the end of the flight
+            assertTrue(f.sideTick < 0 || (steer > 0 && f.sideAt[0] > c + 10.5), what + ": runs into a wall at tick " + f.sideTick + " " + java.util.Arrays.toString(f.sideAt));
             assertTrue(f.ceilingTick < 0, what + ": hits a ceiling");
             assertEquals(ledge.y(), f.landAt[1], 0.01, what + ": does not land on the ledge but at " + java.util.Arrays.toString(f.landAt));
-            // between the edge of the hole (radius 4.5) and the shaft wall (the ledge ring ends at 11.5), with a body width to spare
-            assertTrue(f.landAt[0] > c + 5.5 && f.landAt[0] < c + 10.5, what + ": lands at x " + f.landAt[0] + " (the shaft axis is " + (c + 0.5) + ")");
+            // between the edge of the hole (radius 4.5) and the parapet at the rim of the ledge (x c + 11), with a body width to spare
+            assertTrue(f.landAt[0] > c + 5.5 && f.landAt[0] < c + 10.9, what + ": lands at x " + f.landAt[0] + " (the shaft axis is " + (c + 0.5) + ")");
             assertEquals(hatch.z() + 0.5, f.landAt[2], 1.0, what);
             assertTrue(f.apex > ledge.y() + 1.0, what + ": the throw only just reaches the ledge (apex " + f.apex + ")");
+          }
         }
     }
 

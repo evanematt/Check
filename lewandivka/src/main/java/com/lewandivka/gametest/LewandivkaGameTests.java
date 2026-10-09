@@ -15,6 +15,7 @@ import com.lewandivka.core.registry.ModItems;
 import com.lewandivka.core.registry.ModSounds;
 import com.lewandivka.core.registry.SoundSpec;
 import com.lewandivka.core.world.WorldPlan;
+import com.lewandivka.quest.NetherGate;
 import com.lewandivka.util.Ids;
 import com.lewandivka.world.dimension.Dimensions;
 import com.lewandivka.world.dimension.PlanBlockView;
@@ -39,6 +40,7 @@ import net.minecraft.test.GameTest;
 import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 
 import java.util.ArrayList;
@@ -280,6 +282,25 @@ public final class LewandivkaGameTests implements FabricGameTest {
         for (QuestStep step : QuestStep.values()) {
             if (step.compassMarker != null) {
                 check(Structures.has(step.compassMarker), "step " + step + " points to missing marker " + step.compassMarker);
+            }
+        }
+        context.complete();
+    }
+
+    /** A frame of obsidian becomes a Nether portal with the game's own portal code (NetherGate uses it in the district, where the game does not). */
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void aFrameOfObsidianBecomesANetherPortal(TestContext context) {
+        for (int dx = 0; dx <= 3; dx++) {
+            for (int dy = 0; dy <= 4; dy++) {
+                boolean frame = dx == 0 || dx == 3 || dy == 0 || dy == 4;
+                context.setBlockState(new BlockPos(dx, 1 + dy, 2), frame ? Blocks.OBSIDIAN.getDefaultState() : Blocks.AIR.getDefaultState());
+            }
+        }
+        ServerWorld world = context.getWorld();
+        check(NetherGate.light(world, context.getAbsolutePos(new BlockPos(1, 2, 2)), Direction.NORTH), "the frame of obsidian was not lit");
+        for (int dx = 1; dx <= 2; dx++) {
+            for (int dy = 1; dy <= 3; dy++) {
+                check(world.getBlockState(context.getAbsolutePos(new BlockPos(dx, 1 + dy, 2))).isOf(Blocks.NETHER_PORTAL), "no portal block at " + dx + "," + dy);
             }
         }
         context.complete();

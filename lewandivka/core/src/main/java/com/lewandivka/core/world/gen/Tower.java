@@ -337,6 +337,10 @@ public final class Tower {
         b.disc(C, top, C, 10.5, SLAB);
         b.disc(C, top, C, 4.5, Pal.AIR);
         b.marker("f4_ledge", C + 8, top + 1, C);
+        // a parapet on the east rim of the ledge: a rider who keeps pressing forward on the way up would fly over the edge of the
+        // ledge (LaunchTest flies him); he bumps into the wall instead and drops onto the ledge. The rim north of it stays free for
+        // the way to the first platform of the fifth floor
+        b.fill(C + 11, top + 1, C - 4, C + 11, top + 5, C + 4, Pal.CONCRETE_DARK);
         // arrival from F3 (stair shaft top on the west side at z = 33) and the way to the shaft door
         b.marker("f4_arrive", 9, y + 1, 34);
         b.marker("f4_door", 39, y + 1, 30);

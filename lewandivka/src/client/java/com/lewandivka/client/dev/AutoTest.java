@@ -398,9 +398,9 @@ public final class AutoTest {
         });
         shot(c, "wild_portal", 6);
         cmd(c, "execute at @s run tp @s ~0.5 ~1 ~3.0", 4);
-        until("the Nether", 1200, 3, () -> in(c, "minecraft:the_nether"));
+        until("the Nether", 1200, 3, () -> c.world != null && c.world.getRegistryKey() == World.NETHER);
         settle(c, "the Nether", 2400);
-        add("check the Nether", 1, () -> expect("the portal of the district leads to the Nether", in(c, "minecraft:the_nether"),
+        add("check the Nether", 1, () -> expect("the portal of the district leads to the Nether", c.world.getRegistryKey() == World.NETHER,
                 "the player is in " + c.world.getRegistryKey().getValue() + " at " + c.player.getBlockPos().toShortString()));
         shot(c, "nether_arrival", 10);
         // out of the portal and out of its reach until the cooldown has run out, then out of the Nether through a second frame

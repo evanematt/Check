@@ -76,8 +76,20 @@ public final class FlightSim {
         return fly(world, x, y, z, vx, vy, vz, width, height, maxTicks, wind, 0);
     }
 
-    /** The wind acts on the ticks with {@code tick % 2 == parity} (the server checks every second tick; which one depends on the moment of the throw). */
+    /** The wind acts on the ticks with {@code tick % 2 == parity} (the client applies it every second tick; which one depends on the moment of the throw). */
     public static Flight fly(Solid world, double x, double y, double z, double vx, double vy, double vz, double width, double height, int maxTicks, Wind wind, int parity) {
+        return fly(world, x, y, z, vx, vy, vz, width, height, maxTicks, wind, parity, 0.0);
+    }
+
+    /** The speed a player adds in the air by holding a key (vanilla: 0.02 per tick, along the way he faces; 0 for a rider who lets go). */
+    public static final double AIR_STEERING = 0.02;
+
+    /**
+     * The same flight of a rider who holds a movement key: {@code steerX} is added to the horizontal speed along x at the start of
+     * every tick in which he is in the air (the game does it before the move, and the air slows the sum down afterwards).
+     */
+    public static Flight fly(Solid world, double x, double y, double z, double vx, double vy, double vz, double width, double height, int maxTicks, Wind wind, int parity,
+                             double steerX) {
         Flight f = new Flight();
         f.path.add(new double[] {x, y, z});
         f.apex = y;
@@ -91,6 +103,9 @@ public final class FlightSim {
                     vy = v[1];
                     vz = v[2];
                 }
+            }
+            if (!onGround) {
+                vx += steerX;
             }
             double friction = onGround ? GROUND : AIR;
             double dx = vx;

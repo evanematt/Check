@@ -74,7 +74,7 @@ public final class WildTerrain {
     }
 
     private static double near(int cityEdge, int r) {
-        return 1.0 - Noise.smoothstep(cityEdge + 90, cityEdge + 650, r);
+        return 1.0 - Noise.smoothstep(cityEdge + 90, cityEdge + 520, r);
     }
 
     /**
@@ -89,8 +89,8 @@ public final class WildTerrain {
         double z = pz + 60.0 * Noise.perlin2(S_WARP + 1, px / 260.0 + 17.3, pz / 260.0 - 9.1);
 
         // ---- climate
-        double temp = Noise.fbmPerlin2(S_TEMP, x / 1100.0, z / 1100.0, 3) * 1.25;
-        double humid = Noise.fbmPerlin2(S_HUMID, x / 800.0, z / 800.0, 3) * 1.25;
+        double temp = Noise.fbmPerlin2(S_TEMP, x / 650.0, z / 650.0, 3) * 1.75;
+        double humid = Noise.fbmPerlin2(S_HUMID, x / 520.0, z / 520.0, 3) * 1.75;
         temp = Noise.lerp(temp, 0.12, near * 0.85);
         humid = Noise.lerp(humid, 0.16, near * 0.85);
         out.temperature = temp;
@@ -142,8 +142,8 @@ public final class WildTerrain {
         int height = o.height;
         double t = o.temperature;
         double hm = o.humidity;
-        boolean cold = t < -0.38;
-        boolean hot = t > 0.55;
+        boolean cold = t < -0.45;
+        boolean hot = t > 0.36;
         boolean wet = height < SEA;
         o.fluidY = wet ? SEA : Integer.MIN_VALUE;
         o.top = "minecraft:grass_block";
@@ -227,24 +227,24 @@ public final class WildTerrain {
     private static void landBiome(int x, int z, double t, double hm, double variety, Sample o) {
         if (t < -0.45) {
             o.biome = hm > 0.0 ? "minecraft:snowy_taiga" : "minecraft:snowy_plains";
-        } else if (t < -0.12) {
+        } else if (t < -0.18) {
             o.biome = hm > 0.05 ? "minecraft:taiga" : hm > -0.25 ? "minecraft:forest" : "minecraft:plains";
-        } else if (t < 0.38) {
+        } else if (t < 0.22) {
             if (hm > 0.60 && o.height <= SEA + 4) {
                 o.biome = "minecraft:swamp";
             } else if (hm > 0.45) {
                 o.biome = variety > 0.0 ? "minecraft:dark_forest" : "minecraft:forest";
-            } else if (hm > 0.18) {
+            } else if (hm > 0.05) {
                 o.biome = variety > 0.35 ? "minecraft:flower_forest" : variety > -0.15 ? "minecraft:forest" : "minecraft:birch_forest";
-            } else if (hm > -0.15) {
+            } else if (hm > -0.25) {
                 o.biome = variety > 0.35 ? "minecraft:sunflower_plains" : variety < -0.35 ? "minecraft:meadow" : "minecraft:plains";
             } else {
                 o.biome = "minecraft:plains";
             }
-        } else if (t < 0.62) {
+        } else if (t < 0.36) {
             o.biome = hm > 0.30 ? "minecraft:forest" : hm > -0.20 ? "minecraft:savanna" : "minecraft:plains";
         } else {
-            o.biome = hm > 0.25 ? "minecraft:jungle" : hm > -0.30 ? "minecraft:savanna" : "minecraft:desert";
+            o.biome = hm > 0.22 ? "minecraft:jungle" : hm > -0.15 ? "minecraft:savanna" : "minecraft:desert";
         }
         if (o.biome.equals("minecraft:desert")) {
             o.top = "minecraft:sand";
