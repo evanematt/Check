@@ -1,3 +1,4 @@
 # Modrinth slugs to describe (one per line); pushing a change of this file runs the workflow "Lewandivka research"
-treps-cars
-# 19:46 second look: the classes that register the cars
+alcohol
+ciggycraft
+more-food
