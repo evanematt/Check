@@ -1,5 +1,4 @@
 # Modrinth slugs to describe (one per line, a line that starts with ? is a search); pushing a change of this file runs the workflow "Lewandivka research"
-?cigarette
-?tobacco
-?smoking cigarettes
-?cigar
+mc-cigs
+tcbz-cigarette
+fume-de-bushy
