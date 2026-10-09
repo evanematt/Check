@@ -32,7 +32,7 @@ jar from Modrinth the first time. Fabric API is **not** embedded in the mod.
 
 ## Not available at build time
 
-- `mrcrayfishs-furniture-mod-refurbished`: project mrcrayfishs-furniture-mod-refurbished not found on Modrinth
+- nothing: every listed project was resolved.
 
 ## This mod
 
