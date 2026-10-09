@@ -198,6 +198,8 @@ def find_project(cfg, minecraft: str):
         project = fetch(f"{API}/project/{urllib.parse.quote(slug)}")
         if project:
             return project
+    if cfg.get("exact"):
+        return None   # the slug is the project: a search for similar names would find another one (an add-on, a different mod)
     wanted = cfg.get("type", "mod")
     facets = [[f"project_type:{wanted}"], [f"versions:{minecraft}"]]
     if wanted == "mod":

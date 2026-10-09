@@ -134,6 +134,57 @@ mineshafts, strongholds and the other structures that the game's own `locate` fi
 structures (and how high each structure stands over the ground) they came out with; any logged error of the generation fails the
 smoke test. (A chunk needs its neighbours up to eight chunks away, so squares are far cheaper than single chunks.)
 
+### The city: ground, underground and relief
+
+`CityGround` (core) is the one function of the height of the district's ground. Every building stands on a pad at the level of
+the streets (`GROUND` = 63); pads of the same level melt into one another, the margin of a pad is trimmed only against a
+neighbour of another level, and the streets win outside the pads. Between the buildings the ground undulates gently
+(`INNER_AMPLITUDE` 5 blocks) and outside the built-up area it grows into real hills over 120..215 blocks from the centre
+(`AMPLITUDE` 15), so nothing is a cliff: `CityGroundTest` and `WildTerrainTest` walk the city and its edge. The dimension is
+as deep as the ordinary world (`min_y` −64, 384 blocks): `ChunkPainter` puts stone above and deepslate below y 8, the bedrock
+gradient at the bottom, lava below y −54 in the caves; the biome under the city is `minecraft:plains` more than eight blocks
+below the surface, so the game's own features make ores, dungeons and caves there, and the places that reach deep (the garages
+of the quests, the tower) keep the ordinary underground away from them (`deepStructures`).
+
+### The buildings and their rooms
+
+`DistrictPlan` places the buildings (layout rules checked by `layoutProblems()`: nothing on a street, on another building or on a
+place of the quests) and the props of the streets; the buildings are blueprints made by `PanelBlock` (a row of sections with a
+lobby, a stairwell and four flats a storey), `Buildings` (houses, kindergarten, shop), `School`, `Industry` (garages, boiler
+house, substations) and `Yard` (stalls, sheds, the pitch). Rooms are text grids read by `RoomKit` (`B^` a bed, `T` a table,
+`c<` a chair, `S>` a sofa ...), turned into blocks through a `Plot` (the axes of a room, so one template serves a flat and its
+mirror image) by `Furnish`, the one place that speaks of furniture in terms of what it is. `HouseKit` makes the floors and the
+stairs of the houses. `Walk` proves that a visitor can reach every cell of a room and that the stairs of a stairwell can be
+climbed (stairs and slabs count as solid, a step up is one block, a top slab over the first stair is headroom).
+
+**Windows** are light blue stained glass panes (`Pal.WINDOW`: clear panes look like holes from a street) in a closed frame of
+white (piers, a sill, a lintel); the facades of the panel blocks have only calm weathering. `WindowsTest` checks that every pane
+is closed by its frame and that no building has clear panes.
+
+**Furniture and the furniture mod.** `Decor` names every piece twice, `handcrafted:oak_chair[...]|minecraft:oak_stairs[...]`
+(`Keys.either`): the block of **Handcrafted** and, after the bar, the block of the game that stands in for it. The core looks only
+at the stand-in (`Materials`, `Walk`), `BlueprintBuilder.rotateKey` turns both halves (and the direction words in the shape of a
+Handcrafted table), and `StateResolver` (glue) picks the block of the mod when the game has it, all its properties fit and, for a
+bed, it is a bed of the game's own kind (so it can be slept in); otherwise the stand-in. Tables and sofas join their neighbours
+(`Decor.tableShape`, `couchShape`: read off the models of the mod, checked after every rotation of every building by
+`DecorTest`). The blocks and properties of Handcrafted 3.0.6 are a test fixture (`tools/data/handcrafted-3.0.6-blocks.txt`, from
+`/lewandivka dumpblocks handcrafted` in the server-pack run), and every key made by `Decor` is checked against it
+(`RegistryTest`). `/lewandivka decor` says which blocks the furniture came out as; the smoke test of the plain server expects the
+stand-ins, the pack boot expects the blocks of the mod (and none of the stand-ins).
+
+### The people of the district
+
+`ModEntities` lists eight kinds of **citizens** (`CitizenEntity`: walks within six blocks of his place, looks at players, says
+one of five short things of `DialogueBook` when spoken to, never twice the same in a row, never while a dialogue of the story is
+running) and seven **traders** (`VendorEntity`, a `MerchantEntity` of the game with GeckoLib animation: stands behind his stall,
+greets, opens the ordinary trade screen). `Populace` (core) lists the places: citizen markers in the plan (`district:citizen_N`)
+and a `vendor` marker in every stall of the market; `Townsfolk` (glue) makes somebody stand at every place whenever a player is
+within 48 blocks (two empty looks in a row before it makes one, so a restart does not double the market). The goods of a trader
+are the table `Wares` (core, tested: the items exist, the counts fit a stack, the prices are one to five emeralds, every trader
+buys at least three plain goods of a first day and sells at least three things); `VendorEntity` builds the game's `TradeOffer`s
+from it and makes them again every day and on every load. The currency is the emerald; the district token is a quest item and
+stays out of the trade, so nothing a quest needs can be spent. `/lewandivka populace` makes everybody now.
+
 ### Calibrated physics
 
 The dungeons are built for exact launch numbers: `core/.../world/Launch.java` holds the speed of the spring pads (vertical
@@ -180,7 +231,11 @@ tables, recipes, advancements, tags, biomes, dimensions). `validate_resources.py
 candidate (including jar-in-jar modules) and steps back through older releases until all dependency ranges, the Minecraft
 version and the loader version fit. Output: `.mrpack` (references only), server pack (server-side mods, Fabric launcher,
 scripts), TLauncher installer (downloads and hash-checks the same files), `THIRD_PARTY.md`, `resolved.json`. Fabric API
-and GeckoLib are never embedded in `lewandivka.jar`.
+and GeckoLib are never embedded in `lewandivka.jar`. The server pack carries only the jars whose license lets anybody pass
+them on (`redistributable()`: MIT, Apache, the GPL family, MPL ...); the others (Handcrafted is under the Terrarium license, all
+rights reserved but for its code) are listed with URL and hash in `mods-download.txt` and fetched from Modrinth by
+`fetch-mods.sh` / `fetch-mods.bat`, which the start scripts call (and the pack boot test of the CI, too). `THIRD_PARTY.md` says
+for every project whether its jar is in the archive.
 
 ## 10. CI (`.github/workflows/lewandivka.yml` and `lewandivka-client.yml`)
 

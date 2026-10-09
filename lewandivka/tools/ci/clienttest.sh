@@ -53,6 +53,17 @@ enableVsync:false
 graphicsMode:1
 particles:1
 OPTS
+# The furniture of the rooms is made of the blocks of the furniture mod of the pack when it is installed: the test installs it the way
+# the pack does (its jar and its library in the mods folders of the development server and client), so that the pictures show it.
+# LEWANDIVKA_CI_MODS=none runs the test with the game's own blocks only.
+if [ "${LEWANDIVKA_CI_MODS:-furniture}" = "furniture" ]; then
+  if python3 tools/ci/fetch_decor.py "$SRV/mods" "$CLI/mods" > "$OUT/clienttest-mods.txt" 2>&1; then
+    echo "furniture mod installed: $(tr '\n' ' ' < "$OUT/clienttest-mods.txt")"
+  else
+    echo "the furniture mod could not be downloaded, the test runs without it:"; cat "$OUT/clienttest-mods.txt"
+    rm -rf "$SRV/mods" "$CLI/mods"
+  fi
+fi
 ./gradlew runServer --console=plain > "$SERVER_LOG" 2>&1 &
 SERVER_PID=$!
 for i in $(seq 1 420); do
@@ -111,6 +122,7 @@ kill "$UPLOADER" 2>/dev/null
 # an upload of the partial publisher that is in flight must be over before the final publication starts
 for i in $(seq 1 30); do pgrep -f "gh release upload" >/dev/null || break; sleep 2; done
 echo "client exit code $CLIENT_EXIT"
+python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "lewandivka decor" > "$OUT/clienttest-decor.txt" 2>&1
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "stop" > /dev/null 2>&1
 wait "$SERVER_PID" 2>/dev/null
 mkdir -p "$OUT/shots"

@@ -55,6 +55,7 @@ class PopulaceTest {
             }
         }
         assertTrue(Populace.citizenCount() >= 30);
+        assertTrue(Populace.spots().size() >= Populace.citizenCount() + Populace.VENDORS.length + 10, "people indoors too");
     }
 
     @Test

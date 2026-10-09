@@ -235,7 +235,7 @@ public final class DialogueBook {
                 said("Шахи? Ні. Доміно.", "Chess? No. Dominoes.", "Шахи — для тих, хто не вірить у долю.", "Chess is for those who do not believe in fate."),
                 said("Погода вже не та.", "The weather is not what it was.", "Але й не гірша.", "But not worse, either."));
         chat("citizen_worker", "Робітник", "Worker",
-                said("Перекур.", "Smoke break.", "Не дивіться так. Я кинув. Давно.", "Do not look like that. I quit. Long ago."),
+                said("Перекур.", "Smoke break.", "Не дивись так. Я кинув. Давно.", "Do not look like that. I quit. Long ago."),
                 said("На підстанціях моргає світло.", "The lights flicker at the substations.", "Хтось у гаражах краде струм.", "Someone in the garages is stealing current."),
                 said("Потрібен інструмент?", "Need tools?", "Йди до майстра на ринок.", "Go to the handyman at the market."),
                 said("Тринадцятий гараж? Такого немає.", "The thirteenth garage? There is no such thing.", "Є дванадцятий і чотирнадцятий.", "There is a twelfth and a fourteenth.",
@@ -251,7 +251,7 @@ public final class DialogueBook {
                 said("Ви ловитимете боржника?", "Will you catch the debtor?", "Він швидкий!", "He is fast!"),
                 said("А в мене є жетон!", "I have a token!", "Ні, не покажу.", "No, I will not show you."),
                 said("Пісочниця — моя територія.", "The sandbox is my territory.", "Вхід — одна цукерка.", "The entrance is one candy."),
-                said("Я бачила трамвай уночі.", "I saw a tram at night.", "Дорослі кажуть — наснилось.", "The adults say I dreamed it."),
+                said("Уночі по рейках їздив трамвай.", "A tram rode the rails at night.", "Дорослі кажуть — наснилось.", "The adults say I dreamed it."),
                 said("Мама казала не говорити з незнайомими.", "Mom said not to talk to strangers.", "Але ж ви майже свої.", "But you are almost one of us."));
         chat("citizen_teacher", "Вчителька", "Teacher",
                 said("Школа сьогодні зачинена.", "The school is closed today.", "Завтра теж. І післязавтра.", "Tomorrow too. And the day after."),

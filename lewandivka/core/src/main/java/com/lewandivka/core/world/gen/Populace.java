@@ -34,6 +34,14 @@ public final class Populace {
             {98, -40, "citizen_kid"}, {98, 40, "citizen_babushka"}, {-4, 36, "citizen_kid"}, {-24, 41, "citizen_teacher"},
             {-30, -33, "citizen_grandpa"}, {12, 10, "citizen_neighbour"}, {-100, 100, "citizen_yard_keeper"}};
 
+    /** People indoors: the rooms of the kindergarten, the school, a house and some flats are not empty (the marker of the room, the kind). */
+    private static final String[][] INDOORS = {
+            {"kindergarten:playroom", "citizen_kid"}, {"kindergarten:bedroom", "citizen_kid"}, {"kindergarten:upper", "citizen_teacher"},
+            {"school:classroom", "citizen_teacher"}, {"school:library", "citizen_student"}, {"school:upper", "citizen_kid"},
+            {"house_ne0:living", "citizen_grandpa"}, {"house_ne0:bedroom", "citizen_babushka"},
+            {"block_a:flat_a", "citizen_neighbour"}, {"block_a:flat_b", "citizen_babushka"}, {"block_b:flat_a", "citizen_worker"},
+            {"block_d:flat_b", "citizen_student"}};
+
     /** The vendor of every stall of the market, in the order of the stalls. */
     public static final String[] VENDORS = {"vendor_baker", "vendor_greengrocer", "vendor_butcher", "vendor_handyman", "vendor_flea",
             "vendor_fishmonger", "vendor_gardener"};
@@ -64,6 +72,9 @@ public final class Populace {
         }
         for (int i = 0; i < VENDORS.length; i++) {
             out.add(new Spot(stall(i) + ":vendor", VENDORS[i]));
+        }
+        for (String[] room : INDOORS) {
+            out.add(new Spot(room[0], room[1]));
         }
         return out;
     }
