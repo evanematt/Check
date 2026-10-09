@@ -31,7 +31,7 @@ public final class Buildings {
 
     public enum Theme {
         /** Grey concrete panels with peeling white patches (the typical khrushchyovka). */
-        PANEL_GREY(Pal.CONCRETE_GREY, Pal.CONCRETE_WHITE, Pal.CONCRETE_DARK, Pal.CONCRETE_WHITE),
+        PANEL_GREY(Pal.CONCRETE_GREY, Pal.CONCRETE_WHITE, Pal.ANDESITE, Pal.CONCRETE_WHITE),
         /** Pale yellow/beige panels. */
         PANEL_BEIGE(Pal.PLASTER_PEEL, Pal.PLASTER_WHITE, Pal.PLASTER_OCHRE, Pal.PLASTER_WHITE),
         /** Orange-brown plaster as in the second reference street. */
@@ -73,9 +73,6 @@ public final class Buildings {
         }
         if (r < 0.24) {
             return t.dirty;
-        }
-        if ((x % 4 == 0 || y % 3 == 1) && (hf & 3) == 0) {
-            return Pal.ANDESITE;
         }
         return t.wall;
     }
@@ -173,8 +170,8 @@ public final class Buildings {
         for (int storey = 0; storey < storeys; storey++) {
             int y0 = storeyH * storey + 2;
             for (int z : new int[] {d / 2 - 1}) {
-                b.fill(0, y0, z, 0, y0 + 1, z + 1, Pal.PANE);
-                b.fill(w - 1, y0, z, w - 1, y0 + 1, z + 1, Pal.PANE);
+                b.fill(0, y0, z, 0, y0 + 1, z + 1, Pal.WINDOW);
+                b.fill(w - 1, y0, z, w - 1, y0 + 1, z + 1, Pal.WINDOW);
             }
         }
         // front door, porch, steps, lamp (as in the reference photographs)
@@ -236,7 +233,7 @@ public final class Buildings {
         }
         for (int dx = 0; dx < 2; dx++) {
             for (int dy = 0; dy < 2; dy++) {
-                b.set(wx + dx, y0 + dy, zWall, Pal.PANE);
+                b.set(wx + dx, y0 + dy, zWall, Pal.WINDOW);
             }
         }
         if (front && deco <= 2) {
@@ -332,8 +329,8 @@ public final class Buildings {
                 b.set(w - 1, 6, z, "minecraft:stone_brick_slab[type=bottom]");
             }
             // display windows and the door
-            b.fill(2, 2, 0, 5, 3, 0, Pal.PANE);
-            b.fill(8, 2, 0, 11, 3, 0, Pal.PANE);
+            b.fill(2, 2, 0, 5, 3, 0, Pal.WINDOW);
+            b.fill(8, 2, 0, 11, 3, 0, Pal.WINDOW);
             b.set(6, 1, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, false, false, false));
             b.set(6, 2, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, true, false, false));
             b.set(7, 1, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, false, false, true));

@@ -47,6 +47,35 @@ public final class ModEntities {
                 .visual("cat", "chinazik").egg(0x151515, 0x555555).anims(ModEntities.CAT_ANIMS));
         l.add(EntitySpec.of("metadonna", Role.CAT, Group.CREATURE).name("Метадонна", "Metadonna").size(0.6f, 0.7f).stats(10, 0, 0.32)
                 .visual("cat", "metadonna").egg(0x8a8a8a, 0xf0e8d8).anims(ModEntities.CAT_ANIMS));
+        // ---- the people of the district: citizens to talk to, vendors of the market to trade with ----
+        for (Object[] c : new Object[][] {
+                {"citizen_babushka", "Бабуся", "Old Woman", 1.0f, 0xb04a6a, 0xe8d8a0},
+                {"citizen_grandpa", "Дідусь", "Old Man", 1.0f, 0x6a5a40, 0xd0d0c8},
+                {"citizen_worker", "Робітник", "Worker", 1.0f, 0x3a5a8a, 0xe0a030},
+                {"citizen_student", "Студентка", "Student", 1.0f, 0x6a3a7a, 0xe8c0d0},
+                {"citizen_kid", "Дитина", "Kid", 0.62f, 0xd08a20, 0x5ab0d0},
+                {"citizen_teacher", "Вчителька", "Teacher", 1.0f, 0x6a2a2a, 0xe0e0d0},
+                {"citizen_yard_keeper", "Двірник", "Yard Keeper", 1.0f, 0x4a6a3a, 0xc8a040},
+                {"citizen_neighbour", "Сусід", "Neighbour", 1.0f, 0x7a7a8a, 0xb04040}}) {
+            float scale = (float) c[3];
+            EntitySpec e = EntitySpec.of((String) c[0], Role.CITIZEN, Group.CREATURE).name((String) c[1], (String) c[2])
+                    .stats(20, 0, 0.22).visual("humanoid", (String) c[0]).egg((int) c[4], (int) c[5]).anims(ModEntities.HUMANOID_ANIMS);
+            if (scale < 1.0f) {
+                e.size(0.4f, 1.25f).scale(scale);
+            }
+            l.add(e);
+        }
+        for (Object[] v : new Object[][] {
+                {"vendor_baker", "Пекарка", "Baker", 0xe8e0d0, 0xb07a30},
+                {"vendor_greengrocer", "Овочівниця", "Greengrocer", 0x4a8a3a, 0xd05a3a},
+                {"vendor_butcher", "М'ясник", "Butcher", 0xa03a3a, 0xe8e0d8},
+                {"vendor_handyman", "Майстер", "Handyman", 0x7a5a3a, 0x9aa0a8},
+                {"vendor_flea", "Барахольник", "Flea Trader", 0x6a6a4a, 0xc07a9a},
+                {"vendor_fishmonger", "Рибалка", "Fishmonger", 0x3a6a8a, 0xd8d070},
+                {"vendor_gardener", "Садівник", "Gardener", 0x5a7a3a, 0xe0c0d0}}) {
+            l.add(EntitySpec.of((String) v[0], Role.VENDOR, Group.CREATURE).name((String) v[1], (String) v[2])
+                    .stats(30, 0, 0.2).visual("humanoid", (String) v[0]).egg((int) v[3], (int) v[4]).anims(ModEntities.HUMANOID_ANIMS));
+        }
         // ---- bosses ----
         l.add(EntitySpec.of("garage_king", Role.BOSS, Group.MONSTER).name("Гаражний Король", "Garage King").size(2.6f, 3.4f).stats(300, 8, 0.22)
                 .armor(8, 1.0).visual("garage_king", "garage_king").egg(0xb05a20, 0x404040).boss().anims(ModEntities.BOSS_ANIMS));

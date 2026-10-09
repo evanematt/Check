@@ -220,7 +220,7 @@ public final class School {
         b.set(cx + 1, 3, -1, Keys.lantern(true));
         b.fill(cx, 0, -1, cx + 1, 0, -1, Pal.BRICKS);
         b.fill(cx - 1, 0, -3, cx + 2, 0, -2, "minecraft:stone_brick_slab[type=bottom]");
-        b.fill(cx, 6, 0, cx + 1, 7, 0, Pal.PANE);
+        b.fill(cx, 6, 0, cx + 1, 7, 0, Pal.WINDOW);
         b.marker("entrance", cx, 1, 1);
         b.marker("classroom", 3, 1, 3);
         b.marker("library", 12, 1, 4);
@@ -249,7 +249,14 @@ public final class School {
             b.set(x1 - 1, f + dy, z, Pal.CONCRETE_WHITE);
             b.set(x2 + 1, f + dy, z, Pal.CONCRETE_WHITE);
             for (int x = x1; x <= x2; x++) {
-                b.set(x, f + dy, z, Pal.PANE);
+                b.set(x, f + dy, z, Pal.WINDOW);
+            }
+        }
+        // the frame: a sill under the glass and, under the first floor, a lintel over it (the top of the upper wall is the edge of the roof)
+        for (int x = x1 - 1; x <= x2 + 1; x++) {
+            b.set(x, f + 1, z, Pal.CONCRETE_WHITE);
+            if (f == 0) {
+                b.set(x, f + 4, z, Pal.CONCRETE_WHITE);
             }
         }
         for (int x = x1; x <= x2; x++) {

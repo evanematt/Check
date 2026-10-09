@@ -14,7 +14,9 @@ import com.lewandivka.core.registry.ModEntities;
 import com.lewandivka.core.registry.ModItems;
 import com.lewandivka.core.registry.ModSounds;
 import com.lewandivka.core.registry.SoundSpec;
+import com.lewandivka.core.trade.Wares;
 import com.lewandivka.core.world.WorldPlan;
+import com.lewandivka.entity.npc.VendorEntity;
 import com.lewandivka.quest.NetherGate;
 import com.lewandivka.util.Ids;
 import com.lewandivka.world.dimension.Dimensions;
@@ -258,6 +260,63 @@ public final class LewandivkaGameTests implements FabricGameTest {
             check(pace[1] > pace[0] && pace[1] >= 4.4 && pace[1] <= 5.4, "the party's Debtor must be faster, but slower than a sprinting player: " + report);
             context.complete();
         });
+    }
+
+    // ------------------------------------------------------------------ the people of the district
+
+    /**
+     * Every trader of the market has the goods of his table, in the order of the table, and they are still his goods after his
+     * data went to the disk and came back (a better table reaches the traders of an old world, too: the offers are made again).
+     * A trade really takes the payment and gives the goods.
+     */
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void theTradersOfTheMarketHaveTheirGoods(TestContext context) {
+        ServerWorld world = context.getWorld();
+        List<String> problems = new ArrayList<>();
+        for (EntitySpec spec : ModEntities.ALL) {
+            if (spec.role != EntitySpec.Role.VENDOR) {
+                continue;
+            }
+            Entity made = Registries.ENTITY_TYPE.get(Ids.of(spec.id)).create(world);
+            if (!(made instanceof VendorEntity trader)) {
+                problems.add(spec.id + " is not a trader");
+                continue;
+            }
+            List<Wares.Offer> table = Wares.of(spec.id);
+            for (int round = 0; round < 2; round++) {
+                if (round == 1) {
+                    NbtCompound nbt = new NbtCompound();
+                    trader.writeCustomDataToNbt(nbt);
+                    trader.readCustomDataFromNbt(nbt);
+                }
+                var offers = trader.getOffers();
+                if (offers.size() != table.size()) {
+                    problems.add(spec.id + " has " + offers.size() + " offers, the table has " + table.size());
+                    continue;
+                }
+                for (int i = 0; i < table.size(); i++) {
+                    Wares.Offer t = table.get(i);
+                    var o = offers.get(i);
+                    boolean same = o.getOriginalFirstBuyItem().getCount() == t.giveCount()
+                            && Registries.ITEM.getId(o.getOriginalFirstBuyItem().getItem()).toString().equals(t.give())
+                            && o.getSellItem().getCount() == t.getCount()
+                            && Registries.ITEM.getId(o.getSellItem().getItem()).toString().equals(t.get())
+                            && o.getMaxUses() == t.maxUses() && o.getSecondBuyItem().isEmpty();
+                    if (!same) {
+                        problems.add(spec.id + " offer " + i + " is not " + t);
+                    }
+                }
+            }
+            // the first offer of the table: what the player pays is taken, what he gets is the sell item
+            var first = trader.getOffers().get(0);
+            var pay = first.getOriginalFirstBuyItem().copy();
+            if (!first.matchesBuyItems(pay, net.minecraft.item.ItemStack.EMPTY) || !first.depleteBuyItems(pay, net.minecraft.item.ItemStack.EMPTY) || !pay.isEmpty()) {
+                problems.add(spec.id + ": the payment of the first offer is not taken");
+            }
+            trader.discard();
+        }
+        check(problems.isEmpty(), "traders of the market: " + problems);
+        context.complete();
     }
 
     // ------------------------------------------------------------------ structures and markers

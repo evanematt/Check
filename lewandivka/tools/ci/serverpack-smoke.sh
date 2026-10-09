@@ -28,6 +28,7 @@ if grep -q "Done (" "$LOG"; then
     "execute in lewandivka:chromandivka run forceload add 0 0 31 31" \
     "lewandivka validate" \
     "lewandivka decor" \
+    "lewandivka populace" \
     "lewandivka dumpblocks" \
     "lewandivka dumpblocks handcrafted" \
     "lewandivka dumpblocks refurbished_furniture" \
@@ -41,7 +42,10 @@ fi
 wait "$PID" 2>/dev/null
 # the furniture of the rooms must be made of the blocks of the furniture mod of the pack (Handcrafted), none of it of the stand-ins
 grep -h "^decor:" "$LOG.rcon" 2>/dev/null | head -2
+grep -h "^populace:" "$LOG.rcon" 2>/dev/null | head -2
+PEOPLE_OK=0
+if grep -Eq "^populace: ([0-9]+) places, \1 made now, 0 stood already" "$LOG.rcon" 2>/dev/null; then PEOPLE_OK=1; else echo "SERVERPACK: not every place of the people of the district was filled"; fi
 FURNITURE_OK=0
 if grep -q "^decor: [1-9][0-9]* furniture keys, [1-9][0-9]* with the blocks of a furniture mod, 0 with the stand-in of the game" "$LOG.rcon" 2>/dev/null; then FURNITURE_OK=1; else echo "SERVERPACK: the furniture is not (all) made of the blocks of the furniture mod"; fi
 # the open country must generate with the third-party mods of the pack too (they change chunk generation and lighting)
-if [ "$FURNITURE_OK" = 1 ] && grep -q "validate: OK" "$LOG.rcon" 2>/dev/null && grep -q "^survey .* chunks=25 " "$LOG.rcon" 2>/dev/null; then echo "SERVERPACK-RESULT OK"; else echo "SERVERPACK-RESULT FAILED"; exit 1; fi
+if [ "$FURNITURE_OK" = 1 ] && [ "$PEOPLE_OK" = 1 ] && grep -q "validate: OK" "$LOG.rcon" 2>/dev/null && grep -q "^survey .* chunks=25 " "$LOG.rcon" 2>/dev/null; then echo "SERVERPACK-RESULT OK"; else echo "SERVERPACK-RESULT FAILED"; exit 1; fi

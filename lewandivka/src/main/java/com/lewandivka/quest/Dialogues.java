@@ -70,6 +70,11 @@ public final class Dialogues {
         ACTIVE.add(a);
     }
 
+    /** Whether the player is in the middle of a dialogue (a citizen does not interrupt the story, whose choices would be lost). */
+    public static synchronized boolean busy(ServerPlayerEntity player) {
+        return BY_PLAYER.containsKey(player.getUuid());
+    }
+
     public static synchronized void tick(MinecraftServer server) {
         long now = server.getTicks();
         Iterator<Active> it = ACTIVE.iterator();

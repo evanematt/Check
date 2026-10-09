@@ -65,6 +65,7 @@ session "$LOG" \
   "execute in lewandivka:chromandivka run forceload add 0 0 31 31" \
   "lewandivka validate" \
   "lewandivka decor" \
+  "lewandivka populace" \
   "lewandivka selftest" \
   "execute in lewandivka:district run lewandivka probe 2 60 72 -3" \
   "lewandivka joinreplay start A -1" \
@@ -117,6 +118,10 @@ grep -q "validate: OK" "$LOG2.rcon" 2>/dev/null || { echo "SMOKE: the restarted 
 # the furniture: without a furniture mod every piece is made of the blocks of the game that stand in for it
 grep -h "^decor:" "$LOG.rcon" 2>/dev/null | head -2
 grep -q "^decor: [1-9][0-9]* furniture keys, 0 with the blocks of a furniture mod" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the furniture is not made of the blocks of the game"; ok=0; }
+# the people of the district: every place gets its citizen or trader, and every trader has his goods
+grep -h "^populace:" "$LOG.rcon" 2>/dev/null | head -2
+grep -Eq "^populace: ([0-9]+) places, \1 made now, 0 stood already" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: not every place of the people of the district was filled"; ok=0; }
+grep -Eq "vendor_baker=[1-9].* vendor_gardener=[1-9]" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the traders have no goods"; ok=0; }
 # the self test needs the real dimensions: generated world = plan, free first arrival, players can cross (see SelfTest)
 grep -h "selftest:" "$LOG.rcon" "$LOG2.rcon" 2>/dev/null | cut -c1-1800
 grep -q "selftest: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the self test failed in the first session"; ok=0; }

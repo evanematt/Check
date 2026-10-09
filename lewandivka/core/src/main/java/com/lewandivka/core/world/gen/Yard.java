@@ -63,6 +63,10 @@ public final class Yard {
             }
             b.fill(1, 0, 2, width - 2, 0, 2, Keys.AIR);
             b.set(width / 2, 0, 2, Keys.barrel(Dir.NORTH));
+            // the trader stands behind the counter, between the barrel and the post (the people of the district: see Populace)
+            b.marker("vendor", width / 2 - 1, 0, 2);
+            // where a customer stands (the pictures of the client test go there)
+            b.marker("customer", width / 2, 0, 0);
             return b.build();
         });
     }
@@ -88,7 +92,7 @@ public final class Yard {
             b.fill(2, 1, 0, 2, 2, 0, Keys.AIR);
             b.set(2, 1, 0, Keys.door("minecraft:spruce_door", Dir.NORTH, false, false, false));
             b.set(2, 2, 0, Keys.door("minecraft:spruce_door", Dir.NORTH, true, false, false));
-            b.fill(1, 2, d - 1, 3, 2, d - 1, Pal.PANE);
+            b.fill(1, 2, d - 1, 3, 2, d - 1, Pal.WINDOW);
             b.set(1, 1, 2, "minecraft:crafting_table");
             b.set(3, 1, 3, Keys.barrel(Dir.NORTH));
             b.set(1, 1, 3, "minecraft:composter[level=3]");

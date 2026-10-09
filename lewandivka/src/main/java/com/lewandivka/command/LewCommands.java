@@ -92,6 +92,7 @@ public final class LewCommands {
                                 .executes(c -> teleportToSpot(c.getSource(), StringArgumentType.getString(c, "structure"), StringArgumentType.getString(c, "spot")))))));
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
         root.then(CommandManager.literal("decor").executes(c -> decor(c.getSource())));
+        root.then(CommandManager.literal("populace").executes(c -> feedback(c.getSource(), com.lewandivka.quest.Townsfolk.makeAll(c.getSource().getServer()))));
         root.then(CommandManager.literal("dumpblocks")
                 .executes(c -> dumpBlocks(c.getSource(), null))
                 .then(CommandManager.argument("namespace", StringArgumentType.word()).executes(c -> dumpBlocks(c.getSource(), StringArgumentType.getString(c, "namespace")))));
@@ -337,15 +338,15 @@ public final class LewCommands {
     /** Development tool: to a named spot of a structure (a room of a building, the roof), keeping the way the player looks. */
     private static int teleportToSpot(ServerCommandSource source, String structure, String spot) {
         ServerPlayerEntity player = source.getPlayer();
-        Structures.Site site = Structures.site(structure);
         Structures.Marker m = Structures.marker(structure + ":" + spot);
-        if (player == null || site == null || m == null) {
+        // the markers of the plan itself ("district:citizen_3") belong to no structure, only to a dimension
+        if (player == null || m == null) {
             source.sendError(Text.literal("unknown spot " + structure + ":" + spot));
             return 0;
         }
-        ServerWorld world = Dimensions.world(source.getServer(), site.dimension());
+        ServerWorld world = Dimensions.world(source.getServer(), m.dimension());
         if (world == null) {
-            source.sendError(Text.literal("dimension " + site.dimension() + " is not loaded"));
+            source.sendError(Text.literal("dimension " + m.dimension() + " is not loaded"));
             return 0;
         }
         player.teleport(world, m.x() + 0.5, m.y(), m.z() + 0.5, player.getYaw(), player.getPitch());

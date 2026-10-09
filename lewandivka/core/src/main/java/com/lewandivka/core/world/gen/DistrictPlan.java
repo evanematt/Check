@@ -814,8 +814,8 @@ public final class DistrictPlan implements WorldPlan {
 
     /** The market along the south side of the main street: stalls with awnings. */
     private void market() {
-        for (int i = 0; i < 7; i++) {
-            prop("stall_" + i, Yard.stall(5, 0, 130 + i), 64 + i * 7, 10);
+        for (int i = 0; i < Populace.VENDORS.length; i++) {
+            prop(Populace.stall(i), Yard.stall(5, 0, 130 + i), 64 + i * 7, 10);
         }
     }
 
@@ -958,5 +958,10 @@ public final class DistrictPlan implements WorldPlan {
         propForce("portal_district_frame", Props.districtPortal(), 14, GROUND, -10);
         marker("portal_district", 16, GROUND + 1, -10, "");
         marker("wrong_tram_stop", 0, GROUND + 1, 0, "");
+        // the citizens: they stand about where the district is public (see Populace)
+        for (int i = 0; i < Populace.citizenCount(); i++) {
+            int[] at = Populace.citizenAt(i);
+            marker(Populace.citizenMarker(i), at[0], y, at[1], "");
+        }
     }
 }

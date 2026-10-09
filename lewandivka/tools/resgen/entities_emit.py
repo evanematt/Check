@@ -29,6 +29,10 @@ TEXTURES = {
     "pan_shlahbaum": lambda: H.paint("pan_shlahbaum"),
     "fare_dodger": lambda: H.paint("fare_dodger"),
     "fare_dodger_leader": lambda: H.paint("fare_dodger_leader"),
+    **{name: (lambda n=name: H.paint(n)) for name in (
+        "citizen_babushka", "citizen_grandpa", "citizen_worker", "citizen_student", "citizen_kid", "citizen_teacher", "citizen_yard_keeper",
+        "citizen_neighbour", "vendor_baker", "vendor_greengrocer", "vendor_butcher", "vendor_handyman", "vendor_flea", "vendor_fishmonger",
+        "vendor_gardener")},
     "chinazik": lambda: K.paint("chinazik"),
     "metadonna": lambda: K.paint("metadonna"),
     "garage_king": B.paint_garage_king,

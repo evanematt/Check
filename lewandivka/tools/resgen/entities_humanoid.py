@@ -248,6 +248,16 @@ def paint_skin(cfg) -> Tex:
         cap_overlay(t, hat, cfg.cap, cfg.logo, cfg.cap_stripe)
     elif cfg.headwear == "hood":
         hood_overlay(t, hat, cfg.top)
+    elif cfg.headwear == "scarf":
+        hood_overlay(t, hat, cfg.scarf)
+        # a pattern of small flowers on the kerchief
+        rnd = random.Random(5)
+        for f in ("up", "south", "east", "west"):
+            x0, y0, x1, y1 = hat.rect(f)
+            for _ in range(5):
+                t.set(rnd.randrange(x0, x1 + 1), rnd.randrange(y0, y1 + 1), "#f2e6c8")
+    if cfg.apron:
+        apron(t, m, cfg.apron, cfg.apron_trim)
     return t
 
 
@@ -255,7 +265,7 @@ def make_cfg(**kw) -> Cfg:
     base = dict(skin=SKIN_TONES["fair"], hair="#2a2018", eye="#2a2a30", brow="#2a2018", unibrow=False, worried=False,
                 mouth="flat", stubble=False, moustache=False, glasses=False, scar=False, hairline=False, look_right=False,
                 under="#2a2a2e", top="#202024", pants="#202024", shoes="#d8d8d8", stripe=None, stripe2=False, zip="#9a9a9a",
-                headwear=None, cap="#16171b", logo=None, cap_stripe=None, extras=None)
+                headwear=None, cap="#16171b", logo=None, cap_stripe=None, extras=None, scarf=None, apron=None, apron_trim=None)
     base.update(kw)
     return Cfg(**base)
 
@@ -298,6 +308,44 @@ def extras_shlahbaum(t: Tex, m: Model) -> None:
                 t.hline(x0, x1, y0 + k, "#f0f0e8" if (k // 4) % 2 == 0 else "#d03a3a")   # barrier stripes
 
 
+def apron(t: Tex, m: Model, color, trim=None) -> None:
+    """An apron over the chest and the belly: straps over the shoulders, a bib, a pocket, a hem."""
+    jacket = part(m, "jacket")
+    jacket.box(t, "north", 1, 4, 6, 11, color)
+    jacket.box(t, "north", 1, 0, 1, 3, color)
+    jacket.box(t, "north", 6, 0, 6, 3, color)
+    jacket.box(t, "north", 2, 8, 5, 8, shade(color, 0.86))
+    jacket.box(t, "north", 1, 11, 6, 11, trim or shade(color, 0.8))
+    jacket.box(t, "south", 1, 7, 6, 7, color)                 # the strings at the back
+
+
+def extras_backpack(t: Tex, m: Model) -> None:
+    jacket = part(m, "jacket")
+    jacket.box(t, "south", 1, 1, 6, 9, "#2a8a8a")
+    jacket.box(t, "south", 2, 6, 5, 8, "#1f6a6a")
+    jacket.box(t, "north", 1, 0, 1, 6, "#1a5a5a")
+    jacket.box(t, "north", 6, 0, 6, 6, "#1a5a5a")
+
+
+def extras_patchwork(t: Tex, m: Model) -> None:
+    rnd = random.Random(11)
+    colors = ["#9a4a3a", "#3a6a8a", "#c8a84a", "#5a7a4a", "#8a5a8a"]
+    for name in ("jacket", "right_sleeve", "left_sleeve"):
+        p = part(m, name)
+        for f in ("north", "south"):
+            x0, y0, x1, y1 = p.rect(f)
+            for _ in range(4):
+                x = rnd.randrange(x0, max(x0 + 1, x1 - 1))
+                y = rnd.randrange(y0, max(y0 + 1, y1 - 2))
+                t.rect(x, y, x + 1, y + 1, rnd.choice(colors))
+
+
+def extras_whistle(t: Tex, m: Model) -> None:
+    jacket = part(m, "jacket")
+    jacket.px(t, "north", 3, 3, "#d8d8d8")                    # a whistle on a lace
+    jacket.px(t, "north", 4, 4, "#d8d8d8")
+
+
 SKINS = {
     "gopnik": lambda: make_cfg(skin=SKIN_TONES["tan"], hair="#241a14", brow="#1a1410", unibrow=True, mouth="scowl", stubble=True,
                                under="#2a2a2e", top="#17181c", pants="#17181c", shoes="#e0e0e0", stripe="#f2f2f2",
@@ -318,6 +366,45 @@ SKINS = {
     "fare_dodger_leader": lambda: make_cfg(skin=SKIN_TONES["tan"], hair="#1a1210", brow="#1a1210", unibrow=True, mouth="grin", scar=False,
                                            stubble=True, top="#3a1a1a", pants="#2a1818", shoes="#26181a", headwear="cap", cap="#26181a",
                                            cap_stripe="#e6c46a", logo="#e6c46a", zip="#e6c46a", extras=extras_leader),
+    # ---- the people of the district ----
+    "citizen_babushka": lambda: make_cfg(skin=SKIN_TONES["pale"], hair="#c8c8c8", brow="#a0a0a0", mouth="flat", glasses=True,
+                                         top="#7a4a6a", pants="#4a3a4a", shoes="#3a2a2a", zip="#a08090", headwear="scarf", scarf="#b84a5a"),
+    "citizen_grandpa": lambda: make_cfg(skin=SKIN_TONES["ruddy"], hair="#d8d8d8", brow="#c0c0c0", moustache=True, mouth="flat",
+                                        top="#6a5a40", pants="#3a3a3a", shoes="#2a2018", zip="#9a8a6a", headwear="cap", cap="#4a4a3a"),
+    "citizen_worker": lambda: make_cfg(skin=SKIN_TONES["tan"], hair="#2a2018", brow="#2a2018", stubble=True, mouth="flat",
+                                       top="#2a4a7a", pants="#2a3a5a", shoes="#5a4a30", stripe="#e0a030", headwear="cap", cap="#e8b030", zip="#8a9ab0"),
+    "citizen_student": lambda: make_cfg(skin=SKIN_TONES["fair"], hair="#6a3a28", brow="#4a2a1c", mouth="grin", look_right=True,
+                                        top="#5a3a7a", pants="#2a3a5a", shoes="#e0e0e0", zip="#b0a0c8", extras=extras_backpack),
+    "citizen_kid": lambda: make_cfg(skin=SKIN_TONES["fair"], hair="#e0b040", brow="#b08a30", mouth="grin", look_right=True,
+                                    top="#e04a3a", pants="#3a5aa0", shoes="#e8e8e8", zip="#f0d0a0", headwear="cap", cap="#3a8ae0", logo="#f0f0f0"),
+    "citizen_teacher": lambda: make_cfg(skin=SKIN_TONES["fair"], hair="#3a2a20", brow="#2a1c14", mouth="flat", glasses=True,
+                                        top="#6a2a3a", pants="#2a2a2e", shoes="#2a2018", zip="#e8e8e0", extras=extras_whistle),
+    "citizen_yard_keeper": lambda: make_cfg(skin=SKIN_TONES["ruddy"], hair="#5a4a3a", brow="#4a3a2a", stubble=True, mouth="flat",
+                                            top="#3a5a2a", pants="#4a4a3a", shoes="#2a2a2a", headwear="cap", cap="#c8a040", zip="#8a9a6a"),
+    "citizen_neighbour": lambda: make_cfg(skin=SKIN_TONES["fair"], hair="#7a7a7a", brow="#6a6a6a", hairline=True, stubble=True, mouth="flat", worried=True,
+                                          top="#c8c8c0", pants="#3a3a5a", shoes="#a05a3a", stripe="#e0e0e0", stripe2=True, zip="#a0a098"),
+    # ---- the traders of the market ----
+    "vendor_baker": lambda: make_cfg(skin=SKIN_TONES["fair"], hair="#6a4a30", brow="#4a3220", mouth="grin", look_right=True,
+                                     top="#e8e8e0", pants="#4a3a4a", shoes="#4a3a2a", zip="#d8d8d0", headwear="cap", cap="#f4f4ec",
+                                     apron="#f0f0f0", apron_trim="#c8a050"),
+    "vendor_greengrocer": lambda: make_cfg(skin=SKIN_TONES["ruddy"], hair="#4a3a2a", brow="#3a2a1c", mouth="grin",
+                                           top="#8a5a3a", pants="#4a4a3a", shoes="#3a2a20", zip="#a08a5a", headwear="scarf", scarf="#5a8a3a",
+                                           apron="#4a7a3a", apron_trim="#d8e0b0"),
+    "vendor_butcher": lambda: make_cfg(skin=SKIN_TONES["tan"], hair="#2a2018", brow="#1a1410", moustache=True, mouth="flat",
+                                       top="#e8e0d8", pants="#3a3a40", shoes="#2a2a2a", zip="#c8c0b8", headwear="cap", cap="#f0ece4",
+                                       apron="#b04a4a", apron_trim="#7a2a2a"),
+    "vendor_handyman": lambda: make_cfg(skin=SKIN_TONES["tan"], hair="#3a2a20", brow="#2a1c14", stubble=True, mouth="flat",
+                                        top="#6a5a3a", pants="#3a3a40", shoes="#4a3a2a", zip="#8a7a5a", headwear="cap", cap="#4a4a4a", logo="#d0a030",
+                                        apron="#8a6a3a", apron_trim="#5a4020"),
+    "vendor_flea": lambda: make_cfg(skin=SKIN_TONES["pale"], hair="#8a7a6a", brow="#6a5a4a", mouth="grin", look_right=True,
+                                    top="#7a6a4a", pants="#5a4a5a", shoes="#6a4a3a", zip="#a89870", headwear="scarf", scarf="#c07a9a",
+                                    extras=extras_patchwork),
+    "vendor_fishmonger": lambda: make_cfg(skin=SKIN_TONES["ruddy"], hair="#4a4a40", brow="#3a3a30", stubble=True, mouth="flat",
+                                          top="#3a5a7a", pants="#3a4a3a", shoes="#2a2a1a", zip="#8aa0b0", headwear="cap", cap="#d8d070",
+                                          apron="#d0d8d8", apron_trim="#8a9aa0"),
+    "vendor_gardener": lambda: make_cfg(skin=SKIN_TONES["fair"], hair="#7a6a3a", brow="#5a4a2a", mouth="grin",
+                                        top="#5a7a3a", pants="#6a5a3a", shoes="#4a3a20", zip="#8aa05a", headwear="cap", cap="#d8c070",
+                                        apron="#c8b070", apron_trim="#8a7a40"),
 }
 
 

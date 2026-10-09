@@ -978,6 +978,470 @@
       "uk": "ТЕРМІНОВІ ПИТАННЯ — вхід збоку.",
       "en": "URGENT MATTERS — side entrance."
     },
+    "speaker.lewandivka.citizen_babushka": {
+      "uk": "Бабуся",
+      "en": "Old Woman"
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_1.1": {
+      "uk": "Ти чий будеш?",
+      "en": "Whose are you?"
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_1.2": {
+      "uk": "Нічий? Ну, тоді наш.",
+      "en": "Nobody's? Then you are ours."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_2.1": {
+      "uk": "Хліб на ринку ще теплий.",
+      "en": "The bread at the market is still warm."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_2.2": {
+      "uk": "Іди, поки не розібрали.",
+      "en": "Go, before they sell out."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_3.1": {
+      "uk": "Колись тут трамвай ходив.",
+      "en": "A tram used to run here."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_3.2": {
+      "uk": "Гарний був. Червоний.",
+      "en": "A nice one. Red."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_4.1": {
+      "uk": "Ввечері до гаражів не ходи.",
+      "en": "Do not go to the garages in the evening."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_4.2": {
+      "uk": "Там хлопці сємки лузають.",
+      "en": "The boys crack seeds there."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_4.3": {
+      "uk": "І питають.",
+      "en": "And ask."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_5.1": {
+      "uk": "Котів годуєш? Молодець.",
+      "en": "Feeding the cats? Good for you."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_5.2": {
+      "uk": "Вони тут усе пам'ятають.",
+      "en": "They remember everything here."
+    },
+    "speaker.lewandivka.citizen_grandpa": {
+      "uk": "Дідусь",
+      "en": "Old Man"
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_1.1": {
+      "uk": "Шлагбаум піднято. День вдався.",
+      "en": "The barrier is up. A good day."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_2.1": {
+      "uk": "Район той самий.",
+      "en": "Same district."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_2.2": {
+      "uk": "Це ми змінилися.",
+      "en": "It is we who changed."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_3.1": {
+      "uk": "Хочеш пораду?",
+      "en": "Want some advice?"
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_3.2": {
+      "uk": "Не клади цвях на рейки.",
+      "en": "Do not put a nail on the rails."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_3.3": {
+      "uk": "Трамвай образиться.",
+      "en": "The tram will be offended."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_4.1": {
+      "uk": "Шахи? Ні. Доміно.",
+      "en": "Chess? No. Dominoes."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_4.2": {
+      "uk": "Шахи — для тих, хто не вірить у долю.",
+      "en": "Chess is for those who do not believe in fate."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_5.1": {
+      "uk": "Погода вже не та.",
+      "en": "The weather is not what it was."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_5.2": {
+      "uk": "Але й не гірша.",
+      "en": "But not worse, either."
+    },
+    "speaker.lewandivka.citizen_worker": {
+      "uk": "Робітник",
+      "en": "Worker"
+    },
+    "dialogue.lewandivka.talk_citizen_worker_1.1": {
+      "uk": "Перекур.",
+      "en": "Smoke break."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_1.2": {
+      "uk": "Не дивіться так. Я кинув. Давно.",
+      "en": "Do not look like that. I quit. Long ago."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_2.1": {
+      "uk": "На підстанціях моргає світло.",
+      "en": "The lights flicker at the substations."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_2.2": {
+      "uk": "Хтось у гаражах краде струм.",
+      "en": "Someone in the garages is stealing current."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_3.1": {
+      "uk": "Потрібен інструмент?",
+      "en": "Need tools?"
+    },
+    "dialogue.lewandivka.talk_citizen_worker_3.2": {
+      "uk": "Йди до майстра на ринок.",
+      "en": "Go to the handyman at the market."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_4.1": {
+      "uk": "Тринадцятий гараж? Такого немає.",
+      "en": "The thirteenth garage? There is no such thing."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_4.2": {
+      "uk": "Є дванадцятий і чотирнадцятий.",
+      "en": "There is a twelfth and a fourteenth."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_4.3": {
+      "uk": "Між ними — стіна.",
+      "en": "Between them is a wall."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_5.1": {
+      "uk": "Норма — вісім годин.",
+      "en": "The norm is eight hours."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_5.2": {
+      "uk": "А відчуття — вічність.",
+      "en": "The feeling is eternity."
+    },
+    "speaker.lewandivka.citizen_student": {
+      "uk": "Студентка",
+      "en": "Student"
+    },
+    "dialogue.lewandivka.talk_citizen_student_1.1": {
+      "uk": "У мене сесія. Не заважайте.",
+      "en": "I have exams. Do not disturb."
+    },
+    "dialogue.lewandivka.talk_citizen_student_1.2": {
+      "uk": "Хоча... заважайте.",
+      "en": "Although... do disturb."
+    },
+    "dialogue.lewandivka.talk_citizen_student_2.1": {
+      "uk": "Вам не здається, що район — це квест?",
+      "en": "Does the district not feel like a quest to you?"
+    },
+    "dialogue.lewandivka.talk_citizen_student_2.2": {
+      "uk": "Мені теж.",
+      "en": "To me too."
+    },
+    "dialogue.lewandivka.talk_citizen_student_3.1": {
+      "uk": "Кафе немає. Ринок є.",
+      "en": "No cafes. But there is a market."
+    },
+    "dialogue.lewandivka.talk_citizen_student_3.2": {
+      "uk": "Беру пиріг і йду вчитись.",
+      "en": "I take a pie and go study."
+    },
+    "dialogue.lewandivka.talk_citizen_student_4.1": {
+      "uk": "Зв'язок тут ловить лише на даху.",
+      "en": "The signal only works on the roof here."
+    },
+    "dialogue.lewandivka.talk_citizen_student_4.2": {
+      "uk": "Тому всі сидять на даху.",
+      "en": "So everybody sits on the roof."
+    },
+    "dialogue.lewandivka.talk_citizen_student_5.1": {
+      "uk": "Бачила кота біля пісочниці.",
+      "en": "I saw a cat near the sandbox."
+    },
+    "dialogue.lewandivka.talk_citizen_student_5.2": {
+      "uk": "Чорного. Дивився осудливо.",
+      "en": "A black one. He looked judgmental."
+    },
+    "speaker.lewandivka.citizen_kid": {
+      "uk": "Дитина",
+      "en": "Kid"
+    },
+    "dialogue.lewandivka.talk_citizen_kid_1.1": {
+      "uk": "Ви ловитимете боржника?",
+      "en": "Will you catch the debtor?"
+    },
+    "dialogue.lewandivka.talk_citizen_kid_1.2": {
+      "uk": "Він швидкий!",
+      "en": "He is fast!"
+    },
+    "dialogue.lewandivka.talk_citizen_kid_2.1": {
+      "uk": "А в мене є жетон!",
+      "en": "I have a token!"
+    },
+    "dialogue.lewandivka.talk_citizen_kid_2.2": {
+      "uk": "Ні, не покажу.",
+      "en": "No, I will not show you."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_3.1": {
+      "uk": "Пісочниця — моя територія.",
+      "en": "The sandbox is my territory."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_3.2": {
+      "uk": "Вхід — одна цукерка.",
+      "en": "The entrance is one candy."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_4.1": {
+      "uk": "Я бачила трамвай уночі.",
+      "en": "I saw a tram at night."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_4.2": {
+      "uk": "Дорослі кажуть — наснилось.",
+      "en": "The adults say I dreamed it."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_5.1": {
+      "uk": "Мама казала не говорити з незнайомими.",
+      "en": "Mom said not to talk to strangers."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_5.2": {
+      "uk": "Але ж ви майже свої.",
+      "en": "But you are almost one of us."
+    },
+    "speaker.lewandivka.citizen_teacher": {
+      "uk": "Вчителька",
+      "en": "Teacher"
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_1.1": {
+      "uk": "Школа сьогодні зачинена.",
+      "en": "The school is closed today."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_1.2": {
+      "uk": "Завтра теж. І післязавтра.",
+      "en": "Tomorrow too. And the day after."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_2.1": {
+      "uk": "Діти! Не бігати коридором!",
+      "en": "Children! No running in the corridor!"
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_2.2": {
+      "uk": "Ой, це я не вам.",
+      "en": "Oh, that was not for you."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_3.1": {
+      "uk": "Хочете вчитись? Усі парти вільні.",
+      "en": "Want to study? All the desks are free."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_4.1": {
+      "uk": "Домашнє завдання: знайти дванадцять котів.",
+      "en": "Homework: find twelve cats."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_4.2": {
+      "uk": "Ні, я серйозно.",
+      "en": "No, I am serious."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_5.1": {
+      "uk": "Я викладала біологію.",
+      "en": "I used to teach biology."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_5.2": {
+      "uk": "Тепер викладаю виживання.",
+      "en": "Now I teach survival."
+    },
+    "speaker.lewandivka.citizen_yard_keeper": {
+      "uk": "Двірник",
+      "en": "Yard Keeper"
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_1.1": {
+      "uk": "Мету. Мету. Мету.",
+      "en": "Sweeping. Sweeping. Sweeping."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_1.2": {
+      "uk": "Листя не закінчується.",
+      "en": "The leaves never end."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_2.1": {
+      "uk": "Це моя територія. Ну, наша.",
+      "en": "This is my territory. Well, ours."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_2.2": {
+      "uk": "Не смітіть.",
+      "en": "No littering."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_3.1": {
+      "uk": "У смітниках іноді є корисне.",
+      "en": "Sometimes there is something useful in the bins."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_3.2": {
+      "uk": "Але я нічого не казав.",
+      "en": "But I said nothing."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_4.1": {
+      "uk": "Ліхтарі горять. Район живий.",
+      "en": "The lamps are burning. The district lives."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_5.1": {
+      "uk": "Сємки — біля лавки.",
+      "en": "Seeds by the bench."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_5.2": {
+      "uk": "Лушпиння — в урну.",
+      "en": "Husks into the bin."
+    },
+    "speaker.lewandivka.citizen_neighbour": {
+      "uk": "Сусід",
+      "en": "Neighbour"
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_1.1": {
+      "uk": "О, нові сусіди.",
+      "en": "Oh, new neighbours."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_1.2": {
+      "uk": "Сіль є? Ні? Я й не питав.",
+      "en": "Got salt? No? I did not ask."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_2.1": {
+      "uk": "Я тут з дев'яносто першого.",
+      "en": "I have been here since ninety-one."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_2.2": {
+      "uk": "Лампочку на сходах досі не вкрутили.",
+      "en": "The bulb on the stairs is still not replaced."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_3.1": {
+      "uk": "Мій телевізор показує один канал.",
+      "en": "My TV shows one channel."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_3.2": {
+      "uk": "Зате хороший.",
+      "en": "A good one, though."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_4.1": {
+      "uk": "Чуєте дзвінок? Це не мій телефон.",
+      "en": "Hear that ringing? It is not my phone."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_4.2": {
+      "uk": "Це трамвай.",
+      "en": "That is the tram."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_5.1": {
+      "uk": "Чаю хочете? Чаю немає.",
+      "en": "Tea? There is none."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_5.2": {
+      "uk": "Але запрошення чинне.",
+      "en": "But the invitation stands."
+    },
+    "speaker.lewandivka.vendor_baker": {
+      "uk": "Пекарка",
+      "en": "Baker"
+    },
+    "dialogue.lewandivka.greet_vendor_baker_1.1": {
+      "uk": "Свіженьке! Ще тепле.",
+      "en": "Fresh! Still warm."
+    },
+    "dialogue.lewandivka.greet_vendor_baker_2.1": {
+      "uk": "Хліб — основа району.",
+      "en": "Bread is the foundation of the district."
+    },
+    "dialogue.lewandivka.greet_vendor_baker_3.1": {
+      "uk": "Беріть пиріг. Вдруге не запропоную.",
+      "en": "Take a pie. I will not offer twice."
+    },
+    "speaker.lewandivka.vendor_greengrocer": {
+      "uk": "Овочівниця",
+      "en": "Greengrocer"
+    },
+    "dialogue.lewandivka.greet_vendor_greengrocer_1.1": {
+      "uk": "Картопля своя. Не ваша.",
+      "en": "The potatoes are mine. Not yours."
+    },
+    "dialogue.lewandivka.greet_vendor_greengrocer_2.1": {
+      "uk": "Яблука кислі. Зате чесні.",
+      "en": "The apples are sour. But honest."
+    },
+    "dialogue.lewandivka.greet_vendor_greengrocer_3.1": {
+      "uk": "Торгуємося? Ні? Тоді беріть.",
+      "en": "Haggle? No? Then take them."
+    },
+    "speaker.lewandivka.vendor_butcher": {
+      "uk": "М'ясник",
+      "en": "Butcher"
+    },
+    "dialogue.lewandivka.greet_vendor_butcher_1.1": {
+      "uk": "М'ясо не кусається.",
+      "en": "The meat does not bite."
+    },
+    "dialogue.lewandivka.greet_vendor_butcher_2.1": {
+      "uk": "Свинина вчорашня. Це комплімент.",
+      "en": "The pork is from yesterday. That is a compliment."
+    },
+    "dialogue.lewandivka.greet_vendor_butcher_3.1": {
+      "uk": "Без черги, прошу.",
+      "en": "No queue, please."
+    },
+    "speaker.lewandivka.vendor_handyman": {
+      "uk": "Майстер",
+      "en": "Handyman"
+    },
+    "dialogue.lewandivka.greet_vendor_handyman_1.1": {
+      "uk": "Інструмент — як друг. Поводься добре.",
+      "en": "A tool is like a friend. Treat it well."
+    },
+    "dialogue.lewandivka.greet_vendor_handyman_2.1": {
+      "uk": "Цвяхи є. Терпіння — ні.",
+      "en": "I have nails. Patience, no."
+    },
+    "dialogue.lewandivka.greet_vendor_handyman_3.1": {
+      "uk": "Лопата, сокира, кирка. Усе справжнє.",
+      "en": "Shovel, axe, pickaxe. All genuine."
+    },
+    "speaker.lewandivka.vendor_flea": {
+      "uk": "Барахольник",
+      "en": "Flea Trader"
+    },
+    "dialogue.lewandivka.greet_vendor_flea_1.1": {
+      "uk": "Усе вживане. Нове — тільки пил.",
+      "en": "All used. Only the dust is new."
+    },
+    "dialogue.lewandivka.greet_vendor_flea_2.1": {
+      "uk": "Жетони? Ні. Жетони бере лише трамвай.",
+      "en": "Tokens? No. Only the tram takes tokens."
+    },
+    "dialogue.lewandivka.greet_vendor_flea_3.1": {
+      "uk": "Ліжко, повідець, компас. Вибирайте.",
+      "en": "Bed, lead, compass. Choose."
+    },
+    "speaker.lewandivka.vendor_fishmonger": {
+      "uk": "Рибалка",
+      "en": "Fishmonger"
+    },
+    "dialogue.lewandivka.greet_vendor_fishmonger_1.1": {
+      "uk": "Риба свіжа. Я її сам не бачив.",
+      "en": "The fish is fresh. I have not seen it myself."
+    },
+    "dialogue.lewandivka.greet_vendor_fishmonger_2.1": {
+      "uk": "Клює? Не клює? Беріть готову.",
+      "en": "Biting? Not biting? Take it cooked."
+    },
+    "dialogue.lewandivka.greet_vendor_fishmonger_3.1": {
+      "uk": "Річка велика. Терпіння ще більше.",
+      "en": "The river is big. The patience is bigger."
+    },
+    "speaker.lewandivka.vendor_gardener": {
+      "uk": "Садівник",
+      "en": "Gardener"
+    },
+    "dialogue.lewandivka.greet_vendor_gardener_1.1": {
+      "uk": "Насіння — це майбутнє. Дешеве.",
+      "en": "Seeds are the future. A cheap one."
+    },
+    "dialogue.lewandivka.greet_vendor_gardener_2.1": {
+      "uk": "Посадиш — виросте. Іноді.",
+      "en": "Plant it and it grows. Sometimes."
+    },
+    "dialogue.lewandivka.greet_vendor_gardener_3.1": {
+      "uk": "Кістяне борошно — для нетерплячих.",
+      "en": "Bone meal is for the impatient."
+    },
     "dialogue.lewandivka.epilogue_morning.1": {
       "uk": "Ну?",
       "en": "Well?"
@@ -1099,6 +1563,67 @@
     "head_end",
     "tower_machine",
     "tower_urgent",
+    "talk_citizen_babushka_1",
+    "talk_citizen_babushka_2",
+    "talk_citizen_babushka_3",
+    "talk_citizen_babushka_4",
+    "talk_citizen_babushka_5",
+    "talk_citizen_grandpa_1",
+    "talk_citizen_grandpa_2",
+    "talk_citizen_grandpa_3",
+    "talk_citizen_grandpa_4",
+    "talk_citizen_grandpa_5",
+    "talk_citizen_worker_1",
+    "talk_citizen_worker_2",
+    "talk_citizen_worker_3",
+    "talk_citizen_worker_4",
+    "talk_citizen_worker_5",
+    "talk_citizen_student_1",
+    "talk_citizen_student_2",
+    "talk_citizen_student_3",
+    "talk_citizen_student_4",
+    "talk_citizen_student_5",
+    "talk_citizen_kid_1",
+    "talk_citizen_kid_2",
+    "talk_citizen_kid_3",
+    "talk_citizen_kid_4",
+    "talk_citizen_kid_5",
+    "talk_citizen_teacher_1",
+    "talk_citizen_teacher_2",
+    "talk_citizen_teacher_3",
+    "talk_citizen_teacher_4",
+    "talk_citizen_teacher_5",
+    "talk_citizen_yard_keeper_1",
+    "talk_citizen_yard_keeper_2",
+    "talk_citizen_yard_keeper_3",
+    "talk_citizen_yard_keeper_4",
+    "talk_citizen_yard_keeper_5",
+    "talk_citizen_neighbour_1",
+    "talk_citizen_neighbour_2",
+    "talk_citizen_neighbour_3",
+    "talk_citizen_neighbour_4",
+    "talk_citizen_neighbour_5",
+    "greet_vendor_baker_1",
+    "greet_vendor_baker_2",
+    "greet_vendor_baker_3",
+    "greet_vendor_greengrocer_1",
+    "greet_vendor_greengrocer_2",
+    "greet_vendor_greengrocer_3",
+    "greet_vendor_butcher_1",
+    "greet_vendor_butcher_2",
+    "greet_vendor_butcher_3",
+    "greet_vendor_handyman_1",
+    "greet_vendor_handyman_2",
+    "greet_vendor_handyman_3",
+    "greet_vendor_flea_1",
+    "greet_vendor_flea_2",
+    "greet_vendor_flea_3",
+    "greet_vendor_fishmonger_1",
+    "greet_vendor_fishmonger_2",
+    "greet_vendor_fishmonger_3",
+    "greet_vendor_gardener_1",
+    "greet_vendor_gardener_2",
+    "greet_vendor_gardener_3",
     "epilogue_morning",
     "epilogue_cats",
     "post_cats12",

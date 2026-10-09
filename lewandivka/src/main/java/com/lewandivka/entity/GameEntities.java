@@ -9,7 +9,9 @@ import com.lewandivka.entity.boss.ConductorEntity;
 import com.lewandivka.entity.boss.GarageKingEntity;
 import com.lewandivka.entity.boss.LadyVortexEntity;
 import com.lewandivka.entity.npc.CatEntity;
+import com.lewandivka.entity.npc.CitizenEntity;
 import com.lewandivka.entity.npc.NpcEntity;
+import com.lewandivka.entity.npc.VendorEntity;
 import com.lewandivka.entity.projectile.SeedProjectileEntity;
 import com.lewandivka.entity.projectile.WheelProjectileEntity;
 import com.lewandivka.entity.vehicle.TramEntity;
@@ -56,6 +58,8 @@ public final class GameEntities {
                 case DEBTOR, SHLAHBAUM -> mob(spec, NpcEntity::new);
                 case FARE_DODGER, FARE_LEADER -> mob(spec, FareDodgerEntity::new);
                 case CAT -> mob(spec, CatEntity::new);
+                case CITIZEN -> mob(spec, CitizenEntity::new);
+                case VENDOR -> merchant(spec, VendorEntity::new);
                 case MINION -> mob(spec, MinionEntity::new);
                 case MARKER -> mob(spec, LeashAnchorEntity::new);
                 case BOSS -> switch (spec.id) {
@@ -86,6 +90,17 @@ public final class GameEntities {
             b.fireImmune();
         }
         return b.build();
+    }
+
+    /** A trader of the market: a merchant of the game, not a creature of the mod's own base class, but with the same attributes and models. */
+    private static <T extends MobEntity> EntityType<T> merchant(EntitySpec spec, EntityType.EntityFactory<T> factory) {
+        return FabricEntityTypeBuilder.<T>createMob()
+                .spawnGroup(SpawnGroup.MISC)
+                .entityFactory(factory)
+                .dimensions(EntityDimensions.fixed(spec.width, spec.height))
+                .trackRangeBlocks(64)
+                .defaultAttributes(() -> LewMob.attributes(spec))
+                .build();
     }
 
     private static <T extends Entity> EntityType<T> plain(EntitySpec spec, EntityType.EntityFactory<T> factory, int trackChunks) {

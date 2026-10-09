@@ -61,6 +61,44 @@ public final class DialogueBook {
         TEXT.put("speaker.lewandivka." + id, new Line(uk, en));
     }
 
+    /** Script id of the {@code n}-th (from 1) thing a citizen or a vendor says: {@code talk_citizen_kid_3}, {@code greet_vendor_baker_1}. */
+    public static String talkId(String entityId, int n) {
+        return (entityId.startsWith("vendor_") ? "greet_" : "talk_") + entityId + "_" + n;
+    }
+
+    /** How many different things the creature has to say (0 when it has nothing to say). */
+    public static int talks(String entityId) {
+        int n = 0;
+        while (SCRIPTS.containsKey(talkId(entityId, n + 1))) {
+            n++;
+        }
+        return n;
+    }
+
+    /**
+     * The words of a citizen or a vendor: every script is a few short lines of {uk, en} said one after another by the speaker whose
+     * name is that of the creature.
+     */
+    private static void chat(String entityId, String uk, String en, String[][]... scripts) {
+        speaker(entityId, uk, en);
+        int n = 0;
+        for (String[][] lines : scripts) {
+            B b = script(talkId(entityId, ++n));
+            for (int i = 0; i < lines.length; i++) {
+                b.say(entityId, lines[i][0], lines[i][1], i == 0 ? 10 : 55);
+            }
+            b.done();
+        }
+    }
+
+    private static String[][] said(String... ukEn) {
+        String[][] out = new String[ukEn.length / 2][];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = new String[] {ukEn[2 * i], ukEn[2 * i + 1]};
+        }
+        return out;
+    }
+
     static {
         speaker("shlahbaum", "Пан Шлагбаум", "Mr. Shlahbaum");
         speaker("gopnik", "Гопник", "Gopnik");
@@ -181,6 +219,87 @@ public final class DialogueBook {
                 .say("machine", "ВІЗЬМІТЬ ТАЛОН", "TAKE A TICKET", 10)
                 .say("machine", "Ваш номер: №%s. Зараз обслуговується №003.", "Your number: #%s. Now serving #003.", 40).done();
         script("tower_urgent").say("machine", "ТЕРМІНОВІ ПИТАННЯ — вхід збоку.", "URGENT MATTERS — side entrance.", 10).done();
+
+        // ---------------------------------------------------------------- the people of the district
+        chat("citizen_babushka", "Бабуся", "Old Woman",
+                said("Ти чий будеш?", "Whose are you?", "Нічий? Ну, тоді наш.", "Nobody's? Then you are ours."),
+                said("Хліб на ринку ще теплий.", "The bread at the market is still warm.", "Іди, поки не розібрали.", "Go, before they sell out."),
+                said("Колись тут трамвай ходив.", "A tram used to run here.", "Гарний був. Червоний.", "A nice one. Red."),
+                said("Ввечері до гаражів не ходи.", "Do not go to the garages in the evening.", "Там хлопці сємки лузають.", "The boys crack seeds there.",
+                        "І питають.", "And ask."),
+                said("Котів годуєш? Молодець.", "Feeding the cats? Good for you.", "Вони тут усе пам'ятають.", "They remember everything here."));
+        chat("citizen_grandpa", "Дідусь", "Old Man",
+                said("Шлагбаум піднято. День вдався.", "The barrier is up. A good day."),
+                said("Район той самий.", "Same district.", "Це ми змінилися.", "It is we who changed."),
+                said("Хочеш пораду?", "Want some advice?", "Не клади цвях на рейки.", "Do not put a nail on the rails.", "Трамвай образиться.", "The tram will be offended."),
+                said("Шахи? Ні. Доміно.", "Chess? No. Dominoes.", "Шахи — для тих, хто не вірить у долю.", "Chess is for those who do not believe in fate."),
+                said("Погода вже не та.", "The weather is not what it was.", "Але й не гірша.", "But not worse, either."));
+        chat("citizen_worker", "Робітник", "Worker",
+                said("Перекур.", "Smoke break.", "Не дивіться так. Я кинув. Давно.", "Do not look like that. I quit. Long ago."),
+                said("На підстанціях моргає світло.", "The lights flicker at the substations.", "Хтось у гаражах краде струм.", "Someone in the garages is stealing current."),
+                said("Потрібен інструмент?", "Need tools?", "Йди до майстра на ринок.", "Go to the handyman at the market."),
+                said("Тринадцятий гараж? Такого немає.", "The thirteenth garage? There is no such thing.", "Є дванадцятий і чотирнадцятий.", "There is a twelfth and a fourteenth.",
+                        "Між ними — стіна.", "Between them is a wall."),
+                said("Норма — вісім годин.", "The norm is eight hours.", "А відчуття — вічність.", "The feeling is eternity."));
+        chat("citizen_student", "Студентка", "Student",
+                said("У мене сесія. Не заважайте.", "I have exams. Do not disturb.", "Хоча... заважайте.", "Although... do disturb."),
+                said("Вам не здається, що район — це квест?", "Does the district not feel like a quest to you?", "Мені теж.", "To me too."),
+                said("Кафе немає. Ринок є.", "No cafes. But there is a market.", "Беру пиріг і йду вчитись.", "I take a pie and go study."),
+                said("Зв'язок тут ловить лише на даху.", "The signal only works on the roof here.", "Тому всі сидять на даху.", "So everybody sits on the roof."),
+                said("Бачила кота біля пісочниці.", "I saw a cat near the sandbox.", "Чорного. Дивився осудливо.", "A black one. He looked judgmental."));
+        chat("citizen_kid", "Дитина", "Kid",
+                said("Ви ловитимете боржника?", "Will you catch the debtor?", "Він швидкий!", "He is fast!"),
+                said("А в мене є жетон!", "I have a token!", "Ні, не покажу.", "No, I will not show you."),
+                said("Пісочниця — моя територія.", "The sandbox is my territory.", "Вхід — одна цукерка.", "The entrance is one candy."),
+                said("Я бачила трамвай уночі.", "I saw a tram at night.", "Дорослі кажуть — наснилось.", "The adults say I dreamed it."),
+                said("Мама казала не говорити з незнайомими.", "Mom said not to talk to strangers.", "Але ж ви майже свої.", "But you are almost one of us."));
+        chat("citizen_teacher", "Вчителька", "Teacher",
+                said("Школа сьогодні зачинена.", "The school is closed today.", "Завтра теж. І післязавтра.", "Tomorrow too. And the day after."),
+                said("Діти! Не бігати коридором!", "Children! No running in the corridor!", "Ой, це я не вам.", "Oh, that was not for you."),
+                said("Хочете вчитись? Усі парти вільні.", "Want to study? All the desks are free."),
+                said("Домашнє завдання: знайти дванадцять котів.", "Homework: find twelve cats.", "Ні, я серйозно.", "No, I am serious."),
+                said("Я викладала біологію.", "I used to teach biology.", "Тепер викладаю виживання.", "Now I teach survival."));
+        chat("citizen_yard_keeper", "Двірник", "Yard Keeper",
+                said("Мету. Мету. Мету.", "Sweeping. Sweeping. Sweeping.", "Листя не закінчується.", "The leaves never end."),
+                said("Це моя територія. Ну, наша.", "This is my territory. Well, ours.", "Не смітіть.", "No littering."),
+                said("У смітниках іноді є корисне.", "Sometimes there is something useful in the bins.", "Але я нічого не казав.", "But I said nothing."),
+                said("Ліхтарі горять. Район живий.", "The lamps are burning. The district lives."),
+                said("Сємки — біля лавки.", "Seeds by the bench.", "Лушпиння — в урну.", "Husks into the bin."));
+        chat("citizen_neighbour", "Сусід", "Neighbour",
+                said("О, нові сусіди.", "Oh, new neighbours.", "Сіль є? Ні? Я й не питав.", "Got salt? No? I did not ask."),
+                said("Я тут з дев'яносто першого.", "I have been here since ninety-one.", "Лампочку на сходах досі не вкрутили.", "The bulb on the stairs is still not replaced."),
+                said("Мій телевізор показує один канал.", "My TV shows one channel.", "Зате хороший.", "A good one, though."),
+                said("Чуєте дзвінок? Це не мій телефон.", "Hear that ringing? It is not my phone.", "Це трамвай.", "That is the tram."),
+                said("Чаю хочете? Чаю немає.", "Tea? There is none.", "Але запрошення чинне.", "But the invitation stands."));
+        // the vendors say one thing before the counter opens
+        chat("vendor_baker", "Пекарка", "Baker",
+                said("Свіженьке! Ще тепле.", "Fresh! Still warm."),
+                said("Хліб — основа району.", "Bread is the foundation of the district."),
+                said("Беріть пиріг. Вдруге не запропоную.", "Take a pie. I will not offer twice."));
+        chat("vendor_greengrocer", "Овочівниця", "Greengrocer",
+                said("Картопля своя. Не ваша.", "The potatoes are mine. Not yours."),
+                said("Яблука кислі. Зате чесні.", "The apples are sour. But honest."),
+                said("Торгуємося? Ні? Тоді беріть.", "Haggle? No? Then take them."));
+        chat("vendor_butcher", "М'ясник", "Butcher",
+                said("М'ясо не кусається.", "The meat does not bite."),
+                said("Свинина вчорашня. Це комплімент.", "The pork is from yesterday. That is a compliment."),
+                said("Без черги, прошу.", "No queue, please."));
+        chat("vendor_handyman", "Майстер", "Handyman",
+                said("Інструмент — як друг. Поводься добре.", "A tool is like a friend. Treat it well."),
+                said("Цвяхи є. Терпіння — ні.", "I have nails. Patience, no."),
+                said("Лопата, сокира, кирка. Усе справжнє.", "Shovel, axe, pickaxe. All genuine."));
+        chat("vendor_flea", "Барахольник", "Flea Trader",
+                said("Усе вживане. Нове — тільки пил.", "All used. Only the dust is new."),
+                said("Жетони? Ні. Жетони бере лише трамвай.", "Tokens? No. Only the tram takes tokens."),
+                said("Ліжко, повідець, компас. Вибирайте.", "Bed, lead, compass. Choose."));
+        chat("vendor_fishmonger", "Рибалка", "Fishmonger",
+                said("Риба свіжа. Я її сам не бачив.", "The fish is fresh. I have not seen it myself."),
+                said("Клює? Не клює? Беріть готову.", "Biting? Not biting? Take it cooked."),
+                said("Річка велика. Терпіння ще більше.", "The river is big. The patience is bigger."));
+        chat("vendor_gardener", "Садівник", "Gardener",
+                said("Насіння — це майбутнє. Дешеве.", "Seeds are the future. A cheap one."),
+                said("Посадиш — виросте. Іноді.", "Plant it and it grows. Sometimes."),
+                said("Кістяне борошно — для нетерплячих.", "Bone meal is for the impatient."));
 
         // ---------------------------------------------------------------- epilogue and postgame
         script("epilogue_morning")

@@ -10,7 +10,11 @@ public final class EntitySpec {
 
     /** Selects the Java class in the game glue. */
     public enum Role {
-        GOPNIK, SEED_THROWER, SENIOR_GOPNIK, DEBTOR, SHLAHBAUM, FARE_DODGER, FARE_LEADER, CAT, BOSS, MINION, PROJECTILE, VEHICLE, MARKER
+        GOPNIK, SEED_THROWER, SENIOR_GOPNIK, DEBTOR, SHLAHBAUM, FARE_DODGER, FARE_LEADER, CAT, BOSS, MINION, PROJECTILE, VEHICLE, MARKER,
+        /** The people of the district: they stand about and have a few words to say. */
+        CITIZEN,
+        /** The traders of the market: they have a counter and sell and buy things. */
+        VENDOR
     }
 
     public final String id;

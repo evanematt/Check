@@ -261,7 +261,7 @@ final class PanelBlock {
                     int first = right ? u0 + 13 : u0 + 2;
                     int pierLeft = right ? u0 + 16 : u0 + 1;
                     int pierRight = right ? u0 + 12 : u0 + 5;
-                    window(b, t, first, 3, pierLeft, pierRight, f, zWall, out, h);
+                    window(b, t, first, 3, pierLeft, pierRight, f, zWall, out, h, roofLayer(floors));
                     // the flats on the courtyard side of the upper floors have a balcony with a door in the middle of the window
                     if (!back && k > 0 && (h >>> 8) % 100 < 38) {
                         balcony(b, first + 1, f, h);
@@ -269,32 +269,52 @@ final class PanelBlock {
                 }
                 // the window of the stairwell above the entrance, and at the back at the level of the landing
                 if (k > 0) {
-                    window(b, t, u0 + 8, 2, u0 + 7, u0 + 10, f, 0, -1, Noise.hash(seed + 9, u0, k));
+                    window(b, t, u0 + 8, 2, u0 + 7, u0 + 10, f, 0, -1, Noise.hash(seed + 9, u0, k), roofLayer(floors));
                 }
+                // the small window of the landing at the back, framed like the others
                 int wy = f + 3;
-                b.fill(u0 + 8, wy, DEPTH - 1, u0 + 9, Math.min(wy + 1, STOREY * floors - 1), DEPTH - 1, Pal.PANE);
+                int roof = roofLayer(floors);
+                for (int y = wy - 1; y <= wy + 2 && y < roof; y++) {
+                    boolean glass = y == wy || y == wy + 1;
+                    for (int x = u0 + 7; x <= u0 + 10; x++) {
+                        boolean pier = x == u0 + 7 || x == u0 + 10;
+                        b.set(x, y, DEPTH - 1, glass && !pier ? Pal.WINDOW : t.frame);
+                    }
+                }
             }
         }
         // windows in the end walls: one for the front flat and one for the back flat
         for (int k = 0; k < floors; k++) {
             int f = STOREY * k;
             for (int x : new int[] {0, length - 1}) {
-                b.fill(x, f + 2, 2, x, f + 3, 3, Pal.PANE);
-                b.fill(x, f + 2, DEPTH - 4, x, f + 3, DEPTH - 3, Pal.PANE);
+                b.fill(x, f + 2, 2, x, f + 3, 3, Pal.WINDOW);
+                b.fill(x, f + 2, DEPTH - 4, x, f + 3, DEPTH - 3, Pal.WINDOW);
             }
         }
     }
 
-    /** A window of {@code width} panes (two layers high) in an outside wall, between two white piers, with a sill and a flower pot. */
-    private static void window(BlueprintBuilder b, Buildings.Theme t, int first, int width, int pierA, int pierB, int f, int zWall, int out, long h) {
-        for (int dy = 2; dy <= 3; dy++) {
+    /**
+     * A window of {@code width} panes (two layers high) in an outside wall, in a frame of white: a pier at both sides, a sill
+     * under and a lintel over the glass, and outside a slab for the sill with now and then a flower pot.
+     */
+    private static void window(BlueprintBuilder b, Buildings.Theme t, int first, int width, int pierA, int pierB, int f, int zWall, int out, long h, int roof) {
+        for (int dy = 1; dy <= 4; dy++) {
+            if (f + dy >= roof) {
+                continue;   // the top of the wall is the edge of the roof: no lintel there
+            }
             b.set(pierA, f + dy, zWall, t.frame);
             b.set(pierB, f + dy, zWall, t.frame);
         }
         for (int i = 0; i < width; i++) {
+            b.set(first + i, f + 1, zWall, t.frame);
+            if (f + 4 < roof) {
+                b.set(first + i, f + 4, zWall, t.frame);
+            }
+        }
+        for (int i = 0; i < width; i++) {
             int x = first + i;
             for (int dy = 2; dy <= 3; dy++) {
-                b.set(x, f + dy, zWall, Pal.PANE);
+                b.set(x, f + dy, zWall, Pal.WINDOW);
             }
             b.set(x, f + 1, zWall + out, "minecraft:stone_brick_slab[type=top]");
         }
