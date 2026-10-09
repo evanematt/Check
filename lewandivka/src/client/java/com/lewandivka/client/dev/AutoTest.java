@@ -370,10 +370,15 @@ public final class AutoTest {
      * (backwards along the line of sight), so the picture shows the windows of its front.
      */
     private static void facade(MinecraftClient c, String structure, String spot, float yaw, String name) {
+        facade(c, structure, spot, yaw, name, 9);
+    }
+
+    /** The same with the player {@code back} blocks from the entrance (a tree of the courtyard may stand where nine would put him). */
+    private static void facade(MinecraftClient c, String structure, String spot, float yaw, String name, int back) {
         cmd(c, "lewandivka teleport " + structure + " spot " + spot, 20);
         settle(c, name, 2400);
         cmd(c, "tp @s ~ ~ ~ " + yaw + " 6", 4);
-        cmd(c, "tp @s ^ ^ ^-9", 20);
+        cmd(c, "tp @s ^ ^ ^-" + back, 20);
         add("check " + name, 1, () -> expect("the player stands free in the street at " + name, !c.player.isInsideWall(),
                 "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
         windows(c, name);
@@ -1024,7 +1029,7 @@ public final class AutoTest {
         room(c, "kindergarten", "playroom", 45, 14, "kinder_playroom");
         room(c, "kindergarten", "bedroom", 225, 14, "kinder_bedroom");
         // the windows of the buildings, seen from the street
-        facade(c, "block_a", "entrance", 180, "block_a");
+        facade(c, "block_a", "entrance", 180, "block_a", 5);
         facade(c, "house_ne0", "entrance", 180, "house_ne0");
         facade(c, "kindergarten", "entrance", 0, "kindergarten");
         tour(c, "school", null);
