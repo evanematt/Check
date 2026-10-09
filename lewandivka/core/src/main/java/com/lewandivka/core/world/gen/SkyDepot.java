@@ -101,7 +101,7 @@ public final class SkyDepot {
         }
         b.fill(4, S + 5, 28, 16, S + 5, 30, "minecraft:smooth_stone_slab[type=bottom]");
         b.set(10, S + 3, 28, Pal.note(62, Dir.SOUTH));
-        b.stamp(Props.bench(), 7, S + 1, 29, 0);
+        b.stamp(Props.bench(), 7, S + 1, 29, 2);
         b.interact("cp_arrival", 13, S + 1, 30, Pal.checkpoint());
         b.marker("tram_arrive", 10, S + 1, 31);
         b.marker("tram_rail_start", 3, S + 1, 33);

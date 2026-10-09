@@ -54,7 +54,8 @@ public final class TramBuilders {
         b.set(12, 4, 5, Keys.lantern(true));
         b.set(9, 4, 5, Keys.lantern(true));
         b.set(15, 4, 5, Keys.lantern(true));
-        b.stamp(Props.bench(), 8, 2, 4, 0);
+        // the bench stands against the back wall and looks at the platform; the bag of seeds stays reachable from the platform beside it
+        b.stamp(Props.bench(), 7, 2, 5, 2);
         b.set(14, 2, 5, "minecraft:cauldron");
         // station plate "ЛЕВАНДІВКА / Кінцева" on the back wall, facing the platform
         b.set(12, 3, 4, Pal.note(0, Dir.SOUTH));

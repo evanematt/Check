@@ -173,9 +173,80 @@ class DecorTest {
     }
 
     private static boolean joinedSeat(Blueprint bp, int x, int y, int z, Dir front) {
+        return joinedSeat(bp, x, y, z, front, "_couch");
+    }
+
+    private static boolean joinedSeat(Blueprint bp, int x, int y, int z, Dir front, String kind) {
         String other = bp.keyAt(x, y, z);
-        return other != null && Keys.preferred(other).startsWith("handcrafted:") && Keys.blockId(Keys.preferred(other)).endsWith("_couch")
+        return other != null && Keys.preferred(other).startsWith("handcrafted:") && Keys.blockId(Keys.preferred(other)).endsWith(kind)
                 && front.key().equals(prop(other, "facing"));
+    }
+
+    /** The benches of the streets join in a row as sofas do, whichever way the bench stands. */
+    @Test
+    void benchesOfTheStreetsJoinTheirNeighbours() {
+        int seats = 0;
+        Set<String> places = new HashSet<>();
+        for (Blueprint bp : placements()) {
+            for (int y = 0; y < bp.sizeY(); y++) {
+                for (int z = 0; z < bp.sizeZ(); z++) {
+                    for (int x = 0; x < bp.sizeX(); x++) {
+                        String key = bp.keyAt(x, y, z);
+                        if (key == null || !Keys.preferred(key).startsWith("handcrafted:") || !Keys.blockId(Keys.preferred(key)).endsWith("_bench")) {
+                            continue;
+                        }
+                        seats++;
+                        places.add(bp.id());
+                        Dir front = Dir.byKey(prop(key, "facing"));
+                        assertNotNull(front, key);
+                        boolean left = joinedSeat(bp, x + front.left().dx, y, z + front.left().dz, front, "_bench");
+                        boolean right = joinedSeat(bp, x + front.right().dx, y, z + front.right().dz, front, "_bench");
+                        assertEquals(Decor.couchShape(left, right), prop(key, "shape"), bp.id() + " at " + x + "," + y + "," + z + ": " + key);
+                        assertTrue(HandcraftedBlocks.valuesOf("spruce_bench", "shape").contains(prop(key, "shape")), key);
+                    }
+                }
+            }
+        }
+        assertTrue(seats >= 30, "the streets have " + seats + " seats of benches of the mod");
+    }
+
+    /** The sets of a table and chairs stand in the courtyards and behind the stalls of the market. */
+    @Test
+    void tablesWithChairsStandInTheCourtyardsAndAtTheMarket() {
+        WorldPlan plan = DistrictPlan.get();
+        int sets = 0;
+        int atTheMarket = 0;
+        for (var p : plan.fixedPlacements()) {
+            if (p.blueprint().id().equals("cafeset")) {
+                sets++;
+                if (p.x() >= 60 && p.x() <= 110 && p.z() >= 12 && p.z() <= 18) {
+                    atTheMarket++;
+                }
+            }
+        }
+        assertTrue(sets >= 8, "there are " + sets + " sets of a table and chairs");
+        assertTrue(atTheMarket >= 2, atTheMarket + " of them behind the stalls of the market");
+    }
+
+    /** Every chair of a table of the streets looks at the table. */
+    @Test
+    void theChairsOfTheStreetsLookAtTheirTable() {
+        Blueprint set = Props.cafeSet();
+        int chairs = 0;
+        for (int z = 0; z < set.sizeZ(); z++) {
+            for (int x = 0; x < set.sizeX(); x++) {
+                String key = set.keyAt(x, 0, z);
+                if (key == null || !Keys.blockId(Keys.preferred(key)).endsWith("_chair")) {
+                    continue;
+                }
+                chairs++;
+                Dir front = Dir.byKey(prop(key, "facing"));
+                String ahead = set.keyAt(x + front.dx, 0, z + front.dz);
+                assertNotNull(ahead, key);
+                assertTrue(Keys.blockId(Keys.preferred(ahead)).endsWith("_table"), "the chair at " + x + "," + z + " looks at " + ahead);
+            }
+        }
+        assertEquals(4, chairs);
     }
 
     @Test
@@ -186,7 +257,7 @@ class DecorTest {
             for (String key : bp.paletteKeys()) {
                 if (key != null && Keys.isEither(key)) {
                     String id = Keys.blockId(Keys.preferred(key)).substring("handcrafted:".length());
-                    for (String kind : new String[] {"_fancy_bed", "_chair", "_table", "_couch", "_shelf", "_cupboard", "_counter", "oven", "_cushion", "_crockery_combo"}) {
+                    for (String kind : new String[] {"_fancy_bed", "_chair", "_table", "_couch", "_shelf", "_cupboard", "_counter", "oven", "_cushion", "_crockery_combo", "_bench"}) {
                         if (id.endsWith(kind) || id.equals(kind)) {
                             kinds.add(kind);
                         }
@@ -197,7 +268,7 @@ class DecorTest {
                 }
             }
         }
-        assertEquals(new TreeSet<>(List.of("_fancy_bed", "_chair", "_table", "_couch", "_shelf", "_cupboard", "_counter", "oven", "_cushion", "_crockery_combo")), kinds);
+        assertEquals(new TreeSet<>(List.of("_fancy_bed", "_chair", "_table", "_couch", "_shelf", "_cupboard", "_counter", "oven", "_cushion", "_crockery_combo", "_bench")), kinds);
     }
 
     @Test

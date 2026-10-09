@@ -57,14 +57,16 @@ public final class Yard {
                 }
                 b.set(x, 0, 1, "minecraft:spruce_slab[type=top]");
                 long h = Noise.hash(seed, x, 3);
-                if (x > 0 && x < width - 1 && (h & 3) != 0) {
+                // the middle of the counter stays open: the trader stands behind it, and a block of goods (two blocks tall, with the
+                // slab) would hide him from the customer completely
+                if (x > 0 && x < width - 1 && x != width / 2 && (h & 3) != 0) {
                     b.set(x, 1, 1, GOODS[(int) Math.floorMod(h >>> 4, (long) GOODS.length)]);
                 }
             }
             b.fill(1, 0, 2, width - 2, 0, 2, Keys.AIR);
-            b.set(width / 2, 0, 2, Keys.barrel(Dir.NORTH));
-            // the trader stands behind the counter, between the barrel and the post (the people of the district: see Populace)
-            b.marker("vendor", width / 2 - 1, 0, 2);
+            b.set(width - 2, 0, 2, Keys.barrel(Dir.NORTH));
+            // the trader stands behind the open middle of the counter, in front of the customer (the people of the district: see Populace)
+            b.marker("vendor", width / 2, 0, 2);
             // where a customer stands (the pictures of the client test go there)
             b.marker("customer", width / 2, 0, 0);
             return b.build();

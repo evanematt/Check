@@ -370,7 +370,37 @@ public final class AutoTest {
         cmd(c, "tp @s ^ ^ ^-9", 20);
         add("check " + name, 1, () -> expect("the player stands free in the street at " + name, !c.player.isInsideWall(),
                 "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
+        windows(c, name);
         shot(c, "street_" + name, 8);
+    }
+
+    /**
+     * The windows as the client has them: the panes of the facade have joined their frames and each other (a pane that has joined
+     * nothing is only a thin post in the middle of the opening).
+     */
+    private static void windows(MinecraftClient c, String name) {
+        add("check the windows of " + name, 1, () -> {
+            net.minecraft.util.math.BlockPos at = c.player.getBlockPos();
+            net.minecraft.util.math.BlockPos.Mutable p = new net.minecraft.util.math.BlockPos.Mutable();
+            int total = 0;
+            int alone = 0;
+            for (int dx = -16; dx <= 16; dx++) {
+                for (int dy = -8; dy <= 12; dy++) {
+                    for (int dz = -16; dz <= 16; dz++) {
+                        net.minecraft.block.BlockState s = c.world.getBlockState(p.set(at.getX() + dx, at.getY() + dy, at.getZ() + dz));
+                        if (s.isOf(net.minecraft.block.Blocks.LIGHT_BLUE_STAINED_GLASS_PANE)) {
+                            total++;
+                            if (!s.get(net.minecraft.state.property.Properties.NORTH) && !s.get(net.minecraft.state.property.Properties.EAST)
+                                    && !s.get(net.minecraft.state.property.Properties.SOUTH) && !s.get(net.minecraft.state.property.Properties.WEST)) {
+                                alone++;
+                            }
+                        }
+                    }
+                }
+            }
+            expect("the windows of " + name + " are joined to their frames", total > 0 && alone * 20 <= total,
+                    total + " panes within reach, " + alone + " of them standing alone");
+        });
     }
 
     /** A citizen or a trader from the front: the player stands at his place, steps back four blocks and looks at him. */
@@ -381,6 +411,20 @@ public final class AutoTest {
         cmd(c, "tp @s ^ ^ ^-4", 30);
         add("check " + name, 1, () -> expect("the player stands free by " + name, !c.player.isInsideWall(),
                 "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
+        add("who is in sight at " + name, 1, () -> {
+            java.util.List<net.minecraft.entity.mob.MobEntity> people = c.world.getEntitiesByClass(net.minecraft.entity.mob.MobEntity.class,
+                    c.player.getBoundingBox().expand(12.0),
+                    e -> e instanceof com.lewandivka.entity.npc.VendorEntity || e instanceof com.lewandivka.entity.npc.CitizenEntity);
+            StringBuilder sb = new StringBuilder();
+            for (net.minecraft.entity.mob.MobEntity e : people) {
+                boolean seen = c.world.raycast(new net.minecraft.world.RaycastContext(c.player.getEyePos(), e.getEyePos(),
+                        net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, c.player))
+                        .getType() == net.minecraft.util.hit.HitResult.Type.MISS;
+                sb.append(' ').append(net.minecraft.registry.Registries.ENTITY_TYPE.getId(e.getType()).getPath())
+                        .append(String.format("@%.1f", Math.sqrt(e.squaredDistanceTo(c.player)))).append(seen ? "(seen)" : "(hidden)");
+            }
+            note("people within twelve blocks of " + name + ":" + (people.isEmpty() ? " nobody" : sb));
+        });
         shot(c, "people_" + name, 8);
     }
 
@@ -402,6 +446,10 @@ public final class AutoTest {
                     nearest = t;
                 }
             }
+            boolean seen = c.world.raycast(new net.minecraft.world.RaycastContext(c.player.getEyePos(), nearest.getEyePos(),
+                    net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, c.player))
+                    .getType() == net.minecraft.util.hit.HitResult.Type.MISS;
+            expect("the customer sees the trader at " + name + " over the counter", seen, "from " + c.player.getEyePos() + " to " + nearest.getEyePos());
             screenWanted = true;
             c.interactionManager.interactEntity(c.player, nearest, Hand.MAIN_HAND);
         });

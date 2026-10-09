@@ -157,17 +157,32 @@ public final class Props {
 
     // ------------------------------------------------------------------ street furniture
 
-    /** Park bench for three, facing north (+z side is the back). 3x2x2. */
+    /**
+     * Park bench for three, facing north (the back is on the +z side). 3x1x1: the benches of the furniture mod, side by side; without
+     * the mod a row of stairs of the game.
+     */
     public static Blueprint bench() {
         return cached("bench", () -> {
-            BlueprintBuilder b = new BlueprintBuilder("bench", 3, 2, 2);
+            BlueprintBuilder b = new BlueprintBuilder("bench", 3, 1, 1);
             for (int x = 0; x < 3; x++) {
-                b.set(x, 0, 0, "minecraft:spruce_slab[type=bottom]");
-                b.set(x, 1, 1, "minecraft:spruce_slab[type=top]");
-                b.set(x, 0, 1, "minecraft:spruce_slab[type=top]");
+                // the sitter looks north: his left hand is the west
+                b.set(x, 0, 0, Decor.bench("spruce", Dir.NORTH, Decor.couchShape(x > 0, x < 2), "minecraft:spruce_stairs"));
             }
-            b.set(0, 0, 0, "minecraft:cobblestone_wall");
-            b.set(2, 0, 0, "minecraft:cobblestone_wall");
+            return b.build();
+        });
+    }
+
+    /** A table with four chairs and a set of plates on it, for a courtyard or behind the stalls of the market. 3x2x3. */
+    public static Blueprint cafeSet() {
+        return cached("cafeset", () -> {
+            BlueprintBuilder b = new BlueprintBuilder("cafeset", 3, 2, 3);
+            b.set(1, 0, 1, Decor.table("spruce", "single", "minecraft:spruce_slab"));
+            b.set(1, 1, 1, Decor.crockery(0, Dir.SOUTH, "minecraft:candle[candles=1,lit=false]"));
+            // every chair looks at the table
+            b.set(1, 0, 0, Decor.chair("spruce", "none", Dir.SOUTH, "minecraft:spruce_stairs"));
+            b.set(1, 0, 2, Decor.chair("spruce", "none", Dir.NORTH, "minecraft:spruce_stairs"));
+            b.set(0, 0, 1, Decor.chair("spruce", "none", Dir.EAST, "minecraft:spruce_stairs"));
+            b.set(2, 0, 1, Decor.chair("spruce", "none", Dir.WEST, "minecraft:spruce_stairs"));
             return b.build();
         });
     }

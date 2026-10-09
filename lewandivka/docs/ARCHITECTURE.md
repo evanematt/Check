@@ -159,7 +159,12 @@ climbed (stairs and slabs count as solid, a step up is one block, a top slab ove
 
 **Windows** are light blue stained glass panes (`Pal.WINDOW`: clear panes look like holes from a street) in a closed frame of
 white (piers, a sill, a lintel); the facades of the panel blocks have only calm weathering. `WindowsTest` checks that every pane
-is closed by its frame and that no building has clear panes.
+is closed by its frame and that no building has clear panes. A key of a blueprint names a pane, a fence, a wall or a bar *without*
+its joins to the neighbours, which the game works out when the block is placed by hand but not when a chunk is written; so
+`ChunkPainter` marks every one of them for the post-processing of the chunk (`markBlockForPostProcessing`, the way the game does
+it for the fences and the bars of its own structures), and the neighbours are joined when the chunk comes alive and before it is
+sent to a player. Without it every window is a thin post in the middle of the opening (a defect of the first pictures of the
+client test); the client bot now counts the panes at the facades that stand alone.
 
 **Furniture and the furniture mod.** `Decor` names every piece twice, `handcrafted:oak_chair[...]|minecraft:oak_stairs[...]`
 (`Keys.either`): the block of **Handcrafted** and, after the bar, the block of the game that stands in for it. The core looks only
@@ -169,7 +174,9 @@ bed, it is a bed of the game's own kind (so it can be slept in); otherwise the s
 (`Decor.tableShape`, `couchShape`: read off the models of the mod, checked after every rotation of every building by
 `DecorTest`). The blocks and properties of Handcrafted 3.0.6 are a test fixture (`tools/data/handcrafted-3.0.6-blocks.txt`, from
 `/lewandivka dumpblocks handcrafted` in the server-pack run), and every key made by `Decor` is checked against it
-(`RegistryTest`). `/lewandivka decor` says which blocks the furniture came out as; the smoke test of the plain server expects the
+(`RegistryTest`). The streets have the mod too: the park benches (`Props.bench`, three seats of `<wood>_bench` that join like a
+sofa, stairs of the game as the stand-in) and the sets of a table with four chairs in the courtyards and behind the stalls of the
+market (`Props.cafeSet`). `/lewandivka decor` says which blocks the furniture came out as; the smoke test of the plain server expects the
 stand-ins, the pack boot expects the blocks of the mod (and none of the stand-ins).
 
 ### The people of the district

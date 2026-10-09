@@ -74,6 +74,14 @@ final class Decor {
         return "brown";
     }
 
+    /**
+     * One seat of a park bench (a seat with a back that joins the seats next to it like a sofa, {@code shape} is {@link #couchShape});
+     * the stand-in is a stair with its back to the back of the bench.
+     */
+    static String bench(String wood, Dir front, String shape, String vanillaStairs) {
+        return Keys.either(mod(wood + "_bench", "color", "none", "facing", front.key(), "shape", shape), Keys.stairs(vanillaStairs, front.opposite(), false));
+    }
+
     /** A table; {@code shape} is {@link #tableShape}; the stand-in is a slab in the upper half of the cell. */
     static String table(String wood, String shape, String vanillaSlab) {
         return Keys.either(mod(wood + "_table", "color", "none", "shape", shape), Keys.slab(vanillaSlab, true));

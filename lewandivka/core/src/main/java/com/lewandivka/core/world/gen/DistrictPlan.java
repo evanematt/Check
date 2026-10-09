@@ -638,6 +638,8 @@ public final class DistrictPlan implements WorldPlan {
         treeLineX(-58, 38, -31, 9, 120);
         prop("bench_n1", Props.bench(), -48, -36);
         prop("bench_n2", Props.bench(), -6, -36);
+        prop("cafe_n1", Props.cafeSet(), -43, -36);
+        prop("cafe_n2", Props.cafeSet(), -1, -36);
         // bench clue: tea glass left on the seat
         Blueprint bench = Props.bench();
         propForce("bench_clue", bench, 14, GROUND + 1, -36);
@@ -667,6 +669,8 @@ public final class DistrictPlan implements WorldPlan {
         treeLineX(-58, -30, 40, 9, 160);
         prop("bench_s1", Props.bench(), -46, 38);
         prop("bench_s2", Props.bench(), 12, 38);
+        prop("cafe_s1", Props.cafeSet(), -41, 38);
+        prop("cafe_s2", Props.cafeSet(), 17, 38);
         prop("car_s1", Props.car(Props.CAR_YELLOW, 0), 24, 36);
         prop("car_s2", Props.car(Props.CAR_GREEN, 0), -44, 33);
         propForce("stash_iron", Props.dumpster("kiosk_iron"), 34, GROUND + 1, 36);
@@ -747,6 +751,7 @@ public final class DistrictPlan implements WorldPlan {
         treeLineX(-140, 38, -95, 9, 300);
         treeLineX(-140, 38, -112, 9, 301);
         for (int x = -140; x <= 36; x += 22) {
+            prop("cafe_ns" + x, Props.cafeSet(), x + 8, -102);
             prop("bench_ns" + x, Props.bench(), x, -102);
             prop("flowers_ns" + x, Props.flowers(6), x + 4, -99);
         }
@@ -778,6 +783,7 @@ public final class DistrictPlan implements WorldPlan {
         treeLineX(-58, 38, 95, 9, 320);
         treeLineX(-58, 38, 112, 9, 321);
         for (int x = -56; x <= 36; x += 22) {
+            prop("cafe_ss" + x, Props.cafeSet(), x + 8, 104);
             prop("bench_ss" + x, Props.bench(), x, 104);
             prop("flowers_ss" + x, Props.flowers(6), x + 4, 101);
         }
@@ -816,6 +822,10 @@ public final class DistrictPlan implements WorldPlan {
     private void market() {
         for (int i = 0; i < Populace.VENDORS.length; i++) {
             prop(Populace.stall(i), Yard.stall(5, 0, 130 + i), 64 + i * 7, 10);
+        }
+        // a few tables with chairs behind the stalls, for those who have bought something
+        for (int i = 0; i < 3; i++) {
+            prop("cafe_m" + i, Props.cafeSet(), 66 + i * 14, 14);
         }
     }
 

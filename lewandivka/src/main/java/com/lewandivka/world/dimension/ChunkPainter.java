@@ -6,12 +6,17 @@ import com.lewandivka.core.world.Noise;
 import com.lewandivka.core.world.TerrainColumn;
 import com.lewandivka.core.world.WorldPlan;
 import com.lewandivka.world.structure.StateResolver;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.FenceBlock;
+import net.minecraft.block.PaneBlock;
+import net.minecraft.block.WallBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ProtoChunk;
 
 import java.util.EnumSet;
 
@@ -103,9 +108,22 @@ public final class ChunkPainter {
         return y < 0 || y < 8 && Noise.hash01(SEED_DEEPSLATE, x, y, z) < (8 - y) / 8.0;
     }
 
+    /**
+     * Blocks that take their shape from the neighbours (a pane joins the pane or the wall next to it, a fence the next fence).
+     * A key of a blueprint names the block without these joins, so they are worked out when the chunk comes alive, the way the
+     * game does it for the fences and bars of its own structures: without it every window would be a thin post.
+     */
+    private static boolean joins(BlockState state) {
+        Block b = state.getBlock();
+        return b instanceof PaneBlock || b instanceof FenceBlock || b instanceof WallBlock;
+    }
+
     private static void stamp(Chunk chunk, StructurePlacement p, int x0, int z0, int minY, int maxY, BlockPos.Mutable mp) {
         Blueprint bp = p.blueprint();
         BlockState[] palette = new BlockState[bp.paletteSize()];
+        boolean[] join = new boolean[bp.paletteSize()];
+        // only a chunk under construction keeps the list of the blocks to be joined (the others would only complain)
+        boolean building = chunk instanceof ProtoChunk;
         int fromX = Math.max(p.x(), x0);
         int toX = Math.min(p.maxX(), x0 + 15);
         int fromZ = Math.max(p.z(), z0);
@@ -125,8 +143,12 @@ public final class ChunkPainter {
                     if (state == null) {
                         state = StateResolver.parse(bp.paletteKey(raw));
                         palette[raw] = state;
+                        join[raw] = building && joins(state);
                     }
                     chunk.setBlockState(mp.set(wx, wy, wz), state, false);
+                    if (join[raw]) {
+                        chunk.markBlockForPostProcessing(mp);
+                    }
                 }
             }
         }
