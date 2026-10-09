@@ -262,12 +262,22 @@ public final class DistrictPlan implements WorldPlan {
                 }
                 int half = tree.sizeX() / 2;
                 StructurePlacement sp = new StructurePlacement("forest", tree, tx - half, col.height + 1, tz - half);
-                if (sp.intersectsXZ(minX, minZ, maxX, maxZ)) {
+                if (sp.intersectsXZ(minX, minZ, maxX, maxZ) && !onBuilding(sp)) {
                     out.add(sp);
                 }
             }
         }
         return out;
+    }
+
+    /** Whether the crown of a tree of the forest belt would grow into a building. */
+    private boolean onBuilding(StructurePlacement tree) {
+        for (StructurePlacement p : placements) {
+            if (!p.id().equals("tree") && p.intersectsXZ(tree.x() - 1, tree.z() - 1, tree.maxX() + 1, tree.maxZ() + 1)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -403,10 +413,13 @@ public final class DistrictPlan implements WorldPlan {
         northCourtyard();
         southCourtyard();
         westSide();
+        westFlank();
         northEast();
+        market();
         southEast();
         northStrip();
         southStrip();
+        utilities();
         garageCooperative();
         streetFurniture();
         questMarkers();
@@ -505,20 +518,9 @@ public final class DistrictPlan implements WorldPlan {
                 layoutProblems.add(id + " at " + probe.x() + "," + probe.z() + ".." + probe.maxX() + "," + probe.maxZ() + ": " + why);
             }
         }
-        // the building stands at the natural height of the ground under its middle (the streets are level, so a building next to one
-        // stands at the level of the street), at most a few blocks off the level of the streets (the ground has to climb to it), on a
-        // plateau that slopes back into the land around it
-        int natural = (int) Math.round(ground.natural((probe.x() + probe.maxX()) / 2, (probe.z() + probe.maxZ()) / 2));
-        // ... and never further from the level of the street than the ground can climb on the way (one block per block)
-        double toStreet = Double.MAX_VALUE;
-        for (int x = probe.x(); x <= probe.maxX(); x += 4) {
-            toStreet = Math.min(toStreet, Math.min(ground.distanceToRoad(x, probe.z()), ground.distanceToRoad(x, probe.maxZ())));
-        }
-        for (int z = probe.z(); z <= probe.maxZ(); z += 4) {
-            toStreet = Math.min(toStreet, Math.min(ground.distanceToRoad(probe.x(), z), ground.distanceToRoad(probe.maxX(), z)));
-        }
-        int reach = (int) Math.max(0, Math.min(3, Math.floor(toStreet) - 1));
-        int level = Math.max(GROUND - reach, Math.min(GROUND + reach, natural));
+        // every building stands on a pad at the level of the streets (the land between the buildings undulates, the pads and the
+        // streets do not: neighbours never differ in level, and no slope is steeper than the margin of a pad allows)
+        int level = GROUND;
         StructurePlacement sp = new StructurePlacement(id, bp, ox, level, oz);
         ground.plateau(sp.x(), sp.z(), sp.maxX(), sp.maxZ(), level, 8);
         clearTrees(sp.x(), sp.z(), sp.maxX(), sp.maxZ());
@@ -680,11 +682,7 @@ public final class DistrictPlan implements WorldPlan {
         panel("block_w1", 3, 5, Buildings.Theme.PANEL_GREY, 1, 31, -100, -56);
         panel("block_w2", 2, 5, Buildings.Theme.PANEL_BEIGE, 1, 32, -100, -1);
         treeLineZ(-52, 30, -86, 8, 170);
-        treeLineZ(-52, 30, -110, 10, 171);
-        prop("fence_w1", Props.chainFence(24, true), -130, -50);
-        // a small allotment garden
-        prop("garden_w1", Props.gardenPlot(10, 8), -130, -20);
-        prop("garden_w2", Props.gardenPlot(10, 8), -130, -8);
+        treeLineZ(-4, 30, -110, 10, 171);
         propForce("dumpster_w1", Props.dumpster("junk"), -86, GROUND + 1, 12);
     }
 
@@ -793,6 +791,52 @@ public final class DistrictPlan implements WorldPlan {
         treeLineX(58, 146, 108, 12, 330);
     }
 
+    /** The private sector west of the blocks (houses turned to the east), the pitch between them and the blocks, the allotment gardens. */
+    private void westFlank() {
+        Buildings.HouseStyle[] styles = Buildings.HouseStyle.values();
+        for (int i = 0; i < 4; i++) {
+            houseLot("house_wn" + i, -143, -56 + i * 16, 12 + (i % 2) * 2, 9, styles[i % 3], 1, 120 + i);
+        }
+        building("field_w", Yard.field(19, 42), -124, -50);
+        treeLineZ(-52, -8, -127, 8, 340);
+        treeLineZ(-52, -8, -105, 8, 341);
+        // the allotments: rows of beds with a shed at the end of every row
+        for (int row = 0; row < 4; row++) {
+            int z = 10 + row * 12;
+            for (int col = 0; col < 2; col++) {
+                prop("plot_" + row + col, Props.gardenPlot(10, 8), -145 + col * 13, z);
+            }
+            building("shed_" + row, Yard.shed(1, 150 + row), -121, z, false);
+        }
+        propForce("pallets_w", Props.pallets(), -144, GROUND + 1, 58);
+    }
+
+    /** The market along the south side of the main street: stalls with awnings. */
+    private void market() {
+        for (int i = 0; i < 7; i++) {
+            prop("stall_" + i, Yard.stall(5, 0, 130 + i), 64 + i * 7, 10);
+        }
+    }
+
+    /** Garages, a boiler house and a transformer station at the northern and the southern edge of the district. */
+    private void utilities() {
+        // north: the garages turn their gates to the north, the boiler house stands beside the street
+        building("garages_n1", Industry.garageRow(10, 0, 6), -146, -141);
+        building("boiler", Industry.boilerHouse(0, 5), -102, -142);
+        building("substation_n", Industry.substation(0, 3), -60, -141);
+        building("garages_n2", Industry.garageRow(8, 0, 7), -46, -141);
+        building("garages_n3", Industry.garageRow(8, 0, 8), 4, -141);
+        // south: the same, turned to face south
+        building("garages_s1", Industry.garageRow(10, 2, 9), -60, 135);
+        building("substation_s", Industry.substation(2, 4), -12, 135);
+        building("garages_s2", Industry.garageRow(8, 2, 10), 4, 135);
+        building("garages_s3", Industry.garageRow(8, 2, 11), 60, 135);
+        for (int x : new int[] {-56, -30, 10, 30}) {
+            prop("car_nu" + x, Props.car(Props.CAR_BLUE, 0), x, -131);
+            prop("car_su" + x, Props.car(Props.CAR_WHITE, 0), x, 132);
+        }
+    }
+
     /**
      * House with a fenced front garden, bush and tree. {@code turns}: 0 = front faces north,
      * 2 = front faces south. The 3-block porch margin of the blueprint is followed by a 3-deep garden
@@ -801,12 +845,26 @@ public final class DistrictPlan implements WorldPlan {
     private void houseLot(String id, int x, int z, int w, int d, Buildings.HouseStyle style, int turns, long seed) {
         Blueprint h = Buildings.plasterHouse(w, d, style, turns, seed);
         building(id, h, x, z);
-        int gz = turns == 2 ? z + d + 3 : z - 6;
-        int fz = turns == 2 ? z + d + 6 : z - 7;
-        prop(id + "_garden", Props.gardenPlot(w - 2, 3), x + 1, gz);
-        prop(id + "_fence", Props.chainFence(w + 6, true), x - 3, fz);
-        tree(x + w + 2, z + 3, (int) Math.floorMod(seed, (long) Props.TREE_VARIANTS));
-        prop(id + "_bush", Props.bush((int) seed), x - 2, z + d / 2);
+        int tree = (int) Math.floorMod(seed, (long) Props.TREE_VARIANTS);
+        switch (turns & 3) {
+            case 0, 2 -> {
+                int gz = turns == 2 ? z + d + 3 : z - 6;
+                int fz = turns == 2 ? z + d + 6 : z - 7;
+                prop(id + "_garden", Props.gardenPlot(w - 2, 3), x + 1, gz);
+                prop(id + "_fence", Props.chainFence(w + 6, true), x - 3, fz);
+                tree(x + w + 2, z + 3, tree);
+                prop(id + "_bush", Props.bush((int) seed), x - 2, z + d / 2);
+            }
+            default -> {
+                // the house faces east (1) or west (3): its depth runs along x, its width along z
+                int gx = turns == 1 ? x + d + 3 : x - 6;
+                int fx = turns == 1 ? x + d + 6 : x - 7;
+                prop(id + "_garden", Yard.rotated(Props.gardenPlot(w - 2, 3), 1), gx, z + 1);
+                prop(id + "_fence", Yard.rotated(Props.chainFence(w + 6, true), 1), fx, z - 3);
+                tree(turns == 1 ? x + 3 : x + d - 4, z + w + 2, tree);
+                prop(id + "_bush", Props.bush((int) seed), x + d / 2, z - 2);
+            }
+        }
     }
 
     private void garageCooperative() {

@@ -171,6 +171,9 @@ public final class Catalog {
         m.put("house_orange", rename(Buildings.plasterHouse(14, 9, Buildings.HouseStyle.ORANGE, 0, 4), "house_orange"));
         m.put("house_lilac", rename(Buildings.plasterHouse(12, 9, Buildings.HouseStyle.LILAC, 0, 5), "house_lilac"));
         m.put("kindergarten", rename(Buildings.kindergarten(Buildings.HouseStyle.LILAC, 0, 24), "kindergarten"));
+        m.put("garage_row", rename(Industry.garageRow(8, 0, 1), "garage_row"));
+        m.put("boiler_house", rename(Industry.boilerHouse(0, 5), "boiler_house"));
+        m.put("substation", rename(Industry.substation(0, 3), "substation"));
         m.put("old_shop", rename(Buildings.oldShop(0), "old_shop"));
         m.put("tram_depot", rename(Buildings.tramDepot(0), "tram_depot"));
         m.put("tram_stop", TramBuilders.tramStop());

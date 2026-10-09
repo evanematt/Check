@@ -110,12 +110,13 @@ final class CityGround {
 
     /** Makes the plateaus searchable; no plateau can be added afterwards. */
     void freeze() {
-        // the margin of a plateau never reaches another plateau, so that the land inside each of them is exactly its level
+        // the margin of a plateau never reaches a plateau of another level, so that the land inside each of them is exactly its level
+        // (neighbours at the same level simply melt into one another)
         for (int i = 0; i < plateaus.size(); i++) {
             Plateau p = plateaus.get(i);
             int margin = p.margin;
             for (int j = 0; j < plateaus.size(); j++) {
-                if (j != i) {
+                if (j != i && plateaus.get(j).level != p.level) {
                     margin = Math.min(margin, (int) Math.max(0, Math.ceil(p.gap(plateaus.get(j))) - 1));
                 }
             }
