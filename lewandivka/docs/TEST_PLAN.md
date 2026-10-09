@@ -66,6 +66,7 @@ should be walked through once with real players. Tick per party size.
 | 27 | Market: buy something at every stall (food for emeralds), sell something to every trader (wheat, coal, cobblestone, logs, fish ...), come back the next day: the goods are there again | ☐ | ☐ | ☐ | the trade screen opens, the payment is taken, nobody walks away or can be hurt, no token is asked for |
 | 28 | Citizens: talk to all eight kinds, twice each | ☐ | ☐ | ☐ | one short chat message of two or three lines, not the same twice in a row, nothing while a quest dialogue with choices is open |
 | 29 | Buildings: look at the facades from the street (panel blocks, houses, kindergarten, school) in daylight and at night, then go in | ☐ | ☐ | ☐ | the windows read as glass in white frames; the furniture is the models of Handcrafted (chairs face the tables, sofas have arms, beds have headboards) |
+| 30 | Streets: sit on a park bench and at a table with chairs in a courtyard (right click), look at the railings of the balconies and at the market from the back | ☐ | ☐ | ☐ | the benches and chairs are the models of Handcrafted (a bench of three seats is one long bench, the chairs face the table), the railings are joined bars, every trader can be seen over the counter |
 
 ## 3. Known limits (honest list)
 

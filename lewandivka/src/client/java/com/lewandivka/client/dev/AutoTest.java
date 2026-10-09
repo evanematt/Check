@@ -456,6 +456,8 @@ public final class AutoTest {
      * with offers in it, and it must close again. The picture shows what the customer sees.
      */
     private static void trade(MinecraftClient c, String name) {
+        // what the customer sees at the counter, before he speaks to the trader
+        shot(c, "counter_" + name, 6);
         add("trade with " + name, 20, () -> {
             net.minecraft.util.math.Box area = c.player.getBoundingBox().expand(8.0);
             java.util.List<com.lewandivka.entity.npc.VendorEntity> traders = c.world.getEntitiesByClass(com.lewandivka.entity.npc.VendorEntity.class, area, e -> true);

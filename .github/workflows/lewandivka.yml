@@ -195,6 +195,7 @@ jobs:
           * `Lewandivka-Server-1.0.0.zip` - dedicated server (offline mode for TLauncher accounts)
           * `lewandivka-1.0.0.jar` - the mod alone (needs Fabric API and GeckoLib, see the README)
           * `THIRD_PARTY.md` - every third-party project, license and version
+          * Start a **new world** with a new version: the parts of the district that an older world has already generated keep their old buildings.
 
           Every file was built and tested by CI (unit tests, GameTests, dedicated server, real client, finished server pack).
           NOTES
