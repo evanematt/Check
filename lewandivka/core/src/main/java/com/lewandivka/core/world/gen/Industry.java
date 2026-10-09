@@ -202,10 +202,10 @@ public final class Industry {
         b.fill(w - 1, 5, 5, w - 1, 5, 5, Pal.RUST);
         // the control corner: a desk, a lectern, lamps
         b.set(13, 1, 1, "minecraft:lectern[facing=south]");
-        b.set(14, 1, 1, "minecraft:barrel[facing=up]");
+        Loot.barrelUp(b, 14, 1, 1, "garage");
         b.set(14, 2, 1, "minecraft:redstone_lamp[lit=false]");
         b.set(13, 1, 8, "minecraft:crafting_table");
-        b.set(14, 1, 8, Keys.barrel(Dir.WEST));
+        Loot.barrel(b, 14, 1, 8, Dir.WEST, "garage");
         for (int x = 3; x < w - 2; x += 4) {
             b.set(x, 7, 2, Keys.lantern(true));
             b.set(x, 7, 8, Keys.lantern(true));
@@ -274,7 +274,7 @@ public final class Industry {
         }
         b.fill(1, 5, 5, w - 2, 5, 5, Pal.BARS);
         b.set(4, 5, 2, Keys.lantern(true));
-        b.set(1, 1, 1, Keys.barrel(Dir.EAST));
+        Loot.barrel(b, 1, 1, 1, Dir.EAST, "garage");
         b.marker("entrance", 4, 1, -1);
         b.region("body", 0, 0, 0, w - 1, 6, d - 1);
         return b.build();
