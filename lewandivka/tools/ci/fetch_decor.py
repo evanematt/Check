@@ -19,6 +19,8 @@ LOADER = "fabric"
 # project slug -> the number (or a part of it) of the version of the pack
 PACK = {"handcrafted": "3.0.6", "resourceful-lib": "2.1.29", "treps-cars": "0.9", "alcohol": "1.1.4", "more-food": "1.0.7",
         "fume-de-bushy": "1.0.1"}
+# mods that a dedicated server cannot start with (their code touches a class of the client when it starts): only the client gets them
+CLIENT_ONLY = {"treps-cars"}
 
 
 def get(url: str, binary: bool = False):
@@ -45,10 +47,12 @@ def main(folders: list) -> int:
         if hashlib.sha1(data).hexdigest() != f["hashes"]["sha1"]:
             print(f"{slug}: hash mismatch")
             return 1
-        for folder in folders:
+        # the first folder is that of the development server, the last that of the client
+        targets = folders[-1:] if slug in CLIENT_ONLY else folders
+        for folder in targets:
             Path(folder).mkdir(parents=True, exist_ok=True)
             (Path(folder) / f["filename"]).write_bytes(data)
-        print(f"{slug} {picked[0]['version_number']}: {f['filename']} ({len(data)} bytes) -> {', '.join(folders)}")
+        print(f"{slug} {picked[0]['version_number']}: {f['filename']} ({len(data)} bytes) -> {', '.join(targets)}")
     return 0
 
 
