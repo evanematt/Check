@@ -89,10 +89,20 @@ def inspect(jar: Path) -> None:
             if re.search(r"/lang/en_us\.json$", n):
                 print("---- " + n + " ----")
                 print(z.read(n).decode("utf-8", "replace")[:6000])
-        print("---- class names (first 150) ----")
         classes = [n for n in names if n.endswith(".class") and "$" not in n]
-        for n in classes[:150]:
-            print("  " + n)
+        print("---- classes that are not the models and renderers of the cars ----")
+        for n in classes:
+            if "/entity/client/" not in n:
+                print("  " + n)
+        print("---- strings of the classes that register things ----")
+        for n in classes:
+            base = n.rsplit("/", 1)[-1]
+            if "/entity/client/" in n or not re.match(r"(ModEntities|ModItems|ModBlocks|CarsMod|CarsModClient|ModItemGroups|ModBlockEntities|ModKeybindings|ModDamageTypes|ModSounds|.*Entity|.*Item|.*Block|.*Packet|.*Handler)\.class$", base):
+                continue
+            strings = [x for x in utf8_constants(z.read(n)) if 3 <= len(x) <= 80 and re.match(r"^[ -~]+$", x)]
+            print(f"== {n}: {len(strings)} strings")
+            for x in strings[:400]:
+                print("   " + x)
         print("---- other resources (models, recipes, loot, tags, sounds), first 120 ----")
         shown = 0
         for n in names:
@@ -110,6 +120,34 @@ def inspect(jar: Path) -> None:
                 hints.add(m.group(0).decode("ascii", "replace"))
         for h in sorted(hints)[:150]:
             print("  " + h)
+
+
+def utf8_constants(blob: bytes):
+    """The strings of the constant pool of a class file, in order (what a class registers and names)."""
+    import struct
+    out = []
+    pos = 10
+    count = struct.unpack(">H", blob[8:10])[0]
+    i = 1
+    while i < count:
+        tag = blob[pos]
+        if tag == 1:
+            n = struct.unpack(">H", blob[pos + 1:pos + 3])[0]
+            out.append(blob[pos + 3:pos + 3 + n].decode("utf-8", "replace"))
+            pos += 3 + n
+        elif tag in (3, 4, 9, 10, 11, 12, 17, 18):
+            pos += 5
+        elif tag in (5, 6):
+            pos += 9
+            i += 1
+        elif tag in (7, 8, 16, 19, 20):
+            pos += 3
+        elif tag == 15:
+            pos += 4
+        else:
+            break
+        i += 1
+    return out
 
 
 def main(argv):
