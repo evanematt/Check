@@ -193,6 +193,35 @@ buys at least three plain goods of a first day and sells at least three things);
 from it and makes them again every day and on every load. The currency is the emerald; the district token is a quest item and
 stays out of the trade, so nothing a quest needs can be spent. `/lewandivka populace` makes everybody now.
 
+### Containers with loot
+
+A chest or a barrel of a building is an ordinary container of the game plus a marker (`loot_x_y_z`, data `table=lewandivka:chests/<kind>`;
+`Loot` in the core, the room tokens `C` and `O` of `RoomKit`, the barrels of the garages, the sheds and the shop). `ChunkPainter` runs
+over the markers after everything of the chunk is written: where the block is still a chest or a barrel it gives the chunk the data
+of a block entity with the `LootTable` of its kind (`Chunk.addPendingBlockEntityNbt`; the game makes the block entities of a chunk when
+it puts it into the world, `WorldChunk.runPostProcessing`), and the game fills the container the first time somebody opens it, with a
+different roll in every world. The seven tables (`flat`, `house`, `kindergarten`, `school`, `garage`, `shed`, `shop`) are data files
+made by `tools/resgen/chest_loot.py`; `LootTest` checks that every item exists in 1.20.1, that nothing that does not stack has a count,
+and that the plan has the containers of every kind (about 1,400). The things of the other mods of the pack (`LootExtras`: the drinks of
+Alcohol Only, the tobacco of Fumee de Bushy, the food of More Food, none for the children) are added by `ModLoot` as one more pool when a table
+is loaded, with the items the game has: a table that names an item that does not exist does not load at all, so those names are not in the
+files. `/lewandivka loot` rolls every table forty times (a chest that came out empty means a table that did not load) and looks at
+containers in the world; the pack boot expects all 23 things of the other mods to be found.
+
+### The cars
+
+A car of the plan is a block-built car (`Props.car`, five by three blocks) with a marker `car` (`facing=`, `color=`). Its blocks are
+`!trepscars|<block>` keys (`Keys.unlessMod`): `StateResolver` makes them air when the mod **Trep's Cars** is loaded and the block
+otherwise. With the mod, `CarPark` (glue, ticks every five seconds) makes the creature of the mod at the marker of every place where a
+player is within 48 blocks, once (the places that have had their car are saved in the world, `lewandivka_cars`; a car that was driven
+away is not made again), and takes away the blocks of a car built of blocks in a world that was made before the mod was installed
+(only blocks that are still as the plan made them). The mod itself cannot run on a dedicated server (its main class touches the key
+bindings of the client), so it is `server: unsupported` in the pack, the server pack has no cars, and a dedicated server keeps the cars
+built of blocks; a singleplayer world and a world opened to LAN have the cars. The test of the cars is the second run of the client test
+(`tools/ci/carstest.sh`, `AutoTest` with `LEWANDIVKA_AUTOTEST=cars`): the game plays a world of its own, two places get cars built of
+blocks the way an older world has them, `CarPark.makeAll` makes the cars, the bot checks the cars, the blocks that are gone and that nothing is made twice,
+photographs six cars, gets into one with a click and drives it.
+
 ### Calibrated physics
 
 The dungeons are built for exact launch numbers: `core/.../world/Launch.java` holds the speed of the spring pads (vertical

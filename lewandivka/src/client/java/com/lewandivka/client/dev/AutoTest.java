@@ -289,6 +289,19 @@ public final class AutoTest {
         });
     }
 
+    /** What the camera looks at in the world of the client: the first block on the line of sight and how far it is (to tell a picture that is a stale frame from one that is the room). */
+    private static void ray(MinecraftClient c, String name) {
+        add("ray " + name, 1, () -> {
+            Vec3d eye = c.player.getEyePos();
+            Vec3d to = eye.add(c.player.getRotationVec(1.0f).multiply(8.0));
+            net.minecraft.util.hit.BlockHitResult hit = c.world.raycast(new net.minecraft.world.RaycastContext(eye, to,
+                    net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, c.player));
+            note(String.format(Locale.ROOT, "ray %s: from %.1f %.1f %.1f yaw %.0f pitch %.0f: %s at %s, %.1f blocks", name, eye.x, eye.y, eye.z, c.player.getYaw(),
+                    c.player.getPitch(), hit.getType() == net.minecraft.util.hit.HitResult.Type.MISS ? "nothing" : Registries.BLOCK.getId(c.world.getBlockState(hit.getBlockPos()).getBlock()),
+                    hit.getType() == net.minecraft.util.hit.HitResult.Type.MISS ? "-" : hit.getBlockPos().toShortString(), eye.distanceTo(hit.getPos())));
+        });
+    }
+
     /** Pauses the script until the terrain around the player has loaded (a dimension change can take a while). */
     private static void settle(MinecraftClient c, String name, int maxTicks) {
         add("await " + name, 2, () -> {
@@ -362,7 +375,90 @@ public final class AutoTest {
         cmd(c, "tp @s ~ ~ ~ " + yaw + " " + pitch, 6);
         add("check " + name, 1, () -> expect("the player stands free in " + name, !c.player.isInsideWall(),
                 "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
+        ray(c, name);
         shot(c, "room_" + name, 8);
+    }
+
+    /**
+     * A chest or a barrel of a building with a table of loot (the marker names it): the player goes to it, stands in front of it where the
+     * floor is free, looks at it and opens it with a real click. The game fills it when it is first opened, so the screen must show things
+     * (a table that did not load, or a block that lost its block entity, shows an empty container or none).
+     */
+    private static void container(MinecraftClient c, String markerId, String name) {
+        Marker m = Structures.marker(markerId);
+        if (m == null) {
+            add("no container " + markerId, 1, () -> expect("the plan has a container at " + markerId, false, "no such marker"));
+            return;
+        }
+        BlockPos pos = m.pos();
+        String table = com.lewandivka.core.world.gen.Loot.tableOf(m.data());
+        cmd(c, atIn("lewandivka:district", pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, 0, 60), 20);
+        settle(c, "the container " + name, 2400);
+        add("stand in front of " + name, 14, () -> {
+            net.minecraft.block.BlockState state = c.world.getBlockState(pos);
+            Direction front = Direction.SOUTH;
+            if (state.contains(net.minecraft.state.property.Properties.HORIZONTAL_FACING)) {
+                front = state.get(net.minecraft.state.property.Properties.HORIZONTAL_FACING);
+            } else if (state.contains(net.minecraft.state.property.Properties.FACING) && state.get(net.minecraft.state.property.Properties.FACING).getAxis().isHorizontal()) {
+                front = state.get(net.minecraft.state.property.Properties.FACING);
+            }
+            Direction[] order = {front, front.rotateYClockwise(), front.rotateYCounterclockwise(), front.getOpposite()};
+            Vec3d best = null;
+            for (int dist = 2; dist >= 1 && best == null; dist--) {
+                for (Direction d : order) {
+                    boolean free = true;
+                    for (int i = 1; i <= dist; i++) {
+                        BlockPos feet = pos.offset(d, i);
+                        free &= c.world.getBlockState(feet).getCollisionShape(c.world, feet).isEmpty()
+                                && c.world.getBlockState(feet.up()).getCollisionShape(c.world, feet.up()).isEmpty();
+                    }
+                    BlockPos stand = pos.offset(d, dist);
+                    if (free && !c.world.getBlockState(stand.down()).getCollisionShape(c.world, stand.down()).isEmpty()) {
+                        best = Vec3d.ofBottomCenter(stand);
+                        break;
+                    }
+                }
+            }
+            if (best == null) {
+                note("no free place in front of " + name + " (" + state.getBlock().getTranslationKey() + "): the player stays above it");
+                c.player.networkHandler.sendChatCommand("tp @s ~ ~ ~ 0 60");
+                return;
+            }
+            double dx = pos.getX() + 0.5 - best.x;
+            double dz = pos.getZ() + 0.5 - best.z;
+            float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+            c.player.networkHandler.sendChatCommand(at(best.x, best.y, best.z, yaw, 28));
+        });
+        ray(c, "container " + name);
+        shot(c, "loot_" + name + "_closed", 8);
+        add("open " + name, 24, () -> {
+            screenWanted = true;
+            net.minecraft.block.BlockState state = c.world.getBlockState(pos);
+            expect("the container " + name + " is a chest or a barrel", state.getBlock() instanceof net.minecraft.block.ChestBlock || state.getBlock() instanceof net.minecraft.block.BarrelBlock,
+                    state.getBlock().getTranslationKey() + " at " + pos.toShortString());
+            Direction face = c.player.getY() > pos.getY() + 1.4 ? Direction.UP : Direction.fromRotation(c.player.getYaw()).getOpposite();
+            c.interactionManager.interactBlock(c.player, Hand.MAIN_HAND, new BlockHitResult(Vec3d.ofCenter(pos), face, pos, false));
+        });
+        until("the screen of " + name, 100, 8, () -> c.currentScreen instanceof net.minecraft.client.gui.screen.ingame.GenericContainerScreen
+                && c.player.currentScreenHandler instanceof net.minecraft.screen.GenericContainerScreenHandler h && h.getInventory().size() >= 9);
+        add("check the loot of " + name, 1, () -> {
+            int stacks = 0;
+            java.util.Set<String> items = new java.util.TreeSet<>();
+            if (c.player.currentScreenHandler instanceof net.minecraft.screen.GenericContainerScreenHandler h) {
+                for (int i = 0; i < h.getInventory().size(); i++) {
+                    if (!h.getInventory().getStack(i).isEmpty()) {
+                        stacks++;
+                        items.add(Registries.ITEM.getId(h.getInventory().getStack(i).getItem()).getPath() + "x" + h.getInventory().getStack(i).getCount());
+                    }
+                }
+            }
+            expect("the container " + name + " holds loot (" + table + ")", stacks >= 2, stacks + " stacks: " + items);
+        });
+        shot(c, "loot_" + name, 8);
+        add("close " + name, 6, () -> {
+            c.setScreen(null);
+            screenWanted = false;
+        });
     }
 
     /** A picture from a place given by its coordinates (the furniture of the streets has no spot of its own). */
@@ -377,6 +473,7 @@ public final class AutoTest {
     /** Another view from the place where the player stands: what the room has on its other walls. */
     private static void look(MinecraftClient c, float yaw, float pitch, String name) {
         cmd(c, "tp @s ~ ~ ~ " + yaw + " " + pitch, 6);
+        ray(c, name);
         shot(c, "room_" + name, 8);
     }
 
@@ -1313,6 +1410,15 @@ public final class AutoTest {
         facade(c, "house_ne0", "entrance", 180, "house_ne0");
         facade(c, "kindergarten", "entrance", 0, "kindergarten");
         tour(c, "school", null);
+        // the chests and the barrels of the buildings: opened with a real click, they must hold loot
+        container(c, "block_a:loot_5_1_5", "flat_chest");
+        container(c, "house_ne0:loot_4_1_1", "house_barrel");
+        container(c, "house_ne1:loot_1_1_2", "house_chest");
+        container(c, "kindergarten:loot_9_1_1", "kindergarten_chest");
+        container(c, "school:loot_3_1_1", "school_chest");
+        container(c, "old_shop:loot_5_1_7", "shop_barrel");
+        container(c, "garages_n1:loot_10_1_6", "garage_barrel");
+        container(c, "shed_0:loot_3_1_3", "shed_barrel");
         // the people of the district: the traders of the market (every one of them is made now) and some of the citizens
         cmd(c, "lewandivka populace", 80);
         meet(c, "stall_0", "customer", 0, "baker");

@@ -40,6 +40,9 @@ import java.util.TreeSet;
  * written down in the save, so that a car a player has driven away is not made again), the first time somebody comes near. A world
  * that was made before the mod was installed still has its block-built cars: they are taken away as the car of the mod is made.
  *
+ * <p>The cars of the district cannot be hurt: a car of the mod blows up when it is destroyed, and that is not what a punch at a parked
+ * car should do to a street of the district.</p>
+ *
  * <p>The mod itself cannot be run by a dedicated server (its main class touches a class that only the client has), so the cars of
  * the mod exist in a game that is played on one computer: a world on its own or opened to the local network. Everywhere else the
  * cars stay built of blocks.</p>
@@ -150,6 +153,9 @@ public final class CarPark {
         }
         counts[1] += clearBlocks(world, spot);
         car.refreshPositionAndAngles(spot.x() + 0.5, spot.y(), spot.z() + 0.5, Cars.yaw(spot.facing()), 0.0f);
+        // a car of the mod blows up when it dies (an explosion that breaks blocks and sets fire): a punch at a parked car in the middle of
+        // the district must not do that, so the cars of the district cannot be hurt (only the void and the commands still kill them)
+        car.setInvulnerable(true);
         if (car instanceof MobEntity mob) {
             mob.setPersistent();
             mob.setBodyYaw(Cars.yaw(spot.facing()));
