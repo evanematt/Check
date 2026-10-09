@@ -1160,10 +1160,11 @@ public final class AutoTest {
     }
 
     /**
-     * The picture of a car from a vantage point {@code dx, dy, dz} blocks from its middle, looking at it; the player is in the picture's
-     * place when it is taken. Checks that the car of the mod stands there and that no block of the car built of blocks is left.
+     * The picture of a car: the player goes above it (so that its chunk loads), then a vantage point is picked in the world of the client, on
+     * the ground around the car, free for a player to stand on and with nothing between the eye and the car; the player stands there and
+     * looks at the car. Checks that the car of the mod stands at its place and that no block of the car built of blocks is left.
      */
-    private static void carView(MinecraftClient c, String marker, String name, double dx, double dy, double dz) {
+    private static void carView(MinecraftClient c, String marker, String name) {
         com.lewandivka.core.world.gen.Cars.Spot car = carSpot(marker);
         if (car == null) {
             add("no car " + marker, 1, () -> expect("the plan has a car at " + marker, false, "no such place"));
@@ -1172,12 +1173,9 @@ public final class AutoTest {
         double cx = car.x() + 0.5;
         double cy = car.y();
         double cz = car.z() + 0.5;
-        float yaw = (float) Math.toDegrees(Math.atan2(dx, -dz));
-        float pitch = (float) Math.toDegrees(Math.atan2(dy - 1.0, Math.hypot(dx, dz)));
-        cmd(c, atIn("lewandivka:district", cx + dx, cy + dy, cz + dz, yaw, pitch), 20);
+        cmd(c, atIn("lewandivka:district", cx, cy + 3.0, cz, 0, 60), 20);
         settle(c, name, 2400);
         add("check the car at " + name, 1, () -> {
-            expect("the player stands free at the car " + name, !c.player.isInsideWall(), "the player is at " + c.player.getBlockPos().toShortString());
             java.util.List<Entity> near = c.world.getOtherEntities(null, net.minecraft.util.math.Box.of(new Vec3d(cx, cy + 1.0, cz), 8, 6, 8), AutoTest::isCar);
             double best = Double.MAX_VALUE;
             String kind = "none";
@@ -1208,7 +1206,45 @@ public final class AutoTest {
             }
             expect("no block of the car built of blocks is left at " + name, leftover == 0, leftover + " blocks of the footprint of " + marker);
         });
-        shot(c, "cars_" + name, 10);
+        boolean[] found = new boolean[1];
+        add("pick the view of the car at " + name, 14, () -> {
+            Vec3d centre = new Vec3d(cx, cy + 1.0, cz);
+            for (double dist : new double[] {7, 6, 8, 5, 9, 4}) {
+                for (int k = 0; k < 16 && !found[0]; k++) {
+                    double a = Math.toRadians(k * 22.5);
+                    double px = cx + Math.sin(a) * dist;
+                    double pz = cz + Math.cos(a) * dist;
+                    BlockPos feet = BlockPos.ofFloored(px, cy, pz);
+                    boolean room = c.world.getBlockState(feet).getCollisionShape(c.world, feet).isEmpty()
+                            && c.world.getBlockState(feet.up()).getCollisionShape(c.world, feet.up()).isEmpty()
+                            && !c.world.getBlockState(feet.down()).getCollisionShape(c.world, feet.down()).isEmpty();
+                    if (!room) {
+                        continue;
+                    }
+                    Vec3d eye = new Vec3d(px, cy + 1.62, pz);
+                    boolean clear = c.world.raycast(new net.minecraft.world.RaycastContext(eye, centre, net.minecraft.world.RaycastContext.ShapeType.COLLIDER,
+                            net.minecraft.world.RaycastContext.FluidHandling.NONE, c.player)).getType() == net.minecraft.util.hit.HitResult.Type.MISS;
+                    if (!clear) {
+                        continue;
+                    }
+                    found[0] = true;
+                    float yaw = (float) Math.toDegrees(Math.atan2(px - cx, cz - pz));
+                    float pitch = (float) Math.toDegrees(Math.atan2(eye.y - centre.y, dist));
+                    c.player.networkHandler.sendChatCommand(at(px, cy, pz, yaw, pitch));
+                }
+                if (found[0]) {
+                    break;
+                }
+            }
+            note(found[0] ? "a view of the car at " + name + " was found" : "no free view of the car at " + name + ": no picture");
+        });
+        add("wait for the picture of " + name, 20, () -> { });
+        add("picture of the car at " + name, 2, () -> {
+            if (found[0]) {
+                ScreenshotRecorder.saveScreenshot(c.runDirectory, "cars_" + name + ".png", c.getFramebuffer(), text -> { });
+                shots++;
+            }
+        });
     }
 
     /** Gets into the car of a place with a real click and pushes the forward key: the mod's own driving, on the server inside the game. */
@@ -1314,14 +1350,14 @@ public final class AutoTest {
         });
 
         // the pictures: two places that had cars of blocks, two that were generated with the mod in the game
-        carView(c, "car_n1:car", "street_replaced", -5, 5, 7);
-        carView(c, "car_n1:car", "street_replaced_top", 0, 14, 1);
-        carView(c, "car_s2:car", "street_replaced_2", 5, 5, -7);
-        carView(c, "car_n2:car", "street_new", -5, 5, 7);
-        carView(c, "car_s1:car", "street_new_2", 5, 5, -7);
-        carView(c, "car_t:car", "street_new_3", -7, 5, 5);
-        carView(c, "garage13:car.car", "garage13", 0, 4, -6);
-        carView(c, "garages_n2:car.car", "garages_row", 0, 4, -6);
+        carView(c, "car_n1:car", "street_replaced");
+        carView(c, "car_s2:car", "street_replaced_2");
+        carView(c, "car_n2:car", "street_new");
+        carView(c, "car_s1:car", "street_new_2");
+        carView(c, "car_t:car", "street_new_3");
+        carView(c, "garage13:car.car", "garage13");
+        carView(c, "garages_n2:car.car", "garages_row");
+        carView(c, "garages_s3:car.car", "garages_row_2");
         drive(c, "car_n2:car", "street");
         add("cars known to the client", 2, () -> {
             java.util.Map<String, Integer> counts = new java.util.TreeMap<>();
