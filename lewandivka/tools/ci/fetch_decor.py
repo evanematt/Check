@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Downloads the furniture mod of the pack and its library from Modrinth into the mods folders of the development server and client
+"""Downloads the content mods of the pack (the furniture mod and its library, the cars, the drinks, the food, the cigarettes) from Modrinth into the mods folders of the development server and client
 of the client test, so that the pictures of the test show the furniture of the rooms the way the pack does (the development game
 loads the jars of its mods folder, remapped). The versions are those of the pack (see THIRD_PARTY.md); every file is hash checked.
 
@@ -17,7 +17,8 @@ UA = "evanematt-Check/lewandivka-ci (https://github.com/evanematt/Check)"
 MINECRAFT = "1.20.1"
 LOADER = "fabric"
 # project slug -> the number (or a part of it) of the version of the pack
-PACK = {"handcrafted": "3.0.6", "resourceful-lib": "2.1.29"}
+PACK = {"handcrafted": "3.0.6", "resourceful-lib": "2.1.29", "treps-cars": "0.9", "alcohol": "1.1.4", "more-food": "1.0.7",
+        "fume-de-bushy": "1.0.1"}
 
 
 def get(url: str, binary: bool = False):
