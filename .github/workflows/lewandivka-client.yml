@@ -2,7 +2,8 @@ name: Lewandivka client test
 
 # The real client test of the mod «Левандівка: по той бік району» (directory lewandivka/): a Minecraft client under Xvfb with
 # software OpenGL joins a dedicated server, tours both dimensions, plays the physical parts (pads, hatches, dash, glider,
-# the sky tram ride, the end of the first act, the five bosses) and takes screenshots. It takes about half an hour, so it
+# the sky tram ride, the end of the first act, the five bosses) and takes screenshots; then a second run of the client plays a world of
+# its own (the cars of Trep's Cars live only there, see lewandivka/tools/ci/carstest.sh). It takes about half an hour, so it
 # is a workflow of its own: a new push waits for it instead of cancelling it (only the newest waiting run is kept).
 # The result goes to the pre-release "ci-latest" (info-client.txt says which commit it belongs to).
 on:
@@ -22,7 +23,7 @@ concurrency:
 jobs:
   client:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 85
     defaults:
       run:
         shell: bash
@@ -52,7 +53,7 @@ jobs:
 
       - name: Client test (real client, software OpenGL, joins a dedicated server)
         id: clienttest
-        timeout-minutes: 45
+        timeout-minutes: 70
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash tools/ci/clienttest.sh ../logs 2>&1 | tee ../logs/clienttest.txt; exit ${PIPESTATUS[0]}
@@ -76,7 +77,7 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
           rm -rf ci-out && mkdir -p ci-out
-          cp logs/clienttest*.txt logs/autotest-result.txt logs/gallery-*.txt ci-out/ 2>/dev/null || true
+          cp logs/clienttest*.txt logs/autotest-*.txt logs/gallery-*.txt ci-out/ 2>/dev/null || true
           cp logs/shots-jpg/*.jpg ci-out/ 2>/dev/null || true
           echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} state=final clienttest=${{ steps.clienttest.outcome }}" > ci-out/info-client.txt
           find ci-out -type f -empty -delete

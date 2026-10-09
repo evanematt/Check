@@ -28,6 +28,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.PersistentState;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -161,48 +162,97 @@ public final class CarPark {
         return true;
     }
 
+    /** One block of the car built of blocks of a place: where it stands in the plan and what it is. */
+    private record Cell(BlockPos pos, BlockState block) {
+    }
+
+    /** The blocks of the block-built car of a place, as the plan has them (the cells that are only there while the mod is not). */
+    private static List<Cell> cells(Cars.Spot spot) {
+        List<Cell> out = new ArrayList<>();
+        int colon = spot.marker().indexOf(':');
+        Structures.Site site = colon < 0 ? null : Structures.site(spot.marker().substring(0, colon));
+        if (site == null) {
+            return out;
+        }
+        StructurePlacement p = site.placement();
+        int[] fp = spot.footprint();
+        for (int x = fp[0]; x <= fp[2]; x++) {
+            for (int z = fp[1]; z <= fp[3]; z++) {
+                for (int y = spot.y(); y < spot.y() + Cars.HEIGHT; y++) {
+                    String key = p.blueprint().keyAt(x - p.x(), y - p.y(), z - p.z());
+                    if (key != null && Keys.isUnlessMod(key)) {
+                        out.add(new Cell(new BlockPos(x, y, z), StateResolver.parse(Keys.fallback(key))));
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
     /**
      * Takes away the blocks of the block-built car of a place: only the blocks that are still as the plan made them, so that nothing
      * a player has built there is touched.
      */
     private static int clearBlocks(ServerWorld world, Cars.Spot spot) {
-        int colon = spot.marker().indexOf(':');
-        Structures.Site site = colon < 0 ? null : Structures.site(spot.marker().substring(0, colon));
-        if (site == null) {
-            return 0;
-        }
-        StructurePlacement p = site.placement();
-        int[] fp = spot.footprint();
-        BlockPos.Mutable pos = new BlockPos.Mutable();
         int removed = 0;
-        for (int x = fp[0]; x <= fp[2]; x++) {
-            for (int z = fp[1]; z <= fp[3]; z++) {
-                for (int y = spot.y(); y < spot.y() + Cars.HEIGHT; y++) {
-                    String key = p.blueprint().keyAt(x - p.x(), y - p.y(), z - p.z());
-                    if (key == null || !Keys.isUnlessMod(key)) {
-                        continue;
-                    }
-                    BlockState expected = StateResolver.parse(Keys.fallback(key));
-                    pos.set(x, y, z);
-                    if (world.getBlockState(pos) == expected) {
-                        world.setBlockState(pos, Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
-                        removed++;
-                    }
-                }
+        for (Cell cell : cells(spot)) {
+            if (world.getBlockState(cell.pos()) == cell.block()) {
+                world.setBlockState(cell.pos(), Blocks.AIR.getDefaultState(), Block.NOTIFY_LISTENERS);
+                removed++;
             }
         }
         return removed;
     }
 
-    /** Development tool: a car at every place now, loading the chunks (what players do by coming near); says how it went. */
-    public static String makeAll(MinecraftServer server) {
-        List<Cars.Spot> all = spots();
-        if (!available()) {
-            return "cars: " + all.size() + " places, the mod " + Cars.MOD + " is not in this game: the cars stay built of blocks";
-        }
+    /**
+     * Development tool (the test of the cars): builds the cars of blocks at some places, the way a world that was made without the mod has
+     * them, and forgets that those places had a car. Returns the number of blocks put up.
+     */
+    public static int buildBlockCars(MinecraftServer server, List<String> markers) {
         ServerWorld world = Dimensions.district(server);
         if (world == null) {
-            return "cars: the district is not loaded";
+            return 0;
+        }
+        State state = state(server);
+        int put = 0;
+        for (Cars.Spot spot : spots()) {
+            if (!markers.contains(spot.marker())) {
+                continue;
+            }
+            world.getChunk(spot.x() >> 4, spot.z() >> 4);
+            for (Entity e : carsNear(world, new Vec3d(spot.x() + 0.5, spot.y() + 1.0, spot.z() + 0.5), 3.0)) {
+                e.discard();
+            }
+            state.made().remove(spot.marker());
+            FAILED.remove(spot.marker());
+            state.markDirty();
+            for (Cell cell : cells(spot)) {
+                world.setBlockState(cell.pos(), cell.block(), Block.NOTIFY_LISTENERS);
+                put++;
+            }
+        }
+        return put;
+    }
+
+    /** How {@link #makeAll} went: the places, the cars made now and those that stood already, the blocks taken away, the cars alive in the district. */
+    public record Made(boolean available, int places, int made, int already, int missing, int blocks, int standing, Set<String> kinds) {
+
+        public String text() {
+            if (!available) {
+                return "cars: " + places + " places, the mod " + Cars.MOD + " is not in this game: the cars stay built of blocks";
+            }
+            return "cars: " + places + " places, " + made + " cars made now, " + already + " stood already, " + missing
+                    + " could not be made, " + blocks + " blocks of cars built of blocks taken away, " + standing + " cars of " + Cars.MOD
+                    + " in the district now, " + kinds.size() + " kinds: " + kinds;
+        }
+    }
+
+    /** Development tool: a car at every place now, loading the chunks (what players do by coming near); says how it went. */
+    public static Made makeAll(MinecraftServer server) {
+        List<Cars.Spot> all = spots();
+        ServerWorld world = Dimensions.district(server);
+        if (!available() || world == null) {
+            return new Made(false, all.size(), 0, 0, 0, 0, 0, new TreeSet<>());
         }
         State state = state(server);
         int[] counts = new int[2];
@@ -210,6 +260,10 @@ public final class CarPark {
         int missing = 0;
         Set<String> types = new TreeSet<>();
         for (Cars.Spot spot : all) {
+            EntityType<?> t = typeFor(Cars.bodyAt(spot.x(), spot.z()), spot.color());
+            if (t != null) {
+                types.add(Registries.ENTITY_TYPE.getId(t).getPath());
+            }
             if (state.made().contains(spot.marker())) {
                 already++;
                 continue;
@@ -219,19 +273,11 @@ public final class CarPark {
                 missing++;
             }
         }
-        for (Cars.Spot spot : all) {
-            EntityType<?> t = typeFor(Cars.bodyAt(spot.x(), spot.z()), spot.color());
-            if (t != null) {
-                types.add(Registries.ENTITY_TYPE.getId(t).getPath());
-            }
-        }
         int standing = 0;
         for (Entity e : world.iterateEntities()) {
             standing += Registries.ENTITY_TYPE.getId(e.getType()).getNamespace().equals(Cars.MOD) ? 1 : 0;
         }
-        return "cars: " + all.size() + " places, " + counts[0] + " cars made now, " + already + " stood already, " + missing
-                + " could not be made, " + counts[1] + " blocks of cars built of blocks taken away, " + standing + " cars of " + Cars.MOD
-                + " in the district now, " + types.size() + " kinds: " + types;
+        return new Made(true, all.size(), counts[0], already, missing, counts[1], standing, types);
     }
 
     /** Cars of the mod near a point (the pictures and the checks of the tests). */

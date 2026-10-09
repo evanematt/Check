@@ -93,7 +93,7 @@ public final class LewCommands {
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
         root.then(CommandManager.literal("decor").executes(c -> decor(c.getSource())));
         root.then(CommandManager.literal("populace").executes(c -> feedback(c.getSource(), com.lewandivka.quest.Townsfolk.makeAll(c.getSource().getServer()))));
-        root.then(CommandManager.literal("cars").executes(c -> feedback(c.getSource(), com.lewandivka.quest.CarPark.makeAll(c.getSource().getServer()))));
+        root.then(CommandManager.literal("cars").executes(c -> feedback(c.getSource(), com.lewandivka.quest.CarPark.makeAll(c.getSource().getServer()).text())));
         root.then(CommandManager.literal("loot").executes(c -> loot(c.getSource())));
         root.then(CommandManager.literal("dumpitems")
                 .then(CommandManager.argument("namespace", StringArgumentType.word()).executes(c -> dumpItems(c.getSource(), StringArgumentType.getString(c, "namespace")))));

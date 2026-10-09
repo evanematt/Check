@@ -78,11 +78,14 @@ public final class AutoTest {
     private AutoTest() {
     }
 
+    /** {@code LEWANDIVKA_AUTOTEST=cars}: the second run of the client test, in a world of its own with the cars of Trep's Cars (see {@link #buildCars}). */
+    private static final boolean CARS_MODE = "cars".equals(System.getenv("LEWANDIVKA_AUTOTEST"));
+
     public static void register() {
         if (System.getenv("LEWANDIVKA_AUTOTEST") == null) {
             return;
         }
-        LewandivkaMod.LOGGER.info("AutoTest is enabled");
+        LewandivkaMod.LOGGER.info("AutoTest is enabled{}", CARS_MODE ? " (the cars)" : "");
         ClientTickEvents.END_CLIENT_TICK.register(AutoTest::tick);
     }
 
@@ -93,6 +96,9 @@ public final class AutoTest {
 
     private static void tick(MinecraftClient c) {
         if (c.player == null || c.world == null) {
+            if (CARS_MODE) {
+                clickThrough(c);
+            }
             return;
         }
         if (!built) {
@@ -973,7 +979,270 @@ public final class AutoTest {
                 "dimension " + c.world.getRegistryKey().getValue()));
     }
 
+    // ------------------------------------------------------------------ the cars: a world of the game's own
+
+    private static final java.util.Map<String, java.util.concurrent.CompletableFuture<Object>> ASKED = new java.util.HashMap<>();
+    private static int promptTicks;
+
+    /**
+     * A screen in front of the world (a warning that the world uses experimental settings, a question about a backup) is answered with
+     * "yes": the cars test plays a world that was made by another game. Waits a while first, the loading screens have no buttons anyway.
+     */
+    private static void clickThrough(MinecraftClient c) {
+        net.minecraft.client.gui.screen.Screen screen = c.currentScreen;
+        if (screen == null || screen instanceof net.minecraft.client.gui.screen.TitleScreen || screen instanceof DownloadingTerrainScreen) {
+            promptTicks = 0;
+            return;
+        }
+        promptTicks++;
+        if (promptTicks < 100 || promptTicks % 40 != 0) {
+            return;
+        }
+        for (String word : new String[] {"proceed", "without backup", "yes", "continue", "play", "load"}) {
+            for (net.minecraft.client.gui.Element e : screen.children()) {
+                if (e instanceof net.minecraft.client.gui.widget.ButtonWidget b && b.active
+                        && b.getMessage().getString().toLowerCase(Locale.ROOT).contains(word)) {
+                    note("a screen in front of the world (" + screen.getClass().getSimpleName() + "): pressed '" + b.getMessage().getString() + "'");
+                    b.onPress();
+                    return;
+                }
+            }
+        }
+        note("a screen in front of the world (" + screen.getClass().getSimpleName() + ") with no button to press");
+    }
+
+    /** Asks the server inside the game for something, on its own thread; {@link #answered} says when the answer is there. */
+    private static void ask(MinecraftClient c, String key, java.util.function.Function<net.minecraft.server.MinecraftServer, Object> question) {
+        java.util.concurrent.CompletableFuture<Object> future = new java.util.concurrent.CompletableFuture<>();
+        ASKED.put(key, future);
+        net.minecraft.server.MinecraftServer server = c.getServer();
+        if (server == null) {
+            future.completeExceptionally(new IllegalStateException("the game has no server of its own"));
+            return;
+        }
+        server.execute(() -> {
+            try {
+                future.complete(question.apply(server));
+            } catch (RuntimeException e) {
+                future.completeExceptionally(e);
+            }
+        });
+    }
+
+    private static boolean answered(String key) {
+        java.util.concurrent.CompletableFuture<Object> f = ASKED.get(key);
+        return f != null && f.isDone();
+    }
+
+    private static Object answer(String key) {
+        java.util.concurrent.CompletableFuture<Object> f = ASKED.get(key);
+        try {
+            return f == null ? null : f.getNow(null);
+        } catch (RuntimeException e) {
+            note("the question '" + key + "' failed: " + e);
+            return null;
+        }
+    }
+
+    /** A check of something the test only reports (it does not fail the run): a result for the reader of the log. */
+    private static void soft(String what, boolean ok, String detail) {
+        note((ok ? "SOFT CHECK OK " : "SOFT CHECK FAILED ") + what + ": " + detail);
+    }
+
+    private static com.lewandivka.core.world.gen.Cars.Spot carSpot(String marker) {
+        for (com.lewandivka.core.world.gen.Cars.Spot s : com.lewandivka.core.world.gen.Cars.spots(com.lewandivka.core.world.gen.DistrictPlan.get())) {
+            if (s.marker().equals(marker)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isCar(Entity e) {
+        return Registries.ENTITY_TYPE.getId(e.getType()).getNamespace().equals(com.lewandivka.core.world.gen.Cars.MOD);
+    }
+
+    /**
+     * The picture of a car from a vantage point {@code dx, dy, dz} blocks from its middle, looking at it; the player is in the picture's
+     * place when it is taken. Checks that the car of the mod stands there and that no block of the car built of blocks is left.
+     */
+    private static void carView(MinecraftClient c, String marker, String name, double dx, double dy, double dz) {
+        com.lewandivka.core.world.gen.Cars.Spot car = carSpot(marker);
+        if (car == null) {
+            add("no car " + marker, 1, () -> expect("the plan has a car at " + marker, false, "no such place"));
+            return;
+        }
+        double cx = car.x() + 0.5;
+        double cy = car.y();
+        double cz = car.z() + 0.5;
+        float yaw = (float) Math.toDegrees(Math.atan2(dx, -dz));
+        float pitch = (float) Math.toDegrees(Math.atan2(dy - 1.0, Math.hypot(dx, dz)));
+        cmd(c, atIn("lewandivka:district", cx + dx, cy + dy, cz + dz, yaw, pitch), 20);
+        settle(c, name, 2400);
+        add("check the car at " + name, 1, () -> {
+            expect("the player stands free at the car " + name, !c.player.isInsideWall(), "the player is at " + c.player.getBlockPos().toShortString());
+            java.util.List<Entity> near = c.world.getOtherEntities(null, net.minecraft.util.math.Box.of(new Vec3d(cx, cy + 1.0, cz), 8, 6, 8), AutoTest::isCar);
+            double best = Double.MAX_VALUE;
+            String kind = "none";
+            for (Entity e : near) {
+                double d = Math.hypot(e.getX() - cx, e.getZ() - cz);
+                if (d < best) {
+                    best = d;
+                    kind = Registries.ENTITY_TYPE.getId(e.getType()).getPath();
+                }
+            }
+            expect("a car of Trep's Cars stands at " + name, best <= 1.5, "the nearest is " + kind + String.format(Locale.ROOT, " %.1f blocks from %s", best, marker));
+            int leftover = 0;
+            int colon = marker.indexOf(':');
+            Structures.Site site = Structures.site(marker.substring(0, colon));
+            if (site != null) {
+                com.lewandivka.core.structure.StructurePlacement p = site.placement();
+                int[] fp = car.footprint();
+                for (int x = fp[0]; x <= fp[2]; x++) {
+                    for (int z = fp[1]; z <= fp[3]; z++) {
+                        for (int y = car.y(); y < car.y() + com.lewandivka.core.world.gen.Cars.HEIGHT; y++) {
+                            String key = p.blueprint().keyAt(x - p.x(), y - p.y(), z - p.z());
+                            if (key != null && com.lewandivka.core.structure.Keys.isUnlessMod(key) && !c.world.getBlockState(new BlockPos(x, y, z)).isAir()) {
+                                leftover++;
+                            }
+                        }
+                    }
+                }
+            }
+            expect("no block of the car built of blocks is left at " + name, leftover == 0, leftover + " blocks of the footprint of " + marker);
+        });
+        shot(c, "cars_" + name, 10);
+    }
+
+    /** Gets into the car of a place with a real click and pushes the forward key: the mod's own driving, on the server inside the game. */
+    private static void drive(MinecraftClient c, String marker, String name) {
+        com.lewandivka.core.world.gen.Cars.Spot car = carSpot(marker);
+        if (car == null) {
+            add("no car " + marker, 1, () -> expect("the plan has a car at " + marker, false, "no such place"));
+            return;
+        }
+        // beside the car, three blocks to the side (the cars of the streets stand along x), looking at it
+        cmd(c, atIn("lewandivka:district", car.x() + 0.5, car.y(), car.z() + 3.5, 180, 8), 20);
+        settle(c, "beside the car to drive", 2400);
+        Entity[] ref = new Entity[1];
+        Vec3d[] start = new Vec3d[1];
+        add("get into the car", 30, () -> {
+            Entity best = null;
+            for (Entity e : c.world.getOtherEntities(null, c.player.getBoundingBox().expand(6.0), AutoTest::isCar)) {
+                if (best == null || e.squaredDistanceTo(c.player) < best.squaredDistanceTo(c.player)) {
+                    best = e;
+                }
+            }
+            soft("a car is within reach of the player", best != null, best == null ? "none within six blocks" : Registries.ENTITY_TYPE.getId(best.getType()).getPath());
+            if (best != null) {
+                ref[0] = best;
+                start[0] = best.getPos();
+                c.interactionManager.interactEntity(c.player, best, Hand.MAIN_HAND);
+            }
+        });
+        until("the player sits in the car", 80, 3, () -> c.player.hasVehicle());
+        add("check the seat", 1, () -> soft("a click on the car seats the player in it", c.player.hasVehicle(), "vehicle " + c.player.getVehicle()));
+        shot(c, "cars_" + name + "_seated", 4);
+        add("push forward", 1, () -> c.options.forwardKey.setPressed(true));
+        until("the car has driven away", 160, 1, () -> ref[0] != null && ref[0].getPos().distanceTo(start[0]) > 8.0);
+        shot(c, "cars_" + name + "_driving", 2);
+        add("let go of the keys", 1, () -> c.options.forwardKey.setPressed(false));
+        add("check the drive", 1, () -> soft("the car drives when the player pushes forward", ref[0] != null && ref[0].getPos().distanceTo(start[0]) > 5.0,
+                ref[0] == null ? "no car" : String.format(Locale.ROOT, "moved %.1f blocks", ref[0].getPos().distanceTo(start[0]))));
+        cmd(c, "ride @s dismount", 10);
+    }
+
+    /**
+     * The second run of the client test: the game plays a world of its own (so its server is inside the game and can run the mod of the
+     * cars, which a dedicated server cannot), a new world made by the plan with the mod in it. Some places get the cars built of blocks first,
+     * the way a world that was made without the mod has them: the cars of the mod must replace them.
+     */
+    private static void buildCars(MinecraftClient c) {
+        add("settle", 300, () -> { });
+        add("a world of the game's own", 1, () -> expect("the game plays a world of its own (its server is inside the game)", c.getServer() != null && c.isInSingleplayer(),
+                "server " + c.getServer()));
+        add("the mods", 1, () -> {
+            net.fabricmc.loader.api.FabricLoader loader = net.fabricmc.loader.api.FabricLoader.getInstance();
+            String gecko = loader.getModContainer("geckolib").map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("none");
+            String cars = loader.getModContainer("trepscars").map(m -> m.getMetadata().getVersion().getFriendlyString()).orElse("none");
+            expect("Trep's Cars is loaded next to the mod", !cars.equals("none"), "trepscars " + cars + ", geckolib " + gecko);
+        });
+        add("allow the commands", 20, () -> {
+            net.minecraft.server.MinecraftServer server = c.getServer();
+            if (server != null) {
+                server.execute(() -> {
+                    net.minecraft.server.network.ServerPlayerEntity sp = server.getPlayerManager().getPlayer(c.player.getUuid());
+                    if (sp != null) {
+                        server.getPlayerManager().addToOperators(sp.getGameProfile());
+                    }
+                });
+            }
+        });
+        cmd(c, "gamemode creative", 10);
+        cmd(c, "effect give @s minecraft:night_vision 99999 0 true", 6);
+        add("where is the player", 1, () -> {
+            where(c, "the first arrival in the world of its own");
+            expect("the first arrival is not inside a block", !c.player.isInsideWall(), "the player is at " + c.player.getBlockPos().toShortString());
+        });
+        shot(c, "cars_00_arrival", 10);
+
+        // two places get the cars built of blocks, the way an older world has them
+        java.util.List<String> old = java.util.List.of("car_n1:car", "car_s2:car");
+        add("build two cars of blocks", 1, () -> ask(c, "old", server -> com.lewandivka.quest.CarPark.buildBlockCars(server, old)));
+        until("the cars of blocks are built", 1800, 1, () -> answered("old"));
+        add("check the cars of blocks", 1, () -> {
+            Object o = answer("old");
+            expect("the cars of blocks were built", o instanceof Integer n && n > 20, String.valueOf(o));
+        });
+        // every place of a car gets its car of the mod (the part of the district that is not generated yet is generated with the mod in the game)
+        add("make the cars", 1, () -> ask(c, "cars", server -> com.lewandivka.quest.CarPark.makeAll(server)));
+        until("the cars are made", 2400, 1, () -> answered("cars"));
+        add("check the cars", 1, () -> {
+            Object o = answer("cars");
+            expect("the cars were made", o instanceof com.lewandivka.quest.CarPark.Made, String.valueOf(o));
+            if (o instanceof com.lewandivka.quest.CarPark.Made m) {
+                note("cars: " + m.text());
+                expect("every place of a car has its car of Trep's Cars", m.available() && m.missing() == 0 && m.made() + m.already() == m.places(), m.text());
+                expect("the cars are of several kinds", m.kinds().size() >= 3, m.kinds().toString());
+                Object put = answer("old");
+                expect("the cars of blocks were taken away", put instanceof Integer n && m.blocks() >= n, "put up " + put + ", taken away " + m.blocks());
+            }
+        });
+        add("count again", 1, () -> ask(c, "cars2", server -> com.lewandivka.quest.CarPark.makeAll(server)));
+        until("the cars are counted again", 600, 1, () -> answered("cars2"));
+        add("check that no car is made twice", 1, () -> {
+            Object o = answer("cars2");
+            boolean ok = o instanceof com.lewandivka.quest.CarPark.Made m && m.made() == 0 && m.already() == m.places();
+            expect("no car is made twice", ok, o instanceof com.lewandivka.quest.CarPark.Made m2 ? m2.text() : String.valueOf(o));
+        });
+
+        // the pictures: two places that had cars of blocks, two that were generated with the mod in the game
+        carView(c, "car_n1:car", "street_replaced", -5, 5, 7);
+        carView(c, "car_n1:car", "street_replaced_top", 0, 14, 1);
+        carView(c, "car_s2:car", "street_replaced_2", 5, 5, -7);
+        carView(c, "car_n2:car", "street_new", -5, 5, 7);
+        carView(c, "car_s1:car", "street_new_2", 5, 5, -7);
+        carView(c, "car_t:car", "street_new_3", -7, 5, 5);
+        carView(c, "garage13:car.car", "garage13", 0, 4, -6);
+        carView(c, "garages_n2:car.car", "garages_row", 0, 4, -6);
+        drive(c, "car_n2:car", "street");
+        add("cars known to the client", 2, () -> {
+            java.util.Map<String, Integer> counts = new java.util.TreeMap<>();
+            for (Entity e : c.world.getEntities()) {
+                if (isCar(e)) {
+                    counts.merge(Registries.ENTITY_TYPE.getId(e.getType()).getPath(), 1, Integer::sum);
+                }
+            }
+            note("cars known to the client at the end: " + counts);
+        });
+        add("the end", 4, () -> { });
+    }
+
     private static void build(MinecraftClient c) {
+        if (CARS_MODE) {
+            buildCars(c);
+            return;
+        }
         add("settle", 180, () -> { });
         cmd(c, "gamemode creative", 10);
         int[] spawn = com.lewandivka.core.world.gen.DistrictPlan.get().spawn();

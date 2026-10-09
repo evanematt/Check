@@ -10,6 +10,11 @@ SERVER_LOG="$OUT/clienttest-server.txt"
 CLIENT_LOG="$OUT/clienttest-client.txt"
 SRV=run/server
 CLI=run/client
+# The phases of the test (tools/ci/client-phases.txt): "all" is the tour of the whole game on a dedicated server, followed by the cars;
+# "cars" is only the second part (faster, for the work on the cars).
+PHASES=$(tr -d '[:space:]' < tools/ci/client-phases.txt 2>/dev/null)
+PHASES=${PHASES:-all}
+echo "phases: $PHASES"
 rm -rf "$SRV/world" "$CLI/screenshots" "$CLI/autotest-result.txt"
 mkdir -p "$SRV" "$CLI"
 echo "eula=true" > "$SRV/eula.txt"
@@ -76,6 +81,7 @@ if ! grep -q "Done (" "$SERVER_LOG"; then
   kill "$SERVER_PID" 2>/dev/null
   exit 1
 fi
+if [ "$PHASES" = "all" ]; then
 python3 tools/ci/gallery.py > "$OUT/gallery-commands.txt"
 mapfile -t CMDS < "$OUT/gallery-commands.txt"
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "${CMDS[@]}" > "$OUT/gallery-rcon.txt" 2>&1
@@ -121,7 +127,8 @@ CLIENT_EXIT=$?
 kill "$UPLOADER" 2>/dev/null
 # an upload of the partial publisher that is in flight must be over before the final publication starts
 for i in $(seq 1 30); do pgrep -f "gh release upload" >/dev/null || break; sleep 2; done
-echo "client exit code $CLIENT_EXIT"
+fi
+[ "$PHASES" = "all" ] && echo "client exit code $CLIENT_EXIT"
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "lewandivka decor" > "$OUT/clienttest-decor.txt" 2>&1
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "stop" > /dev/null 2>&1
 wait "$SERVER_PID" 2>/dev/null
@@ -145,9 +152,24 @@ N_PROBLEMS=${N_PROBLEMS:-0}
 [ "$N_PROBLEMS" = "0" ] && echo "none: the logs of the server and the client contain no error or warning of the mod" > "$PROBLEMS"
 echo "log problems: $N_PROBLEMS"
 if [ "$N_PROBLEMS" != "0" ]; then head -40 "$PROBLEMS"; fi
-if grep -q "AUTOTEST-RESULT OK" "$OUT/autotest-result.txt" 2>/dev/null && [ "$N_PROBLEMS" = "0" ]; then
+MAIN_OK=0
+if [ "$PHASES" != "all" ]; then
+  MAIN_OK=1
+  echo "the tour of the game was not asked for (phases: $PHASES)"
+elif grep -q "AUTOTEST-RESULT OK" "$OUT/autotest-result.txt" 2>/dev/null && [ "$N_PROBLEMS" = "0" ]; then
+  MAIN_OK=1
+fi
+# the cars of Trep's Cars (a mod of the clients only): the game plays a world of its own, see carstest.sh
+CARS_OK=1
+if ls "$CLI/mods" 2>/dev/null | grep -qi "trep"; then
+  bash tools/ci/carstest.sh "$OUT" 2>&1 | tee "$OUT/clienttest-cars.txt"
+  [ "${PIPESTATUS[0]}" = "0" ] || CARS_OK=0
+else
+  echo "no cars phase: Trep's Cars is not in the mods folder of the client"
+fi
+if [ "$MAIN_OK" = 1 ] && [ "$CARS_OK" = 1 ]; then
   echo "CLIENTTEST-RESULT OK"
 else
-  echo "CLIENTTEST-RESULT FAILED"
+  echo "CLIENTTEST-RESULT FAILED (tour: $MAIN_OK, cars: $CARS_OK)"
   exit 1
 fi
