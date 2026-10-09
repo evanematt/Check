@@ -1,0 +1,36 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "stage": "0"
+      },
+      "apply": {
+        "model": "lewandivka:block/crumbling_platform_0"
+      }
+    },
+    {
+      "when": {
+        "stage": "1"
+      },
+      "apply": {
+        "model": "lewandivka:block/crumbling_platform_1"
+      }
+    },
+    {
+      "when": {
+        "stage": "2"
+      },
+      "apply": {
+        "model": "lewandivka:block/crumbling_platform_2"
+      }
+    },
+    {
+      "when": {
+        "stage": "3"
+      },
+      "apply": {
+        "model": "lewandivka:block/crumbling_platform_3"
+      }
+    }
+  ]
+}

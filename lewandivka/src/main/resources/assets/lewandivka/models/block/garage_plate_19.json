@@ -1,0 +1,6 @@
+{
+  "parent": "lewandivka:block/plate_base",
+  "textures": {
+    "tex": "lewandivka:block/garage_plate_19"
+  }
+}

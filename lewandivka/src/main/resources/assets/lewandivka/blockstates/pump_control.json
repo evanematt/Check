@@ -1,0 +1,84 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "on": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/pump_control",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "on": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/pump_control",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "on": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/pump_control",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "on": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/pump_control",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "on": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/pump_control_on",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "on": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/pump_control_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "on": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/pump_control_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "on": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/pump_control_on",
+        "y": 270
+      }
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+[
+  {
+    "id": "terminus",
+    "icon": "lewandivka:district_notebook",
+    "frame": "task",
+    "hidden": false,
+    "titleUk": "Кінцева",
+    "titleEn": "Terminus",
+    "descUk": "Увійдіть до Левандівки.",
+    "descEn": "Enter Lewandivka."
+  },
+  {
+    "id": "seeds",
+    "parent": "terminus",
+    "icon": "lewandivka:semky",
+    "frame": "task",
+    "hidden": false,
+    "titleUk": "Сємки є?",
+    "titleEn": "Got Any Seeds?",
+    "descUk": "Вирішіть справу сємками, а не кулаками.",
+    "descEn": "Settle it with seeds instead of fists."
+  },
+  {
+    "id": "kiosk",
+    "parent": "terminus",
+    "icon": "lewandivka:district_token",
+    "frame": "task",
+    "hidden": false,
+    "titleUk": "Кіоск працює",
+    "titleEn": "The Kiosk Is Open",
+    "descUk": "Поставте закинутий кіоск на місце.",
+    "descEn": "Put the abandoned kiosk in its place."
+  },
+  {
+    "id": "debtor",
+    "parent": "kiosk",
+    "icon": "lewandivka:debtor_note",
+    "frame": "task",
+    "hidden": false,
+    "titleUk": "Рахунок закрито",
+    "titleEn": "The Bill Is Settled",
+    "descUk": "Наздожени Боржника й вирішіть справу.",
+    "descEn": "Catch the Debtor and settle things."
+  },
+  {
+    "id": "local",
+    "parent": "kiosk",
+    "icon": "lewandivka:district_token",
+    "frame": "goal",
+    "hidden": false,
+    "titleUk": "Свій",
+    "titleEn": "One of Us",
+    "descUk": "Підвищте репутацію до «Свій».",
+    "descEn": "Raise your reputation to \"Свій\"."
+  },
+  {
+    "id": "garage13",
+    "parent": "debtor",
+    "icon": "lewandivka:garage13_note",
+    "frame": "goal",
+    "hidden": false,
+    "titleUk": "Гараж №13",
+    "titleEn": "Garage No. 13",
+    "descUk": "Знайдіть гараж, якого не існує.",
+    "descEn": "Find the garage that does not exist."
+  },
+  {
+    "id": "last_tram",
+    "parent": "garage13",
+    "icon": "lewandivka:ticket_composter",
+    "frame": "goal",
+    "hidden": false,
+    "titleUk": "Останній трамвай",
+    "titleEn": "The Last Tram",
+    "descUk": "Завершіть перший акт.",
+    "descEn": "Complete Act One."
+  },
+  {
+    "id": "other_side",
+    "parent": "last_tram",
+    "icon": "lewandivka:chroma_tablet",
+    "frame": "goal",
+    "hidden": false,
+    "titleUk": "По той бік району",
+    "titleEn": "The Other Side of the District",
+    "descUk": "Потрапте до Хромандівки.",
+    "descEn": "Reach Chromandivka."
+  },
+  {
+    "id": "portal",
+    "parent": "other_side",
+    "icon": "lewandivka:portal_frame",
+    "frame": "task",
+    "hidden": false,
+    "titleUk": "Кольоровий портал",
+    "titleEn": "The Colored Portal",
+    "descUk": "Запустіть портал назад до Левандівки.",
+    "descEn": "Start the portal back to Lewandivka."
+  },
+  {
+    "id": "dash",
+    "parent": "other_side",
+    "icon": "minecraft:feather",
+    "frame": "task",
+    "hidden": false,
+    "titleUk": "Ривок",
+    "titleEn": "Dash",
+    "descUk": "Здолайте Гаражного Короля.",
+    "descEn": "Defeat the Garage King."
+  },
+  {
+    "id": "two_who_know",
+    "parent": "dash",
+    "icon": "lewandivka:cat_fish",
+    "frame": "goal",
+    "hidden": false,
+    "titleUk": "Двоє, які знають дорогу",
+    "titleEn": "Two Who Know the Way",
+    "descUk": "Поверніть обох котів.",
+    "descEn": "Bring both cats back."
+  },
+  {
+    "id": "spring",
+    "parent": "two_who_know",
+    "icon": "minecraft:slime_ball",
+    "frame": "task",
+    "hidden": false,
+    "titleUk": "Підскок",
+    "titleEn": "Spring Insoles",
+    "descUk": "Здолайте Пані Вирву.",
+    "descEn": "Defeat Lady Vortex."
+  },
+  {
+    "id": "ticket_ok",
+    "parent": "spring",
+    "icon": "lewandivka:ticket_circle",
+    "frame": "goal",
+    "hidden": false,
+    "titleUk": "Квиток є",
+    "titleEn": "Ticket Is Valid",
+    "descUk": "Здолайте Кондуктора.",
+    "descEn": "Defeat the Conductor."
+  },
+  {
+    "id": "glider",
+    "parent": "ticket_ok",
+    "icon": "minecraft:elytra",
+    "frame": "task",
+    "hidden": false,
+    "titleUk": "Планер",
+    "titleEn": "Glider Ticket",
+    "descUk": "Отримайте здібність планера.",
+    "descEn": "Obtain the glider ability."
+  },
+  {
+    "id": "ring",
+    "parent": "ticket_ok",
+    "icon": "lewandivka:ring_fragment_conductor",
+    "frame": "goal",
+    "hidden": false,
+    "titleUk": "Кільце ціле",
+    "titleEn": "The Ring Is Whole",
+    "descUk": "Поверніть усі чотири уламки кільця.",
+    "descEn": "Restore all four ring fragments."
+  },
+  {
+    "id": "district_colorful",
+    "parent": "ring",
+    "icon": "lewandivka:chromatic_compass",
+    "frame": "challenge",
+    "hidden": false,
+    "titleUk": "Район знову кольоровий",
+    "titleEn": "The District Is Colorful Again",
+    "descUk": "Завершіть кампанію.",
+    "descEn": "Complete the campaign."
+  },
+  {
+    "id": "cats12",
+    "parent": "district_colorful",
+    "icon": "lewandivka:collar_chinazik",
+    "frame": "goal",
+    "hidden": true,
+    "titleUk": "12 котів Левандівки",
+    "titleEn": "Twelve Cats of Lewandivka",
+    "descUk": "Знайдіть усіх дванадцять котів.",
+    "descEn": "Find all twelve cats."
+  },
+  {
+    "id": "garage0",
+    "parent": "district_colorful",
+    "icon": "lewandivka:guard_door",
+    "frame": "goal",
+    "hidden": true,
+    "titleUk": "Гараж №0",
+    "titleEn": "Garage No. 0",
+    "descUk": "Пройдіть гараж, якого не було навіть у записках.",
+    "descEn": "Clear the garage that was not even in the notes."
+  },
+  {
+    "id": "wrong_tram",
+    "parent": "district_colorful",
+    "icon": "lewandivka:tram_switch",
+    "frame": "goal",
+    "hidden": true,
+    "titleUk": "Не той трамвай",
+    "titleEn": "The Wrong Tram",
+    "descUk": "Сядьте в не той трамвай.",
+    "descEn": "Board the wrong tram."
+  },
+  {
+    "id": "better_not_ask",
+    "parent": "district_colorful",
+    "icon": "lewandivka:mundane_sock",
+    "frame": "challenge",
+    "hidden": true,
+    "titleUk": "Краще б не питав",
+    "titleEn": "Better Not to Have Asked",
+    "descUk": "Дізнайтеся, що було в посилці.",
+    "descEn": "Find out what was in the package."
+  }
+]

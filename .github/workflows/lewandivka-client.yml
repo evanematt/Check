@@ -1,0 +1,90 @@
+name: Lewandivka client test
+
+# The real client test of the mod «Левандівка: по той бік району» (directory lewandivka/): a Minecraft client under Xvfb with
+# software OpenGL joins a dedicated server, tours both dimensions, plays the physical parts (pads, hatches, dash, glider,
+# the sky tram ride, the end of the first act, the five bosses) and takes screenshots; then a second run of the client plays a world of
+# its own (the cars of Trep's Cars live only there, see lewandivka/tools/ci/carstest.sh). It takes about half an hour, so it
+# is a workflow of its own: a new push waits for it instead of cancelling it (only the newest waiting run is kept).
+# The result goes to the pre-release "ci-latest" (info-client.txt says which commit it belongs to).
+on:
+  push:
+    branches: ['claude/determined-clarke-eigmli']
+    paths:
+      - 'lewandivka/**'
+      - '.github/workflows/lewandivka-client.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lewandivka-client-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  client:
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    defaults:
+      run:
+        shell: bash
+        working-directory: lewandivka
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare log folder
+        run: mkdir -p ../logs
+
+      - name: Install Xvfb and software OpenGL
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libgl1 libopenal1 libxrandr2 libxcursor1 libxi6 libxxf86vm1 >/dev/null
+          python3 -m pip install --quiet pillow
+
+      - name: Client test (real client, software OpenGL, joins a dedicated server)
+        id: clienttest
+        timeout-minutes: 70
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash tools/ci/clienttest.sh ../logs 2>&1 | tee ../logs/clienttest.txt; exit ${PIPESTATUS[0]}
+
+      - name: Shrink the screenshots
+        if: always()
+        run: |
+          python3 -m pip install --quiet pillow
+          mkdir -p ../logs/shots-jpg
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          for p in sorted(Path("../logs/shots").glob("*.png")):
+              Image.open(p).convert("RGB").save(Path("../logs/shots-jpg") / (p.stem + ".jpg"), quality=80)
+          PY
+
+      - name: Publish the logs and screenshots to the pre-release ci-latest
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          rm -rf ci-out && mkdir -p ci-out
+          cp logs/clienttest*.txt logs/autotest-*.txt logs/gallery-*.txt ci-out/ 2>/dev/null || true
+          cp logs/shots-jpg/*.jpg ci-out/ 2>/dev/null || true
+          echo "run=${{ github.run_number }} sha=${{ github.sha }} job-status=${{ job.status }} state=final clienttest=${{ steps.clienttest.outcome }}" > ci-out/info-client.txt
+          find ci-out -type f -empty -delete
+          gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
+          # the file that says which commit the logs belong to goes last: whoever waits for it finds the rest already there
+          # an upload that is still running from the partial publisher, or a hiccup of the server, must not lose the whole publication
+          for i in $(seq 1 30); do pgrep -f "gh release upload" >/dev/null || break; sleep 2; done
+          upload() { for i in 1 2 3 4; do gh release upload ci-latest "$@" --clobber && return 0; sleep 6; done; return 1; }
+          upload $(find ci-out -type f ! -name 'info-*')
+          upload ci-out/info-*.txt

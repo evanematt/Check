@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:mundane_sock"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.better_not_ask.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.better_not_ask.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:district_colorful"
+}

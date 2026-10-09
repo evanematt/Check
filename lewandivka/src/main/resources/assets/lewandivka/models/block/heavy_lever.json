@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "lewandivka:block/heavy_lever_front",
+    "side": "lewandivka:block/heavy_lever_side",
+    "top": "lewandivka:block/heavy_lever_top"
+  }
+}

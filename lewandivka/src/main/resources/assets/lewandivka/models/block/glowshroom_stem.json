@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "lewandivka:block/glowshroom_stem_top",
+    "side": "lewandivka:block/glowshroom_stem_side"
+  }
+}

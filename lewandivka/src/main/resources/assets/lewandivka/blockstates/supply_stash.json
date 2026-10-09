@@ -1,0 +1,20 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "looted": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/supply_stash"
+      }
+    },
+    {
+      "when": {
+        "looted": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/supply_stash_looted"
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "open": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/water_drain"
+      }
+    },
+    {
+      "when": {
+        "open": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/water_drain_open"
+      }
+    }
+  ]
+}

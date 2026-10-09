@@ -1,0 +1,4 @@
+// Standalone build for the Minecraft-independent core of the Lewandivka mod.
+// The very same sources are also compiled into the mod jar by the root (Loom) build,
+// so everything in here can be unit-tested without downloading Minecraft.
+rootProject.name = 'lewandivka-core'

@@ -1,0 +1,39 @@
+{
+  "has_precipitation": true,
+  "temperature": 0.6,
+  "downfall": 0.2,
+  "effects": {
+    "sky_color": 9075368,
+    "fog_color": 12622474,
+    "water_color": 4876904,
+    "water_fog_color": 2767418,
+    "grass_color": 7244366,
+    "foliage_color": 5929530,
+    "ambient_sound": "lewandivka:ambient.district.loop",
+    "mood_sound": {
+      "sound": "lewandivka:ambient.district.mood",
+      "tick_delay": 6000,
+      "block_search_extent": 8,
+      "offset": 2.0
+    },
+    "music": {
+      "sound": "lewandivka:music.district",
+      "min_delay": 6000,
+      "max_delay": 18000,
+      "replace_current_music": false
+    }
+  },
+  "spawners": {
+    "monster": [],
+    "creature": [],
+    "ambient": [],
+    "axolotls": [],
+    "underground_water_creature": [],
+    "water_creature": [],
+    "water_ambient": [],
+    "misc": []
+  },
+  "spawn_costs": {},
+  "carvers": {},
+  "features": []
+}

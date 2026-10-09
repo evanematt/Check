@@ -1,0 +1,293 @@
+{
+ "format_version": "1.12.0",
+ "minecraft:geometry": [
+  {
+   "description": {
+    "identifier": "geometry.lewandivka.lady_vortex",
+    "texture_width": 128,
+    "texture_height": 128,
+    "visible_bounds_width": 3.0,
+    "visible_bounds_height": 4.0,
+    "visible_bounds_offset": [
+     0,
+     1.6,
+     0
+    ]
+   },
+   "bones": [
+    {
+     "name": "root",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "spiral_1",
+     "pivot": [
+      0,
+      2,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -8.0,
+        0,
+        -8.0
+       ],
+       "size": [
+        16,
+        5,
+        16
+       ],
+       "uv": [
+        0,
+        0
+       ]
+      }
+     ],
+     "parent": "root"
+    },
+    {
+     "name": "spiral_2",
+     "pivot": [
+      0,
+      7,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -7.0,
+        5,
+        -7.0
+       ],
+       "size": [
+        14,
+        5,
+        14
+       ],
+       "uv": [
+        64,
+        0
+       ]
+      }
+     ],
+     "parent": "root"
+    },
+    {
+     "name": "spiral_3",
+     "pivot": [
+      0,
+      12,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -6.0,
+        10,
+        -6.0
+       ],
+       "size": [
+        12,
+        5,
+        12
+       ],
+       "uv": [
+        0,
+        21
+       ]
+      }
+     ],
+     "parent": "root"
+    },
+    {
+     "name": "spiral_4",
+     "pivot": [
+      0,
+      17,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -5.0,
+        15,
+        -5.0
+       ],
+       "size": [
+        10,
+        5,
+        10
+       ],
+       "uv": [
+        48,
+        21
+       ]
+      }
+     ],
+     "parent": "root"
+    },
+    {
+     "name": "body",
+     "pivot": [
+      0,
+      20,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -4,
+        20,
+        -3
+       ],
+       "size": [
+        8,
+        12,
+        6
+       ],
+       "uv": [
+        88,
+        21
+       ]
+      },
+      {
+       "origin": [
+        -9,
+        16,
+        -9
+       ],
+       "size": [
+        18,
+        4,
+        18
+       ],
+       "uv": [
+        0,
+        39
+       ]
+      }
+     ],
+     "parent": "root"
+    },
+    {
+     "name": "head",
+     "pivot": [
+      0,
+      32,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -4,
+        32,
+        -4
+       ],
+       "size": [
+        8,
+        8,
+        8
+       ],
+       "uv": [
+        72,
+        39
+       ]
+      },
+      {
+       "origin": [
+        -4.5,
+        36,
+        -4.5
+       ],
+       "size": [
+        9,
+        4,
+        9
+       ],
+       "uv": [
+        0,
+        61
+       ]
+      },
+      {
+       "origin": [
+        -4.5,
+        34,
+        -5
+       ],
+       "size": [
+        9,
+        2,
+        1
+       ],
+       "uv": [
+        36,
+        61
+       ]
+      }
+     ],
+     "parent": "body"
+    },
+    {
+     "name": "arm_left",
+     "pivot": [
+      5,
+      30,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        4,
+        18,
+        -2
+       ],
+       "size": [
+        3,
+        12,
+        4
+       ],
+       "uv": [
+        56,
+        61
+       ]
+      }
+     ],
+     "parent": "body"
+    },
+    {
+     "name": "arm_right",
+     "pivot": [
+      -5,
+      30,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -7,
+        18,
+        -2
+       ],
+       "size": [
+        3,
+        12,
+        4
+       ],
+       "uv": [
+        70,
+        61
+       ]
+      }
+     ],
+     "parent": "body"
+    }
+   ]
+  }
+ ]
+}

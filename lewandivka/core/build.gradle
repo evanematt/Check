@@ -1,0 +1,119 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.lewandivka'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testImplementation 'com.google.code.gson:gson:2.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+    options.compilerArgs << '-Xlint:all' << '-Xlint:-serial'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = false
+        exceptionFormat = 'full'
+    }
+    // The structure catalog tests build every blueprint of the game (some are large).
+    maxHeapSize = '1g'
+}
+
+// Development aid: gradle render -Pids=garage13 -Pslices=9,10 -Pscale=6
+tasks.register('render', JavaExec) {
+    group = 'verification'
+    description = 'Renders blueprints to PNG (build/renders)'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.RenderMain'
+    systemProperty 'java.awt.headless', 'true'
+    ['ids', 'slices', 'scale', 'out', 'cut', 'cutview'].each { k ->
+        if (project.hasProperty(k)) {
+            systemProperty k, project.property(k)
+        }
+    }
+}
+
+// Development aid: gradle worldMap -Pcx=0 -Pcz=0 -Pspan=3000 -Ppx=1000 [-Pcave=30]
+tasks.register('worldMap', JavaExec) {
+    group = 'verification'
+    description = 'Draws a top-down map of the district dimension (build/renders/worldmap.png) and prints statistics'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.WorldMapMain'
+    systemProperty 'java.awt.headless', 'true'
+    maxHeapSize = '1g'
+    ['cx', 'cz', 'span', 'px', 'cave', 'out'].each { k ->
+        if (project.hasProperty(k)) {
+            systemProperty k, project.property(k)
+        }
+    }
+}
+
+// Development aid: gradle cityMap -Pcx=0 -Pcz=0 -Pspan=340 -Ppx=1020
+tasks.register('cityMap', JavaExec) {
+    group = 'verification'
+    description = 'Draws the ground and the buildings of the district (build/renders/citymap.png)'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.CityMapMain'
+    systemProperty 'java.awt.headless', 'true'
+    maxHeapSize = '1g'
+    ['cx', 'cz', 'span', 'px', 'out'].each { k ->
+        if (project.hasProperty(k)) {
+            systemProperty k, project.property(k)
+        }
+    }
+}
+
+// Writes every block key the generators can place to build/palette.txt (checked by tools/validate_registry.py)
+tasks.register('dumpPalette', JavaExec) {
+    group = 'verification'
+    description = 'Dumps all block keys used by the world generators'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.PaletteDump'
+    maxHeapSize = '1g'
+}
+
+tasks.register('dumpQuestFlow', JavaExec) {
+    group = 'documentation'
+    description = 'Writes docs/QUEST_FLOW.md from the story table (template: docs/QUEST_FLOW.template.md)'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.QuestFlowDump'
+    workingDir = projectDir
+    systemProperty 'template', file('../docs/QUEST_FLOW.template.md').absolutePath
+    systemProperty 'out', file('../docs/QUEST_FLOW.md').absolutePath
+}
+
+tasks.register('dumpMarkers', JavaExec) {
+    group = 'verification'
+    description = 'Lists every marker of the quest structures (build/markers.txt)'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.MarkerDump'
+    maxHeapSize = '1g'
+}
+
+// Writes the registry/text catalogs as JSON to tools/data/spec (read by the Python resource generator)
+tasks.register('exportSpec', JavaExec) {
+    group = 'build'
+    description = 'Exports blocks, items, entities, sounds and story texts as JSON'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.SpecExport'
+}

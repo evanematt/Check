@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:district_token"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.local.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.local.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:kiosk"
+}

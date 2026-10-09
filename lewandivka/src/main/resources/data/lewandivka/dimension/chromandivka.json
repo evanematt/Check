@@ -1,0 +1,11 @@
+{
+  "type": "lewandivka:chromandivka",
+  "generator": {
+    "type": "lewandivka:plan",
+    "plan": "chromandivka",
+    "biome_source": {
+      "type": "lewandivka:plan",
+      "plan": "chromandivka"
+    }
+  }
+}

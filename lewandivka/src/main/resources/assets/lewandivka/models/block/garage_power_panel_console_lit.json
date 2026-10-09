@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "lewandivka:block/garage_power_panel_console_lit_front",
+    "side": "lewandivka:block/garage_power_panel_side",
+    "top": "lewandivka:block/garage_power_panel_top"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "lewandivka:block/battery_socket_front",
+    "side": "lewandivka:block/battery_socket_side",
+    "top": "lewandivka:block/battery_socket_top"
+  }
+}

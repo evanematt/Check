@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "lewandivka:block/collar_stand_front",
+    "side": "lewandivka:block/collar_stand_side",
+    "top": "lewandivka:block/collar_stand_top"
+  }
+}
