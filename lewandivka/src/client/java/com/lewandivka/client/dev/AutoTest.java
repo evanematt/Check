@@ -384,6 +384,40 @@ public final class AutoTest {
         shot(c, "people_" + name, 8);
     }
 
+    /**
+     * A real right click on the trader nearest to the player (the player stands at his counter): the trade screen of the game must open,
+     * with offers in it, and it must close again. The picture shows what the customer sees.
+     */
+    private static void trade(MinecraftClient c, String name) {
+        add("trade with " + name, 20, () -> {
+            net.minecraft.util.math.Box area = c.player.getBoundingBox().expand(8.0);
+            java.util.List<com.lewandivka.entity.npc.VendorEntity> traders = c.world.getEntitiesByClass(com.lewandivka.entity.npc.VendorEntity.class, area, e -> true);
+            expect("a trader stands by the counter at " + name, !traders.isEmpty(), traders.size() + " traders within eight blocks of " + c.player.getBlockPos().toShortString());
+            if (traders.isEmpty()) {
+                return;
+            }
+            com.lewandivka.entity.npc.VendorEntity nearest = traders.get(0);
+            for (com.lewandivka.entity.npc.VendorEntity t : traders) {
+                if (t.squaredDistanceTo(c.player) < nearest.squaredDistanceTo(c.player)) {
+                    nearest = t;
+                }
+            }
+            screenWanted = true;
+            c.interactionManager.interactEntity(c.player, nearest, Hand.MAIN_HAND);
+        });
+        until("the trade screen of " + name, 100, 6, () -> c.currentScreen instanceof net.minecraft.client.gui.screen.ingame.MerchantScreen);
+        add("check the trade screen of " + name, 1, () -> {
+            boolean open = c.currentScreen instanceof net.minecraft.client.gui.screen.ingame.MerchantScreen;
+            int offers = open && c.player.currentScreenHandler instanceof net.minecraft.screen.MerchantScreenHandler h ? h.getRecipes().size() : 0;
+            expect("the trade screen of " + name + " is open with goods in it", open && offers > 0, "screen " + (c.currentScreen == null ? "none" : c.currentScreen.getClass().getSimpleName()) + ", " + offers + " offers");
+        });
+        shot(c, "trade_" + name, 8);
+        add("leave the trade screen of " + name, 6, () -> {
+            c.setScreen(null);
+            screenWanted = false;
+        });
+    }
+
     /** A view of the open country from above and a stand on its ground (the generator and the game's features decide what is there). */
     private static void wild(MinecraftClient c, String name, int x, int z) {
         cmd(c, "lewandivka wild " + x + " " + z + " view", 20);
@@ -929,6 +963,9 @@ public final class AutoTest {
         // the people of the district: the traders of the market (every one of them is made now) and some of the citizens
         cmd(c, "lewandivka populace", 80);
         meet(c, "stall_0", "customer", 0, "baker");
+        cmd(c, "lewandivka teleport stall_0 spot customer", 20);
+        settle(c, "the counter of the baker", 600);
+        trade(c, "baker");
         meet(c, "stall_3", "customer", 0, "handyman");
         meet(c, "stall_5", "customer", 0, "fishmonger");
         meet(c, "district", "citizen_3", 180, "worker_street");
