@@ -158,9 +158,22 @@ def main(argv):
     out.mkdir(parents=True, exist_ok=True)
     for line in Path(argv[1]).read_text(encoding="utf-8").splitlines():
         slug = line.split("#")[0].strip()
-        if slug:
+        if slug.startswith("?"):
+            search(slug[1:].strip())
+        elif slug:
             describe(slug, out)
     return 0
+
+
+def search(query: str) -> None:
+    """The projects of Modrinth that fit Minecraft 1.20.1 and Fabric and are found by the words (a line of the request that starts with ?)."""
+    print("=" * 100)
+    print(f"# search: {query}")
+    facets = json.dumps([["versions:" + MINECRAFT], ["categories:fabric"], ["project_type:mod"]])
+    hits = get(f"{API}/search?query={urllib.parse.quote(query)}&facets={urllib.parse.quote(facets)}&limit=12&index=downloads")
+    for h in hits.get("hits", []):
+        print(f"{h['slug']:34} {h['title'][:34]:34} dl={h['downloads']:>8} client={h['client_side']:11} server={h['server_side']:11} lic={h.get('license')}")
+        print("      " + (h.get("description") or "")[:150])
 
 
 if __name__ == "__main__":
