@@ -22,3 +22,6 @@ __pycache__/
 *.pyc
 # Downloaded third-party jars used to assemble packs locally (never committed)
 modpack/cache/
+
+# javac argument files left by the compiler on a failed build
+javac.*.args

@@ -25,6 +25,9 @@ if grep -q "Done (" "$LOG"; then
     "execute in lewandivka:district run forceload add 0 0 31 31" \
     "execute in lewandivka:chromandivka run forceload add 0 0 31 31" \
     "lewandivka validate" \
+    "lewandivka dumpblocks" \
+    "lewandivka dumpblocks handcrafted" \
+    "lewandivka dumpblocks refurbished_furniture" \
     "execute in lewandivka:district run forceload add -32 348 32 412" \
     "!until 240 chunks=25 lewandivka survey 0 380 2" \
     "stop" | tee "$LOG.rcon"

@@ -89,6 +89,9 @@ public final class LewCommands {
                         .then(CommandManager.literal("spot").then(CommandManager.argument("spot", StringArgumentType.word())
                                 .executes(c -> teleportToSpot(c.getSource(), StringArgumentType.getString(c, "structure"), StringArgumentType.getString(c, "spot")))))));
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
+        root.then(CommandManager.literal("dumpblocks")
+                .executes(c -> dumpBlocks(c.getSource(), null))
+                .then(CommandManager.argument("namespace", StringArgumentType.word()).executes(c -> dumpBlocks(c.getSource(), StringArgumentType.getString(c, "namespace")))));
         root.then(CommandManager.literal("selftest").executes(c -> selftest(c.getSource())));
         root.then(CommandManager.literal("probe")
                 .then(CommandManager.argument("x", IntegerArgumentType.integer())
@@ -288,6 +291,44 @@ public final class LewCommands {
             source.sendError(Text.literal("teleport failed: " + e));
             return 0;
         }
+    }
+
+    /**
+     * Development tool: the blocks of a mod with the properties of their states, grouped by the properties (without a namespace:
+     * how many blocks every namespace has). The furniture of the rooms is mapped onto the blocks of the furniture mods by reading
+     * this list.
+     */
+    private static int dumpBlocks(ServerCommandSource source, String namespace) {
+        java.util.Map<String, java.util.List<String>> bySignature = new java.util.TreeMap<>();
+        java.util.Map<String, Integer> counts = new java.util.TreeMap<>();
+        for (Identifier id : Registries.BLOCK.getIds()) {
+            counts.merge(id.getNamespace(), 1, Integer::sum);
+            if (namespace == null || !id.getNamespace().equals(namespace)) {
+                continue;
+            }
+            StringBuilder signature = new StringBuilder();
+            for (net.minecraft.state.property.Property<?> property : Registries.BLOCK.get(id).getStateManager().getProperties()) {
+                signature.append(describe(property)).append(';');
+            }
+            bySignature.computeIfAbsent(signature.toString(), k -> new java.util.ArrayList<>()).add(id.getPath());
+        }
+        StringBuilder out = new StringBuilder();
+        if (namespace == null) {
+            out.append("namespaces: ").append(counts);
+        } else {
+            out.append("blocks of ").append(namespace).append(": ").append(counts.getOrDefault(namespace, 0));
+            for (var entry : bySignature.entrySet()) {
+                java.util.Collections.sort(entry.getValue());
+                out.append("\nprops {").append(entry.getKey()).append("}: ").append(String.join(" ", entry.getValue()));
+            }
+        }
+        String text = out.toString();
+        source.sendFeedback(() -> Text.literal(text), false);
+        return 1;
+    }
+
+    private static <T extends Comparable<T>> String describe(net.minecraft.state.property.Property<T> property) {
+        return property.getName() + "=" + property.getValues().stream().map(property::name).collect(Collectors.joining("|"));
     }
 
     /** Development tool: to a named spot of a structure (a room of a building, the roof), keeping the way the player looks. */

@@ -147,16 +147,21 @@ final class HouseKit {
      * last step in the floor of the upper storey.
      */
     private static void stairs(BlueprintBuilder b, int z, Furnish.Style s) {
+        stairs(b, 2, z, s);
+    }
+
+    /** The same flight with its first step at x = {@code x0}. */
+    static void stairs(BlueprintBuilder b, int x0, int z, Furnish.Style s) {
         for (int step = 0; step < 4; step++) {
-            b.set(2 + step, 1 + step, z, Keys.stairs(s.stairs(), Dir.EAST, false));
+            b.set(x0 + step, 1 + step, z, Keys.stairs(s.stairs(), Dir.EAST, false));
         }
-        b.set(2, 4, z, Keys.slab(s.slab(), true));
-        b.set(3, 4, z, Keys.AIR);
-        b.set(4, 4, z, Keys.AIR);
+        b.set(x0, 4, z, Keys.slab(s.slab(), true));
+        b.set(x0 + 1, 4, z, Keys.AIR);
+        b.set(x0 + 2, 4, z, Keys.AIR);
         // under the steps: planks (nothing is to be passed there)
-        b.set(3, 1, z, s.planks());
-        b.fill(4, 1, z, 4, 2, z, s.planks());
-        b.fill(5, 1, z, 5, 3, z, s.planks());
+        b.set(x0 + 1, 1, z, s.planks());
+        b.fill(x0 + 2, 1, z, x0 + 2, 2, z, s.planks());
+        b.fill(x0 + 3, 1, z, x0 + 3, 3, z, s.planks());
     }
 
     /** The cells (x, z) of the inside that stand free on the ground floor, for the walkability checks of the houses. */

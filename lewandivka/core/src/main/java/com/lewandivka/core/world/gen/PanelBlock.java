@@ -262,6 +262,10 @@ final class PanelBlock {
                     int pierLeft = right ? u0 + 16 : u0 + 1;
                     int pierRight = right ? u0 + 12 : u0 + 5;
                     window(b, t, first, 3, pierLeft, pierRight, f, zWall, out, h);
+                    // the flats on the courtyard side of the upper floors have a balcony with a door in the middle of the window
+                    if (!back && k > 0 && (h >>> 8) % 100 < 38) {
+                        balcony(b, first + 1, f, h);
+                    }
                 }
                 // the window of the stairwell above the entrance, and at the back at the level of the landing
                 if (k > 0) {
@@ -298,6 +302,21 @@ final class PanelBlock {
             b.set(first, f + 2, zWall + out, "minecraft:potted_red_tulip");
         } else if ((h & 3) == 1) {
             b.set(first + (width > 1 ? 1 : 0), f + 2, zWall + out, "minecraft:potted_fern");
+        }
+    }
+
+    /** A balcony in front of the front wall: a door instead of the middle of the window, a slab, a railing of bars. */
+    private static void balcony(BlueprintBuilder b, int cx, int f, long h) {
+        String door = Furnish.door(Furnish.WOODS[(int) Math.floorMod(h >>> 20, (long) Furnish.WOODS.length)]);
+        b.set(cx, f + 1, 0, Keys.door(door, Dir.NORTH, false, false, false));
+        b.set(cx, f + 2, 0, Keys.door(door, Dir.NORTH, true, false, false));
+        b.fill(cx - 1, f, -2, cx + 1, f, -1, Pal.CONCRETE_GREY);
+        b.fill(cx - 1, f + 1, -1, cx + 1, f + 1, -1, Keys.AIR);
+        b.fill(cx - 1, f + 1, -2, cx + 1, f + 1, -2, Pal.BARS);
+        b.set(cx - 1, f + 1, -1, Pal.BARS);
+        b.set(cx + 1, f + 1, -1, Pal.BARS);
+        if ((h >>> 28) % 3 == 0) {
+            b.set(cx, f + 1, -1, Furnish.POTS[(int) Math.floorMod(h >>> 32, (long) Furnish.POTS.length)]);
         }
     }
 

@@ -20,7 +20,7 @@ import java.util.List;
  *   B^  a bed, its foot here and its head in the direction of the arrow (the head cell is marked ~)
  *   T   one cell of a table   c&lt;  a chair (the arrow is where the sitter looks)     y  a toy      Q&gt;  a cubby with coats
  *   W&gt;  a wardrobe            H   a bookcase       S^  a sofa        V&lt;  a television        |   a railing
- *   K^  a kitchen cupboard    X^  a stove          s   a sink        F   a fridge
+ *   K^  a kitchen cupboard    X^  a stove          s   a sink        F   a fridge       N&gt;  a blackboard
  *   t&gt;  a toilet              u   a bathtub        P   a plant       R   a rug       L   a lamp on a stand
  * </pre>
  */
@@ -155,7 +155,7 @@ final class RoomKit {
                 int x = plot.x(c, r);
                 int z = plot.z(c, r);
                 long h = Noise.hash(hash, c, r);
-                boolean skip = ruin && (h & 3) < 2 && "BTcWHSVKXsFPRLtuyQ".indexOf(t.kind()) >= 0;
+                boolean skip = ruin && (h & 3) < 2 && "BTcWHSVKXsFPRLtuyQN".indexOf(t.kind()) >= 0;
                 if (skip) {
                     continue;
                 }
@@ -189,6 +189,11 @@ final class RoomKit {
                         b.set(x, y + 1, z, TOYS[(int) Math.floorMod(h >>> 11, (long) TOYS.length)]);
                     }
                     case '|' -> b.set(x, y, z, s.fence());
+                    case 'N' -> {
+                        // a blackboard on the wall: a chalk tray and the green board over it
+                        b.set(x, y, z, Keys.slab("minecraft:spruce_slab", true));
+                        b.set(x, y + 1, z, "minecraft:green_concrete");
+                    }
                     default -> {
                         // '.', 'l', '%', '~' (the head of a bed, placed with its foot): nothing here
                     }

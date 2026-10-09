@@ -734,11 +734,12 @@ public final class DistrictPlan implements WorldPlan {
         // the row at the street (entrances to the north, into the courtyard) and the row at the back (entrances to the south)
         panel("block_n1", 3, 5, beige, 0, 41, -62, -89);
         panel("block_n2", 2, 5, grey, 0, 42, 4, -89);
-        panel("block_n3", 2, 5, orange, 0, 43, -146, -89);
+        building("school", School.build(0, 7), -146, -94);
+        building("field_school", Yard.field(28, 14), -146, -113);
         panel("block_n4", 3, 5, grey, 2, 44, -62, -129);
         panel("block_n5", 2, 5, beige, 2, 45, 4, -129);
         panel("block_n6", 3, 5, orange, 2, 46, -146, -129);
-        panel("tower_n1", 1, 9, grey, 0, 47, -106, -89);
+        panel("tower_n1", 1, 9, grey, 0, 47, -102, -89);
         // the courtyards between the rows
         for (int x : new int[] {-52, -4, 22}) {
             prop("playground_n" + x, Props.playground(), x, -108);

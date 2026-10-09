@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The room grids: well formed, a bed is a pair, every free cell can be reached from the door. */
 class RoomKitTest {
 
-    private static final String KNOWN = ".#dl%~BTcWHSVKXsFPRLtuyQ|";
+    private static final String KNOWN = ".#dl%~BTcWHSVKXsFPRLtuyQ|N";
 
     static void dump(String name, String[] rows) {
         StringBuilder sb = new StringBuilder(name + "\n");

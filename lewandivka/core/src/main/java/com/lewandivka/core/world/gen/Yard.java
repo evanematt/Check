@@ -109,9 +109,12 @@ public final class Yard {
             for (int x = 0; x < w; x++) {
                 for (int z = 0; z < d; z++) {
                     boolean edge = x == 0 || z == 0 || x == w - 1 || z == d - 1;
-                    boolean middle = z == d / 2;
+                    boolean alongX = w > d;
+                    boolean middle = alongX ? x == w / 2 : z == d / 2;
                     boolean circle = Math.abs(Math.hypot(x - w / 2.0, z - d / 2.0) - 3.5) < 0.6;
-                    boolean box = (x == w / 2 - 4 || x == w / 2 + 4) && (z <= 4 || z >= d - 5) || (z == 4 || z == d - 5) && Math.abs(x - w / 2) <= 4;
+                    boolean box = alongX
+                            ? (z == d / 2 - 4 || z == d / 2 + 4) && (x <= 4 || x >= w - 5) || (x == 4 || x == w - 5) && Math.abs(z - d / 2) <= 4
+                            : (x == w / 2 - 4 || x == w / 2 + 4) && (z <= 4 || z >= d - 5) || (z == 4 || z == d - 5) && Math.abs(x - w / 2) <= 4;
                     if (edge || middle || circle || box) {
                         b.set(x, 0, z, Pal.CONCRETE_WHITE);
                     } else {
@@ -120,12 +123,19 @@ public final class Yard {
                 }
             }
             b.region("body", 0, 0, 0, w - 1, 3, d - 1);
-            // the goals: two posts and a bar
-            for (int end : new int[] {0, d - 1}) {
-                for (int x : new int[] {w / 2 - 2, w / 2 + 2}) {
-                    b.fill(x, 1, end, x, 3, end, Pal.CONCRETE_WHITE);
+            // the goals: two posts and a bar, at the ends of the long side
+            boolean alongX = w > d;
+            for (int end : new int[] {0, (alongX ? w : d) - 1}) {
+                for (int off : new int[] {-2, 2}) {
+                    int x = alongX ? end : w / 2 + off;
+                    int z = alongX ? d / 2 + off : end;
+                    b.fill(x, 1, z, x, 3, z, Pal.CONCRETE_WHITE);
                 }
-                b.fill(w / 2 - 2, 3, end, w / 2 + 2, 3, end, Pal.CONCRETE_WHITE);
+                if (alongX) {
+                    b.fill(end, 3, d / 2 - 2, end, 3, d / 2 + 2, Pal.CONCRETE_WHITE);
+                } else {
+                    b.fill(w / 2 - 2, 3, end, w / 2 + 2, 3, end, Pal.CONCRETE_WHITE);
+                }
             }
             return b.build();
         });
