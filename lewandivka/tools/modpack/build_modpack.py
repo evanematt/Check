@@ -356,6 +356,10 @@ def build_graph(config, report):
 
 def side(pick, which: str) -> str:
     cfg = pick.cfg.get(which)
+    # "force_sides": the project page of the mod is wrong about where it is needed (More Food says that it is for servers only, and its
+    # jar declares both environments and holds the models and textures of its items: a client without it cannot join a world that has them)
+    if cfg and pick.cfg.get("force_sides"):
+        return cfg
     project = pick.project.get(f"{which}_side", "optional")
     if project == "unsupported":
         return "unsupported"

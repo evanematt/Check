@@ -55,6 +55,10 @@ if grep -Eq "^populace: ([0-9]+) places, \1 made now, 0 stood already" "$LOG.rco
 grep -h "^loot:\|^items of\|^entities of" "$LOG.rcon" 2>/dev/null | cut -c1-2500
 LOOT_OK=0
 if grep -q "^loot: OK" "$LOG.rcon" 2>/dev/null; then LOOT_OK=1; else echo "SERVERPACK: the containers of the buildings do not hold what the tables say"; fi
+# every thing of the other mods that the tables ask for must exist in the mods of the pack (a wrong name would only be left out silently)
+if ! grep -q "things of other mods in the tables: [1-9][0-9]* items of" "$LOG.rcon" 2>/dev/null || grep -q "not in this game: \[" "$LOG.rcon" 2>/dev/null; then
+  echo "SERVERPACK: the tables ask for things of the other mods that the pack does not have"; LOOT_OK=0
+fi
 grep -h "^cars:" "$LOG.rcon" 2>/dev/null | head -2
 FURNITURE_OK=0
 if grep -q "^decor: [1-9][0-9]* furniture keys, [1-9][0-9]* with the blocks of a furniture mod, 0 with the stand-in of the game" "$LOG.rcon" 2>/dev/null; then FURNITURE_OK=1; else echo "SERVERPACK: the furniture is not (all) made of the blocks of the furniture mod"; fi
