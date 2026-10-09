@@ -359,6 +359,15 @@ public final class AutoTest {
         shot(c, "room_" + name, 8);
     }
 
+    /** A picture from a place given by its coordinates (the furniture of the streets has no spot of its own). */
+    private static void spot(MinecraftClient c, double x, double y, double z, float yaw, float pitch, String name) {
+        cmd(c, "tp @s " + x + " " + y + " " + z + " " + yaw + " " + pitch, 20);
+        settle(c, name, 2400);
+        add("check " + name, 1, () -> expect("the player stands free at " + name, !c.player.isInsideWall(),
+                "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
+        shot(c, "street_" + name, 8);
+    }
+
     /** Another view from the place where the player stands: what the room has on its other walls. */
     private static void look(MinecraftClient c, float yaw, float pitch, String name) {
         cmd(c, "tp @s ~ ~ ~ " + yaw + " " + pitch, 6);
@@ -998,9 +1007,9 @@ public final class AutoTest {
         cmd(c, "effect give @s minecraft:night_vision 99999 0 true", 6);
         tour(c, "tram_stop", "tram_fight");
         tour(c, "old_shop", null);
-        // the furniture of the streets: a park bench and a table with chairs
-        tour(c, "bench_n1", null);
-        tour(c, "cafe_n1", null);
+        // the furniture of the streets: a park bench (-48..-46, -36, the sitter looks north) and a table with chairs (-43..-41, -36..-34)
+        spot(c, -44.5, 66.5, -41.5, 0, 16, "bench_and_cafe");
+        spot(c, -52.5, 66.5, -32.5, 237, 14, "bench_from_the_side");
         add("grid at the old shop", 1, () -> chunkGrid(c, "at the old shop"));
         tour(c, "garage13", "garage_panels");
         for (String s : List.of("block_a", "house_ne0", "kindergarten", "playground_north", "tram_depot")) {
