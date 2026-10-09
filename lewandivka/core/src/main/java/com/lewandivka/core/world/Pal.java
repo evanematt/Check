@@ -57,8 +57,12 @@ public final class Pal {
     public static final String LOG_OAK = "minecraft:oak_log";
     public static final String GLASS = "minecraft:glass";
     public static final String PANE = "minecraft:glass_pane";
-    /** The glass of the windows of buildings people lived in: a light blue tint, so that a window reads as glass and not as a hole. */
-    public static final String WINDOW = "minecraft:light_blue_stained_glass_pane";
+    /**
+     * The glass of the windows of buildings people lived in: a light blue tint, so that a window reads as glass and not as a hole.
+     * A block, not a pane: a pane is a thin post until the game has joined it to its neighbours (the first pictures of the windows
+     * were thin sticks), a block of glass is a window whatever happens to the chunk.
+     */
+    public static final String WINDOW = "minecraft:light_blue_stained_glass";
     public static final String BARS = "minecraft:iron_bars";
     public static final String LANTERN = "minecraft:lantern";
     public static final String LEAVES_OAK = Keys.of("minecraft:oak_leaves", "persistent", "true");

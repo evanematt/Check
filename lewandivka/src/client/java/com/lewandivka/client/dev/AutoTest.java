@@ -375,21 +375,24 @@ public final class AutoTest {
     }
 
     /**
-     * The windows as the client has them: the panes of the facade have joined their frames and each other (a pane that has joined
-     * nothing is only a thin post in the middle of the opening).
+     * The windows as the client has them: blocks of tinted glass in the facade, and the panes and bars within reach (the railings of
+     * the balconies, the gratings) have joined each other and the walls, a pane that has joined nothing is only a thin post.
      */
     private static void windows(MinecraftClient c, String name) {
         add("check the windows of " + name, 1, () -> {
             net.minecraft.util.math.BlockPos at = c.player.getBlockPos();
             net.minecraft.util.math.BlockPos.Mutable p = new net.minecraft.util.math.BlockPos.Mutable();
-            int total = 0;
+            int glass = 0;
+            int panes = 0;
             int alone = 0;
             for (int dx = -16; dx <= 16; dx++) {
                 for (int dy = -8; dy <= 12; dy++) {
                     for (int dz = -16; dz <= 16; dz++) {
                         net.minecraft.block.BlockState s = c.world.getBlockState(p.set(at.getX() + dx, at.getY() + dy, at.getZ() + dz));
-                        if (s.isOf(net.minecraft.block.Blocks.LIGHT_BLUE_STAINED_GLASS_PANE)) {
-                            total++;
+                        if (s.isOf(net.minecraft.block.Blocks.LIGHT_BLUE_STAINED_GLASS)) {
+                            glass++;
+                        } else if (s.getBlock() instanceof net.minecraft.block.PaneBlock) {
+                            panes++;
                             if (!s.get(net.minecraft.state.property.Properties.NORTH) && !s.get(net.minecraft.state.property.Properties.EAST)
                                     && !s.get(net.minecraft.state.property.Properties.SOUTH) && !s.get(net.minecraft.state.property.Properties.WEST)) {
                                 alone++;
@@ -398,8 +401,8 @@ public final class AutoTest {
                     }
                 }
             }
-            expect("the windows of " + name + " are joined to their frames", total > 0 && alone * 20 <= total,
-                    total + " panes within reach, " + alone + " of them standing alone");
+            expect("the facade of " + name + " has windows of tinted glass", glass >= 12, glass + " blocks of tinted glass within reach");
+            expect("the panes and bars near " + name + " are joined", alone * 10 <= panes, panes + " panes and bars within reach, " + alone + " of them standing alone");
         });
     }
 

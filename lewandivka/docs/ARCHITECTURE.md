@@ -157,14 +157,15 @@ mirror image) by `Furnish`, the one place that speaks of furniture in terms of w
 stairs of the houses. `Walk` proves that a visitor can reach every cell of a room and that the stairs of a stairwell can be
 climbed (stairs and slabs count as solid, a step up is one block, a top slab over the first stair is headroom).
 
-**Windows** are light blue stained glass panes (`Pal.WINDOW`: clear panes look like holes from a street) in a closed frame of
-white (piers, a sill, a lintel); the facades of the panel blocks have only calm weathering. `WindowsTest` checks that every pane
-is closed by its frame and that no building has clear panes. A key of a blueprint names a pane, a fence, a wall or a bar *without*
-its joins to the neighbours, which the game works out when the block is placed by hand but not when a chunk is written; so
+**Windows** are blocks of light blue stained glass (`Pal.WINDOW`: clear glass looks like a hole from a street) in a closed frame of
+white (piers, a sill, a lintel); the facades of the panel blocks have only calm weathering. `WindowsTest` checks that every window
+block is closed by its frame, that no building has clear panes or panes at all. Panes were tried first and looked like thin
+sticks: a key of a blueprint names a pane, a fence, a wall or a bar *without* its joins to the neighbours, which the game works out
+when the block is placed by hand but not when a chunk is written, so a pane stays a thin post in the middle of the opening until
+it is joined. Blocks of glass need no joins. The fences, the bars and the walls of the district still do, so
 `ChunkPainter` marks every one of them for the post-processing of the chunk (`markBlockForPostProcessing`, the way the game does
 it for the fences and the bars of its own structures), and the neighbours are joined when the chunk comes alive and before it is
-sent to a player. Without it every window is a thin post in the middle of the opening (a defect of the first pictures of the
-client test); the client bot now counts the panes at the facades that stand alone.
+sent to a player. The client bot counts the panes and bars at the facades that stand alone.
 
 **Furniture and the furniture mod.** `Decor` names every piece twice, `handcrafted:oak_chair[...]|minecraft:oak_stairs[...]`
 (`Keys.either`): the block of **Handcrafted** and, after the bar, the block of the game that stands in for it. The core looks only

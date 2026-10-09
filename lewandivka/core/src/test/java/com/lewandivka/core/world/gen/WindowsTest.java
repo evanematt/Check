@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The windows of the buildings: tinted glass in a closed frame, and a facade without patches that look like holes. */
+/** The windows of the buildings: blocks of tinted glass in a closed frame, and a facade without patches that look like holes. */
 class WindowsTest {
 
     private static boolean isBuilding(String id) {
@@ -38,17 +38,20 @@ class WindowsTest {
     }
 
     @Test
-    void theBuildingsHaveWindowsOfTintedGlassAndNoClearPanes() {
+    void theBuildingsHaveWindowsOfTintedGlassBlocksAndNoPanes() {
         List<StructurePlacement> list = buildings();
         assertTrue(list.size() >= 30, "buildings found: " + list.size());
         for (StructurePlacement p : list) {
             List<String> keys = p.blueprint().paletteKeys();
             assertTrue(keys.contains(Pal.WINDOW), p.id() + " has no windows");
             assertFalse(keys.contains(Pal.PANE), p.id() + " has clear panes that look like holes");
+            for (String key : keys) {
+                assertFalse(key != null && key.endsWith("_glass_pane"), p.id() + " has a pane of glass that is only a thin post until it is joined: " + key);
+            }
         }
     }
 
-    /** A window is closed: above and below every pane there is glass, frame or wall, and along the wall too. */
+    /** A window is closed: above and below every block of glass there is glass, frame or wall, and along the wall too. */
     @Test
     void everyWindowIsClosedByItsFrame() {
         int panes = 0;
@@ -62,15 +65,15 @@ class WindowsTest {
                         }
                         panes++;
                         String where = p.id() + " at " + x + "," + y + "," + z;
-                        assertTrue(solid(bp, x, y + 1, z) && solid(bp, x, y - 1, z), where + ": the pane is not closed above and below");
+                        assertTrue(solid(bp, x, y + 1, z) && solid(bp, x, y - 1, z), where + ": the window is not closed above and below");
                         boolean alongX = solid(bp, x - 1, y, z) && solid(bp, x + 1, y, z);
                         boolean alongZ = solid(bp, x, y, z - 1) && solid(bp, x, y, z + 1);
-                        assertTrue(alongX || alongZ, where + ": the pane is not closed at its sides");
+                        assertTrue(alongX || alongZ, where + ": the window is not closed at its sides");
                     }
                 }
             }
         }
-        assertTrue(panes > 2000, "panes in the buildings: " + panes);
+        assertTrue(panes > 2000, "blocks of window glass in the buildings: " + panes);
     }
 
     @Test
