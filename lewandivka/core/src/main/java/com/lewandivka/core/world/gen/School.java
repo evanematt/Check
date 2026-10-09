@@ -29,7 +29,7 @@ public final class School {
 
     /** A classroom of 7 x 5 for the west end of a wing: the blackboard on the west wall, pairs of desks and chairs, the door in the corner. */
     static final String[] CLASSROOM = {
-            "P  .  .  T  c< T  c<",
+            "P  .  Cv T  c< T  c<",
             "N> .  l  T  c< T  c<",
             "N> T  .  T  c< T  c<",
             "N> .  l  T  c< T  c<",
@@ -41,7 +41,7 @@ public final class School {
             "H> .  T  T  T  .  H<",
             "H> .  c^ c^ c^ .  H<",
             "H> .  .  l  .  .  H<",
-            "P  .  .  .  .  .  P",
+            "P  .  .  C^ .  .  P",
     };
 
     /** The entrance hall of 6 x 14: the door to the street at the top, the stairs at the bottom. */
@@ -190,7 +190,7 @@ public final class School {
         // the rooms and the stairs of the hall
         String[][] floors = floors();
         long h = Noise.hash(seed, 5, 5);
-        Furnish.Style style = new Furnish.Style(wood, Furnish.planks(wood), "minecraft:white_terracotta", Furnish.BEDS[0], Furnish.SOFAS[0], Furnish.RUGS[0], true, 0);
+        Furnish.Style style = new Furnish.Style(wood, Furnish.planks(wood), "minecraft:white_terracotta", Furnish.BEDS[0], Furnish.SOFAS[0], Furnish.RUGS[0], true, 0, "school");
         for (int storey = 0; storey < 2; storey++) {
             RoomKit.place(b, new Plot(1, 1, Dir.EAST, Dir.SOUTH), 4 * storey, RoomKit.parse(floors[storey]), style, h + storey);
         }

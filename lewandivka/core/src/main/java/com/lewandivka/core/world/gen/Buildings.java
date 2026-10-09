@@ -201,7 +201,8 @@ public final class Buildings {
         String wood = Furnish.WOODS[(int) Math.floorMod(seed, (long) Furnish.WOODS.length)];
         Furnish.Style inside = new Furnish.Style(wood, Furnish.planks(wood), Furnish.WALLS[(int) Math.floorMod(h, (long) Furnish.WALLS.length)],
                 Furnish.BEDS[(int) Math.floorMod(h >>> 8, (long) Furnish.BEDS.length)], Furnish.SOFAS[(int) Math.floorMod(h >>> 16, (long) Furnish.SOFAS.length)],
-                Furnish.RUGS[(int) Math.floorMod(h >>> 24, (long) Furnish.RUGS.length)], !(!kinder && (h >>> 32) % 5 == 0), !kinder && (h >>> 40) % 6 == 0 ? 1 : 0);
+                Furnish.RUGS[(int) Math.floorMod(h >>> 24, (long) Furnish.RUGS.length)], !(!kinder && (h >>> 32) % 5 == 0), !kinder && (h >>> 40) % 6 == 0 ? 1 : 0,
+                kinder ? "kindergarten" : "house");
         HouseKit.furnish(b, w, d, inside, seed, kinder);
         // chimney
         int cx = Math.min(w - 3, w / 2 + 3);
@@ -350,9 +351,14 @@ public final class Buildings {
             b.fill(2, 1, 3, 11, 1, 3, "minecraft:spruce_planks");
             b.fill(2, 2, 3, 11, 2, 3, "minecraft:spruce_slab[type=bottom]");
             for (int x = 2; x <= 11; x += 3) {
-                b.set(x, 1, d - 2, Keys.barrel(Dir.NORTH));
+                if (x == 2) {
+                    b.set(x, 1, d - 2, Keys.barrel(Dir.NORTH));
+                } else {
+                    Loot.barrel(b, x, 1, d - 2, Dir.NORTH, "shop");
+                }
                 b.set(x, 2, d - 2, "minecraft:bookshelf");
             }
+            Loot.chest(b, w - 2, 1, 5, Dir.WEST, "shop");
             b.set(w / 2, 4, d / 2, Pal.light(10));
             b.set(3, 1, d - 2, Pal.stash());
             b.marker("stash", 3, 1, d - 2, "loot=kiosk_sign");

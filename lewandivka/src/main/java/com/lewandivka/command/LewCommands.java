@@ -93,6 +93,10 @@ public final class LewCommands {
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
         root.then(CommandManager.literal("decor").executes(c -> decor(c.getSource())));
         root.then(CommandManager.literal("populace").executes(c -> feedback(c.getSource(), com.lewandivka.quest.Townsfolk.makeAll(c.getSource().getServer()))));
+        root.then(CommandManager.literal("cars").executes(c -> feedback(c.getSource(), com.lewandivka.quest.CarPark.makeAll(c.getSource().getServer()))));
+        root.then(CommandManager.literal("loot").executes(c -> loot(c.getSource())));
+        root.then(CommandManager.literal("dumpitems")
+                .then(CommandManager.argument("namespace", StringArgumentType.word()).executes(c -> dumpItems(c.getSource(), StringArgumentType.getString(c, "namespace")))));
         root.then(CommandManager.literal("dumpblocks")
                 .executes(c -> dumpBlocks(c.getSource(), null))
                 .then(CommandManager.argument("namespace", StringArgumentType.word()).executes(c -> dumpBlocks(c.getSource(), StringArgumentType.getString(c, "namespace")))));
@@ -329,6 +333,42 @@ public final class LewCommands {
         String text = out.toString();
         source.sendFeedback(() -> Text.literal(text), false);
         return 1;
+    }
+
+    /** Development tool: the items and the creatures of a mod by name (the names the other mods of the pack give their things are looked up here). */
+    private static int dumpItems(ServerCommandSource source, String namespace) {
+        java.util.List<String> items = new java.util.ArrayList<>();
+        for (Identifier id : Registries.ITEM.getIds()) {
+            if (id.getNamespace().equals(namespace)) {
+                items.add(id.getPath());
+            }
+        }
+        java.util.List<String> entities = new java.util.ArrayList<>();
+        for (Identifier id : Registries.ENTITY_TYPE.getIds()) {
+            if (id.getNamespace().equals(namespace)) {
+                entities.add(id.getPath());
+            }
+        }
+        java.util.Collections.sort(items);
+        java.util.Collections.sort(entities);
+        String text = "items of " + namespace + ": " + items.size() + " " + String.join(" ", items) + "\nentities of " + namespace + ": " + entities.size()
+                + " " + String.join(" ", entities);
+        com.lewandivka.LewandivkaMod.LOGGER.info("[dumpitems] {}", text);
+        source.sendFeedback(() -> Text.literal(text.length() > 3500 ? text.substring(0, 3500) + " ..." : text), false);
+        return 1;
+    }
+
+    /** What the containers of the buildings hold (see {@link com.lewandivka.world.service.LootCheck}). */
+    private static int loot(ServerCommandSource source) {
+        SelfTest.Report report = com.lewandivka.world.service.LootCheck.run(source.getServer());
+        for (String note : report.notes()) {
+            com.lewandivka.LewandivkaMod.LOGGER.info("[loot] {}", note);
+        }
+        for (String problem : report.problems()) {
+            com.lewandivka.LewandivkaMod.LOGGER.warn("[loot] {}", problem);
+        }
+        String text = "loot: " + (report.ok() ? "OK" : "PROBLEMS") + " - " + String.join(" ; ", report.ok() ? report.notes() : report.problems());
+        return feedback(source, text) * (report.ok() ? 1 : 0);
     }
 
     private static <T extends Comparable<T>> String describe(net.minecraft.state.property.Property<T> property) {

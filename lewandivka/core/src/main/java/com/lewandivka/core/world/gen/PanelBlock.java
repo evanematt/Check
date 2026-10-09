@@ -215,7 +215,7 @@ final class PanelBlock {
                 Furnish.BEDS[(int) Math.floorMod(h >>> 16, (long) Furnish.BEDS.length)],
                 Furnish.SOFAS[(int) Math.floorMod(h >>> 24, (long) Furnish.SOFAS.length)],
                 Furnish.RUGS[(int) Math.floorMod(h >>> 32, (long) Furnish.RUGS.length)],
-                !ruin && (h >>> 48) % 10 < 7, ruin ? 1 : 0);
+                !ruin && (h >>> 48) % 10 < 7, ruin ? 1 : 0, "flat");
         String[] rows = RoomKit.FLATS[(int) Math.floorMod(h >>> 52, (long) RoomKit.FLATS.length)];
         RoomKit.place(b, flat(u0, right, back), STOREY * k, RoomKit.parse(rows), style, h);
     }

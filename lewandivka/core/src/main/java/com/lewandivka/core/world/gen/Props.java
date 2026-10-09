@@ -212,19 +212,26 @@ public final class Props {
             boolean odd = (turns & 1) == 1;
             BlueprintBuilder b = new BlueprintBuilder("car", odd ? 3 : 5, 3, odd ? 5 : 3);
             b.orient(turns, 5, 3);
-            b.fill(0, 0, 0, 4, 1, 2, body);
+            // with the mod of the cars installed these blocks are air and a car of the mod stands there instead (see Cars)
+            b.fill(0, 0, 0, 4, 1, 2, unlessCars(body));
             for (int x : new int[] {0, 4}) {
                 for (int z : new int[] {0, 2}) {
-                    b.set(x, 0, z, "minecraft:black_concrete");
+                    b.set(x, 0, z, unlessCars("minecraft:black_concrete"));
                 }
             }
-            b.fill(1, 2, 0, 3, 2, 2, "minecraft:light_blue_stained_glass");
-            b.fill(1, 2, 1, 3, 2, 1, body);
-            b.set(0, 1, 0, "minecraft:red_concrete").set(0, 1, 2, "minecraft:red_concrete");
-            b.set(4, 1, 0, "minecraft:white_concrete").set(4, 1, 2, "minecraft:white_concrete");
-            b.set(4, 0, 1, "minecraft:gray_concrete").set(0, 0, 1, "minecraft:gray_concrete");
+            b.fill(1, 2, 0, 3, 2, 2, unlessCars("minecraft:light_blue_stained_glass"));
+            b.fill(1, 2, 1, 3, 2, 1, unlessCars(body));
+            b.set(0, 1, 0, unlessCars("minecraft:red_concrete")).set(0, 1, 2, unlessCars("minecraft:red_concrete"));
+            b.set(4, 1, 0, unlessCars("minecraft:white_concrete")).set(4, 1, 2, unlessCars("minecraft:white_concrete"));
+            b.set(4, 0, 1, unlessCars("minecraft:gray_concrete")).set(0, 0, 1, unlessCars("minecraft:gray_concrete"));
+            // the white lights are at the front, which looks along the first axis of the frame
+            b.marker(Cars.MARKER, 2, 0, 1, "facing=east,color=" + Cars.colorOf(body));
             return b.build();
         });
+    }
+
+    private static String unlessCars(String key) {
+        return Keys.unlessMod(Cars.MOD, key);
     }
 
     public static final String CAR_BLUE = "minecraft:blue_concrete";

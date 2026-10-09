@@ -96,7 +96,7 @@ public final class Yard {
             b.set(2, 2, 0, Keys.door("minecraft:spruce_door", Dir.NORTH, true, false, false));
             b.fill(1, 2, d - 1, 3, 2, d - 1, Pal.WINDOW);
             b.set(1, 1, 2, "minecraft:crafting_table");
-            b.set(3, 1, 3, Keys.barrel(Dir.NORTH));
+            Loot.barrel(b, 3, 1, 3, Dir.NORTH, "shed");
             b.set(1, 1, 3, "minecraft:composter[level=3]");
             b.set(3, 1, 1, "minecraft:flower_pot");
             b.set(2, 3, 2, Keys.lantern(true));

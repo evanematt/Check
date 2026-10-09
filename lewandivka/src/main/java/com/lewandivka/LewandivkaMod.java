@@ -17,6 +17,7 @@ import com.lewandivka.quest.QuestWatch;
 import com.lewandivka.quest.Stations;
 import com.lewandivka.quest.TimeControl;
 import com.lewandivka.util.Scheduler;
+import com.lewandivka.world.service.ModLoot;
 import com.lewandivka.world.service.ZoneServices;
 import com.lewandivka.item.GameTab;
 import com.lewandivka.sound.GameSounds;
@@ -53,6 +54,7 @@ public final class LewandivkaMod implements ModInitializer {
         QuestWatch.register();
         FlowHost.register();
         ZoneServices.register();
+        ModLoot.register();
         Lifecycle.register();
         LewCommands.register();
         JoinReplay.register();

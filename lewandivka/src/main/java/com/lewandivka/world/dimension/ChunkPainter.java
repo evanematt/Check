@@ -5,20 +5,26 @@ import com.lewandivka.core.structure.StructurePlacement;
 import com.lewandivka.core.world.Noise;
 import com.lewandivka.core.world.TerrainColumn;
 import com.lewandivka.core.world.WorldPlan;
+import com.lewandivka.core.world.gen.Loot;
 import com.lewandivka.world.structure.StateResolver;
+import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.block.PaneBlock;
 import net.minecraft.block.WallBlock;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ProtoChunk;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Writes one chunk of a world plan: terrain columns first, then the scatter decoration, then the fixed quest structures
@@ -44,13 +50,20 @@ public final class ChunkPainter {
                 paintColumn(plan, chunk, mp, x0 + dx, z0 + dz, col, minY, maxY);
             }
         }
+        List<StructurePlacement> placed = new ArrayList<>();
         for (StructurePlacement p : plan.scatterIn(x0, z0, x0 + 15, z0 + 15)) {
             stamp(chunk, p, x0, z0, minY, maxY, mp);
+            placed.add(p);
         }
         for (StructurePlacement p : plan.fixedPlacements()) {
             if (p.intersectsXZ(x0, z0, x0 + 15, z0 + 15)) {
                 stamp(chunk, p, x0, z0, minY, maxY, mp);
+                placed.add(p);
             }
+        }
+        // only when everything is in its place: a chest that another structure has built over is no chest any more
+        for (StructurePlacement p : placed) {
+            containers(chunk, p, x0, z0, mp);
         }
         Heightmap.populateHeightmaps(chunk, EnumSet.of(Heightmap.Type.OCEAN_FLOOR_WG, Heightmap.Type.WORLD_SURFACE_WG));
     }
@@ -151,6 +164,36 @@ public final class ChunkPainter {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * The chests and barrels with a table of loot (see {@link Loot}): a marker of the blueprint names the table, and the container that
+     * stands at the marker when the chunk is done gets it as the {@code LootTable} of its block entity. The game then fills the
+     * container the first time it is opened, differently every time. The data waits in the chunk until the block entities of the chunk are
+     * made (the game makes them when the chunk is put into the world, before it is sent to anybody).
+     */
+    private static void containers(Chunk chunk, StructurePlacement p, int x0, int z0, BlockPos.Mutable mp) {
+        for (Blueprint.Marker m : p.blueprint().markers()) {
+            int wx = p.x() + m.x();
+            int wz = p.z() + m.z();
+            if (wx < x0 || wx > x0 + 15 || wz < z0 || wz > z0 + 15 || !Loot.isLootMarker(m.name())) {
+                continue;
+            }
+            int wy = p.y() + m.y();
+            Block block = chunk.getBlockState(mp.set(wx, wy, wz)).getBlock();
+            String type = block instanceof ChestBlock ? "minecraft:chest" : block instanceof BarrelBlock ? "minecraft:barrel" : null;
+            String table = Loot.tableOf(m.data());
+            if (type == null || table == null) {
+                continue;
+            }
+            NbtCompound nbt = new NbtCompound();
+            nbt.putString("id", type);
+            nbt.putInt("x", wx);
+            nbt.putInt("y", wy);
+            nbt.putInt("z", wz);
+            nbt.putString("LootTable", table);
+            chunk.addPendingBlockEntityNbt(nbt);
         }
     }
 }

@@ -77,6 +77,7 @@ public final class Lifecycle {
             Abilities.tick(server);
             NpcSpawns.tick(server);
             Townsfolk.tick(server);
+            CarPark.tick(server);
             arrivals(server);
         });
         Campaign.addListener(Lifecycle::stepEntered);

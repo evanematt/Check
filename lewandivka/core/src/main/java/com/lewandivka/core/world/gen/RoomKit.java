@@ -22,7 +22,10 @@ import java.util.List;
  *   W&gt;  a wardrobe            H   a bookcase       S^  a sofa        V&lt;  a television        |   a railing
  *   K^  a kitchen cupboard    X^  a stove          s   a sink        F   a fridge       N&gt;  a blackboard
  *   t&gt;  a toilet              u   a bathtub        P   a plant       R   a rug       L   a lamp on a stand
+ *   C&lt;  a chest (the arrow is where its front looks)       O&lt;  a barrel (the arrow is where its opening looks)
  * </pre>
+ * The chest, the barrel and the stand of the television hold what the loot table of the kind of place says (see {@link Loot}).
+ * They are never left out of a room that nobody lives in.
  */
 final class RoomKit {
 
@@ -99,16 +102,16 @@ final class RoomKit {
              "B^ .  c> T  c<",
              ".  .  l  .  .",
              "W> .  .  .  .",
-             "K^ s  X^ F  ."},
+             "K^ s  X^ F  C<"},
             // 1: a studio with a closet for the toilet and a kitchen corner
             {"W> P  L  T  H<",
              "~  .  c> T  c<",
-             "B^ .  l  .  .",
+             "B^ .  l  .  C<",
              "#  d  #  .  .",
              "t> .  #  K^ s"},
             // 2: the bed under the window, a sofa facing the television
             {"~  B< .  .  P",
-             ".  .  l  .  .",
+             "C> .  l  .  .",
              "S> .  R  .  V<",
              "S> .  R  .  .",
              "K^ s  X^ F  W<"},
@@ -117,10 +120,10 @@ final class RoomKit {
              "B^ B^ l  T  c<",
              ".  .  .  .  .",
              "W> .  R  R  .",
-             "K^ s  X^ F  ."},
+             "K^ s  X^ F  C<"},
             // 4: the closet again, with an armchair and a television instead of the table
             {"~  B< .  .  P",
-             ".  .  l  .  .",
+             "C> .  l  .  .",
              "S> .  R  .  V<",
              "#  d  #  .  .",
              "t> .  #  K^ s"},
@@ -186,7 +189,9 @@ final class RoomKit {
                         Furnish.sofa(b, x, y, z, front, s, Decor.couchShape(joins(g, plot, standing, c, r, front.left(), 'S', t.dir()),
                                 joins(g, plot, standing, c, r, front.right(), 'S', t.dir())));
                     }
-                    case 'V' -> Furnish.tv(b, x, y, z, plot.dir(t.dir()));
+                    case 'V' -> Furnish.tv(b, x, y, z, plot.dir(t.dir()), s);
+                    case 'C' -> Furnish.chest(b, x, y, z, plot.dir(t.dir()), s);
+                    case 'O' -> Furnish.barrel(b, x, y, z, plot.dir(t.dir()), s);
                     case 'K' -> Furnish.counter(b, x, y, z, plot.dir(t.dir()), s, h >>> 4);
                     case 'X' -> Furnish.stove(b, x, y, z, plot.dir(t.dir()));
                     case 's' -> Furnish.sink(b, x, y, z);

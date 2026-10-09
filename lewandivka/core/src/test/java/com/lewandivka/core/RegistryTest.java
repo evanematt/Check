@@ -94,7 +94,10 @@ class RegistryTest {
         JsonObject blocks = vanilla.getAsJsonObject("blocks");
         List<String> problems = new ArrayList<>();
         for (String key : allKeys()) {
-            if (Keys.isEither(key)) {
+            if (Keys.isUnlessMod(key)) {
+                // a block that is only there without a mod: the block itself has to be right
+                key = Keys.fallback(key);
+            } else if (Keys.isEither(key)) {
                 // a block of the furniture mod and the block of the game that stands in for it: both have to be right
                 problems.addAll(HandcraftedBlocks.check(Keys.preferred(key)));
                 key = Keys.fallback(key);

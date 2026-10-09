@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** The room grids: well formed, a bed is a pair, every free cell can be reached from the door. */
 class RoomKitTest {
 
-    private static final String KNOWN = ".#dl%~BTcWHSVKXsFPRLtuyQ|N";
+    private static final String KNOWN = ".#dl%~BTcWHSVKXsFPRLtuyQ|NCO";
 
     static void dump(String name, String[] rows) {
         StringBuilder sb = new StringBuilder(name + "\n");
@@ -27,7 +27,7 @@ class RoomKitTest {
             for (int c = 0; c < grid.cols(); c++) {
                 char k = grid.kind(c, r);
                 assertTrue(KNOWN.indexOf(k) >= 0, name + " cell " + c + "," + r + ": unknown token " + k);
-                if ("cWSVKXtBQ".indexOf(k) >= 0) {
+                if ("cWSVKXtBQCO".indexOf(k) >= 0) {
                     assertTrue("<>^v".indexOf(grid.cells()[r][c].dir()) >= 0, name + " cell " + c + "," + r + " (" + k + ") needs a direction");
                 }
             }

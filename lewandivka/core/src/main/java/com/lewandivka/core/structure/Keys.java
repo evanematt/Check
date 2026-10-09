@@ -132,7 +132,25 @@ public final class Keys {
     }
 
     public static boolean isEither(String key) {
-        return key != null && key.indexOf('|') >= 0;
+        return key != null && key.indexOf('|') >= 0 && !key.startsWith("!");
+    }
+
+    /**
+     * A block that is only there while a mod is not installed: with the mod there is air in its place, because the mod puts a
+     * creature there (the cars of Trep's Cars stand where the block-built cars would). {@code !trepscars|minecraft:blue_concrete}.
+     * Like {@link #either}, every analysis of the core looks at the part after the bar.
+     */
+    public static String unlessMod(String modId, String fallbackKey) {
+        return "!" + modId + "|" + fallbackKey;
+    }
+
+    public static boolean isUnlessMod(String key) {
+        return key != null && key.startsWith("!") && key.indexOf('|') > 1;
+    }
+
+    /** The id of the mod of an {@link #unlessMod} key. */
+    public static String modOf(String key) {
+        return key.substring(1, key.indexOf('|'));
     }
 
     /** Strips the {@code [...]} property part (of the fallback, when the key names a block of a mod and a stand-in). */

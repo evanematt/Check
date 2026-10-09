@@ -111,7 +111,7 @@ public final class Industry {
         } else if (kind < 8) {
             // a workshop: bench, barrels, shelves
             b.set(x0, 1, 6, "minecraft:crafting_table");
-            b.set(x0 + 1, 1, 6, Keys.barrel(Dir.NORTH));
+            Loot.barrel(b, x0 + 1, 1, 6, Dir.NORTH, "garage");
             b.set(x0 + 2, 1, 6, "minecraft:bookshelf");
             b.set(x0 + 2, 2, 6, "minecraft:bookshelf");
             b.set(x0, 1, 5, "minecraft:anvil[facing=east]");
@@ -119,7 +119,7 @@ public final class Industry {
         } else {
             // junk: pallets and barrels
             b.stamp(Props.pallets(), x0, 1, 4);
-            b.set(x0, 1, 2, Keys.barrel(Dir.NORTH));
+            Loot.barrel(b, x0, 1, 2, Dir.NORTH, "garage");
         }
         if ((h >>> 16) % 3 != 0) {
             b.set(x0 + 1, 3, 3, Keys.lantern(true));

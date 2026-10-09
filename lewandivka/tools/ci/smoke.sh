@@ -66,6 +66,8 @@ session "$LOG" \
   "lewandivka validate" \
   "lewandivka decor" \
   "lewandivka populace" \
+  "lewandivka loot" \
+  "lewandivka cars" \
   "lewandivka selftest" \
   "execute in lewandivka:district run lewandivka probe 2 60 72 -3" \
   "lewandivka joinreplay start A -1" \
@@ -122,6 +124,12 @@ grep -q "^decor: [1-9][0-9]* furniture keys, 0 with the blocks of a furniture mo
 grep -h "^populace:" "$LOG.rcon" 2>/dev/null | head -2
 grep -Eq "^populace: ([0-9]+) places, \1 made now, 0 stood already" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: not every place of the people of the district was filled"; ok=0; }
 grep -Eq "vendor_baker=[1-9].* vendor_gardener=[1-9]" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the traders have no goods"; ok=0; }
+# the containers of the buildings: every table of loot gives things (rolled forty times), and the chests and barrels of the world carry them
+grep -h "^loot:" "$LOG.rcon" 2>/dev/null | cut -c1-1500
+grep -q "^loot: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the containers of the buildings do not hold what the tables say"; ok=0; }
+# the cars: without the mod of the cars (a dedicated server cannot run it) they stay built of blocks
+grep -h "^cars:" "$LOG.rcon" 2>/dev/null | head -2
+grep -Eq "^cars: [1-9][0-9]* places, the mod trepscars is not in this game" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the cars are not the cars built of blocks"; ok=0; }
 # the self test needs the real dimensions: generated world = plan, free first arrival, players can cross (see SelfTest)
 grep -h "selftest:" "$LOG.rcon" "$LOG2.rcon" 2>/dev/null | cut -c1-1800
 grep -q "selftest: OK" "$LOG.rcon" 2>/dev/null || { echo "SMOKE: the self test failed in the first session"; ok=0; }

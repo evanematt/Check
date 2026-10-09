@@ -3,6 +3,7 @@ package com.lewandivka.world.structure;
 import com.lewandivka.LewandivkaMod;
 import com.lewandivka.block.SpecBlock;
 import com.lewandivka.core.structure.Keys;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -26,6 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * block of the furniture mod and, after the bar, the block of the game that stands in for it. The block of the mod is used
  * when the game has it (and, for a bed, when it is a bed of the game's own kind, so that it can be slept in) and all its
  * properties fit; otherwise the stand-in.</p>
+ *
+ * <p>A key that starts with a bang, {@code !trepscars|minecraft:blue_concrete}, is a block that is only there while the mod before the
+ * bar is <i>not</i> installed: with the mod there is air (the cars of the district are creatures of Trep's Cars, made by
+ * {@code CarPark}, and the blocks are the cars of a game without the mod).</p>
  */
 public final class StateResolver {
 
@@ -57,6 +62,10 @@ public final class StateResolver {
         int bar = key.indexOf('|');
         if (bar < 0) {
             return resolveBlock(key);
+        }
+        if (Keys.isUnlessMod(key)) {
+            // a block that is only there while the mod is not: with the mod loaded the creature of the mod stands in its place (the cars)
+            return FabricLoader.getInstance().isModLoaded(Keys.modOf(key)) ? Blocks.AIR.getDefaultState() : resolveBlock(key.substring(bar + 1));
         }
         BlockState standIn = resolveBlock(key.substring(bar + 1));
         BlockState mod = resolveFurniture(key.substring(0, bar), standIn);

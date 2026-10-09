@@ -17,7 +17,7 @@ final class Furnish {
     }
 
     /** What a flat or a room is made of and how it is lived in. */
-    record Style(String wood, String floor, String wall, String bed, String sofa, String rug, boolean lit, int mood) {
+    record Style(String wood, String floor, String wall, String bed, String sofa, String rug, boolean lit, int mood, String loot) {
         String planks() {
             return "minecraft:" + wood + "_planks";
         }
@@ -39,7 +39,7 @@ final class Furnish {
         }
 
         Style withMood(int newMood) {
-            return new Style(wood, floor, wall, bed, sofa, rug, lit, newMood);
+            return new Style(wood, floor, wall, bed, sofa, rug, lit, newMood, loot);
         }
     }
 
@@ -103,10 +103,20 @@ final class Furnish {
         b.set(x, y + 1, z, Decor.shelf(s.wood(), front, 2));
     }
 
-    /** A television on a stand. */
-    static void tv(BlueprintBuilder b, int x, int y, int z, Dir front) {
-        b.set(x, y, z, Keys.barrel(front));
+    /** A television on a stand: the stand is a barrel and what is in it is of the kind of the place. */
+    static void tv(BlueprintBuilder b, int x, int y, int z, Dir front, Style s) {
+        Loot.barrel(b, x, y, z, front, s.loot());
         b.set(x, y + 1, z, "minecraft:black_concrete");
+    }
+
+    /** A chest of the place, its front looks in the direction {@code front}. */
+    static void chest(BlueprintBuilder b, int x, int y, int z, Dir front, Style s) {
+        Loot.chest(b, x, y, z, front, s.loot());
+    }
+
+    /** A barrel of the place with its opening towards {@code front}. */
+    static void barrel(BlueprintBuilder b, int x, int y, int z, Dir front, Style s) {
+        Loot.barrel(b, x, y, z, front, s.loot());
     }
 
     // ------------------------------------------------------------------ kitchen and bath

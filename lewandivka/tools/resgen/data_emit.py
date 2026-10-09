@@ -1,6 +1,7 @@
 """Data pack parts: recipes, advancements, tags, dimension types, dimensions, biomes, entity loot tables."""
 from __future__ import annotations
 
+from . import chest_loot
 from .spec import ASSETS, DATA, MOD_ID, RES, advancements, blocks, entities, items, write_json
 
 M = MOD_ID
@@ -177,4 +178,5 @@ def emit_pack_meta() -> int:
 
 
 def generate() -> int:
-    return (emit_recipes() + emit_advancements() + emit_tags() + emit_dimensions() + emit_biomes() + emit_loot() + emit_pack_meta())
+    return (emit_recipes() + emit_advancements() + emit_tags() + emit_dimensions() + emit_biomes() + emit_loot() + chest_loot.emit()
+            + emit_pack_meta())

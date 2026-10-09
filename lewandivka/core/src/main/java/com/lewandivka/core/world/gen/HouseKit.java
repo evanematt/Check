@@ -22,19 +22,19 @@ final class HouseKit {
     // a cottage of width 12 (10 x 7 cells): one open room downstairs, two bedrooms and a bathroom upstairs
     static final String[] HOUSE_GROUND = {
             "P  .  .  Vv .  .  .  .  .  P",
-            ".  R  R  R  .  .  .  .  .  K<",
+            "C> R  R  R  .  .  .  .  .  K<",
             ".  R  R  R  .  .  cv .  l  s<",
             ".  S^ S^ S^ l  .  T  .  .  X<",
             ".  .  .  .  .  .  T  .  .  K<",
             ".  .  l  .  .  .  c^ .  .  F",
-            ".  %  %  %  %  .  .  W< .  .",
+            ".  %  %  %  %  .  .  W< .  O<",
     };
 
     static final String[] HOUSE_UPPER = {
             "~  T  T  .  W< #  P  .  Wv H<",
             "B^ c^ .  .  .  #  .  .  .  ~",
             ".  .  R  R  .  #  R  R  .  B^",
-            "H> .  .  l  .  #  .  l  .  .",
+            "H> .  .  l  .  #  .  l  .  C<",
             "#  #  #  #  d  #  d  #  #  #",
             "P  P  |  |  .  l  .  d  .  t<",
             ".  %  %  %  %  .  .  #  u  u",
@@ -46,7 +46,7 @@ final class HouseKit {
 
     // the kindergarten: two group rooms of 9 x 8 on both sides of a hall of 2 x 8, upstairs a music room and a sleeping room
     static final String[] KINDER_GROUND_LEFT = {
-            "H> .  .  P  .  .  .  P  .",
+            "H> .  .  P  .  .  .  P  C<",
             ".  .  .  .  .  .  .  .  .",
             "y  .  R  R  R  R  R  .  Q<",
             ".  .  R  y  y  R  R  .  Q<",
@@ -57,7 +57,7 @@ final class HouseKit {
     };
 
     static final String[] KINDER_GROUND_RIGHT = {
-            ".  .  P  l  .  l  P  .  .",
+            "C> .  P  l  .  l  P  .  .",
             ".  .  .  .  R  .  .  .  .",
             "~  B< .  .  R  .  .  B> ~",
             ".  .  .  .  R  .  .  .  .",
@@ -68,7 +68,7 @@ final class HouseKit {
     };
 
     static final String[] KINDER_UPPER_LEFT = {
-            "P  .  .  .  .  .  .  .  P",
+            "P  .  .  .  Cv .  .  .  P",
             ".  y  .  R  R  R  .  y  .",
             "H> .  .  R  l  R  .  .  .",
             ".  .  .  R  R  R  .  .  H<",
@@ -79,7 +79,7 @@ final class HouseKit {
     };
 
     static final String[] KINDER_UPPER_RIGHT = {
-            "P  .  T  T  .  T  T  .  P",
+            "P  .  T  T  Cv T  T  .  P",
             ".  .  c^ c^ .  c^ c^ .  .",
             ".  .  .  .  l  .  .  .  .",
             "H> .  T  T  .  T  T  .  .",
