@@ -9,7 +9,9 @@ import com.lewandivka.core.world.TerrainColumn;
 import com.lewandivka.core.world.WorldPlan;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code lewandivka:district}: a fictionalised post-Soviet residential district, roughly 300 x 300
@@ -26,8 +28,9 @@ public final class DistrictPlan implements WorldPlan {
     public static final String BIOME = "lewandivka:district";
     public static final int GROUND = 63;
     public static final int EDGE = 150;
-    public static final int MIN_Y = 0;
-    public static final int HEIGHT = 256;
+    /** The depth of the ordinary overworld: the underground has its deepslate, its diamond level and its lava lakes. */
+    public static final int MIN_Y = -64;
+    public static final int HEIGHT = 384;
     private static final long SEED = 0x1E7AD1C4L;
 
     /** Waypoint graph of the Debtor chase: positions come from markers {@code debtor_wp_<i>}. */
@@ -67,6 +70,12 @@ public final class DistrictPlan implements WorldPlan {
     private final List<StructurePlacement> placements = new ArrayList<>();
     private final List<MarkerPos> markers = new ArrayList<>();
     private final List<Rect> occupied = new ArrayList<>();
+    private final CityGround ground;
+    /** Placements that stand on the ground, whose height is only known when every plateau is registered: reference column and offset. */
+    private final Map<StructurePlacement, int[]> onGround = new IdentityHashMap<>();
+    private final List<Object[]> pendingMarkers = new ArrayList<>();
+    /** Where fixed structures reach deep under the ground: no caves, no ore, no dungeons around them. */
+    private final List<Rect> deepStructures = new ArrayList<>();
 
     private static DistrictPlan instance;
 
@@ -78,7 +87,32 @@ public final class DistrictPlan implements WorldPlan {
     }
 
     public DistrictPlan() {
+        this.ground = new CityGround(GROUND, roadAreas());
         layout();
+        ground.freeze();
+        resolve();
+    }
+
+    /** Roads with their sidewalks, the lanes, the tram bed and the plaza: the land stays level around them. */
+    private static List<int[]> roadAreas() {
+        List<int[]> out = new ArrayList<>();
+        for (Rect r : ROADS) {
+            Rect g = r.grow(3);
+            out.add(new int[] {g.x1, g.z1, g.x2, g.z2});
+        }
+        for (Rect r : List.of(PLAZA, TRAM_BED)) {
+            Rect g = r.grow(1);
+            out.add(new int[] {g.x1, g.z1, g.x2, g.z2});
+        }
+        for (Rect r : LANES) {
+            out.add(new int[] {r.x1, r.z1, r.x2, r.z2});
+        }
+        return out;
+    }
+
+    /** The height of the ground of the district at a column (the same function the terrain uses). */
+    public int groundAt(int x, int z) {
+        return ground.at(x, z);
     }
 
     // ================================================================== WorldPlan
@@ -113,32 +147,49 @@ public final class DistrictPlan implements WorldPlan {
             return;
         }
         String top = topBlock(x, z);
-        out.reset(GROUND, top, top.equals(Pal.GRASS) || top.equals(Pal.COARSE_DIRT) || top.equals(Pal.PATH) ? Pal.DIRT : Pal.GRAVEL,
+        out.reset(ground.at(x, z), top, top.equals(Pal.GRASS) || top.equals(Pal.COARSE_DIRT) || top.equals(Pal.PATH) ? Pal.DIRT : Pal.GRAVEL,
                 top.equals(Pal.GRASS) || top.equals(Pal.COARSE_DIRT) || top.equals(Pal.PATH) ? 3 : 2, "minecraft:stone");
         out.decor = decorAt(x, z, top);
     }
 
-    /** The wilderness: natural land, blended into the flat ground of the city over {@link #BLEND} blocks. */
-    private static void wildColumn(int x, int z, int r, TerrainColumn out) {
+    /** The wilderness: natural land, blended into the ground of the city over {@link #BLEND} blocks. */
+    private void wildColumn(int x, int z, int r, TerrainColumn out) {
         WildTerrain.Sample s = WILD.get();
         WildTerrain.sample(x, z, EDGE, s);
         double w = Noise.smoothstep(CITY_EDGE, CITY_EDGE + BLEND, r);
-        int height = (int) Math.round(Noise.lerp(GROUND, s.exactHeight, w));
+        int height = (int) Math.round(Noise.lerp(w >= 1.0 ? s.exactHeight : ground.exact(x, z), s.exactHeight, w));
         out.reset(height, s.top, s.sub, s.subDepth, s.base);
-        if (height < WildTerrain.SEA) {
+        // a hollow of the city's hills that reaches out into the land stays dry; only the water of the wilderness itself is water
+        if (height < WildTerrain.SEA && s.exactHeight < WildTerrain.SEA) {
             out.fluid(WildTerrain.SEA, "minecraft:water");
         }
     }
+
+    /** How far under the surface of the city the ordinary underground (ores, monsters, lava lakes) begins. */
+    private static final int UNDERGROUND = 8;
 
     @Override
     public String biomeAt(int x, int y, int z) {
         int r = Math.max(Math.abs(x), Math.abs(z));
         if (r <= CITY_EDGE) {
-            return BIOME;
+            // the streets have no features and no monsters of their own; below them the rock is the rock of the ordinary world
+            return y < ground.at(x, z) - UNDERGROUND && !deepStructure(x, z) ? UNDERGROUND_BIOME : BIOME;
         }
         WildTerrain.Sample s = WILD.get();
         WildTerrain.sample(x, z, EDGE, s);
         return s.biome;
+    }
+
+    /** The biome of the rock under the city: the ordinary plains, whose underground features and monsters it brings along. */
+    public static final String UNDERGROUND_BIOME = "minecraft:plains";
+
+    private boolean deepStructure(int x, int z) {
+        for (Rect r : deepStructures) {
+            if (r.has(x, z)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static final List<String> BIOME_LIST;
@@ -158,7 +209,11 @@ public final class DistrictPlan implements WorldPlan {
     @Override
     public boolean carved(int x, int y, int z, int surface) {
         int r = Math.max(Math.abs(x), Math.abs(z));
-        return r > CITY_EDGE + 24 && WildTerrain.cave(x, y, z, surface);
+        if (r > CITY_EDGE + 24) {
+            return WildTerrain.cave(x, y, z, surface, MIN_Y, WildTerrain.ROOF, true);
+        }
+        // under the city there are caves too, but never one that reaches the surface or the foundations of the quest places
+        return !deepStructure(x, z) && WildTerrain.cave(x, y, z, surface, MIN_Y, UNDERGROUND + 1, false);
     }
 
     @Override
@@ -216,6 +271,34 @@ public final class DistrictPlan implements WorldPlan {
     @Override
     public int[] spawn() {
         return new int[] {2, GROUND + 3, -3};
+    }
+
+    /** Every placement and marker that stands on the ground gets its height now that the plateaus are final. */
+    private void resolve() {
+        List<StructurePlacement> done = new ArrayList<>(placements.size());
+        for (StructurePlacement sp : placements) {
+            int[] on = onGround.get(sp);
+            done.add(on == null ? sp : new StructurePlacement(sp.id(), sp.blueprint(), sp.x(), ground.at(on[0], on[1]) + on[2], sp.z()));
+        }
+        placements.clear();
+        placements.addAll(done);
+        for (Object[] m : pendingMarkers) {
+            int x = (Integer) m[1];
+            int y = (Integer) m[2];
+            int z = (Integer) m[3];
+            if (Math.abs(y - GROUND) <= 2) {
+                y = ground.at(x, z) + (y - GROUND);
+            }
+            markers.add(new MarkerPos("district:" + m[0], x, y, z, 1, 1, 1, (String) m[4]));
+        }
+        pendingMarkers.clear();
+        // the places that reach deep under the street keep the ordinary underground away from them
+        for (StructurePlacement sp : placements) {
+            int surface = ground.at((sp.x() + sp.maxX()) / 2, (sp.z() + sp.maxZ()) / 2);
+            if (sp.y() < surface - UNDERGROUND) {
+                deepStructures.add(new Rect(sp.x() - 16, sp.z() - 16, sp.maxX() + 16, sp.maxZ() + 16));
+            }
+        }
     }
 
     // ================================================================== ground
@@ -332,6 +415,7 @@ public final class DistrictPlan implements WorldPlan {
         propForce("stash_tokens_n", Props.stash("tokens"), -30, GROUND + 1, -44);
         propForce("stash_tokens_shop", Props.stash("tokens"), 72, GROUND + 1, -23);
         StructurePlacement g0 = new StructurePlacement("garage0", Garage0.blueprint(), Garage0.ORIGIN_X, GROUND - Garage0.TOP, Garage0.ORIGIN_Z);
+        ground.plateau(g0.x(), g0.z(), g0.maxX(), g0.maxZ(), GROUND, 10);
         clearTrees(g0.x(), g0.z(), g0.maxX(), g0.maxZ());
         placements.add(g0);
     }
@@ -340,10 +424,21 @@ public final class DistrictPlan implements WorldPlan {
         Blueprint.Marker body = bp.marker("body");
         int ox = bodyX - body.x();
         int oz = bodyZ - body.z();
-        StructurePlacement sp = new StructurePlacement(id, bp, ox, GROUND, oz);
+        StructurePlacement probe = new StructurePlacement(id, bp, ox, GROUND, oz);
+        // the building stands at the natural height of the ground under its middle (the streets are level, so a building next to one
+        // stands at the level of the street), on a plateau that slopes back into the land around it
+        int level = (int) Math.round(ground.natural((probe.x() + probe.maxX()) / 2, (probe.z() + probe.maxZ()) / 2));
+        StructurePlacement sp = new StructurePlacement(id, bp, ox, level, oz);
+        ground.plateau(sp.x(), sp.z(), sp.maxX(), sp.maxZ(), level, 8);
         clearTrees(sp.x(), sp.z(), sp.maxX(), sp.maxZ());
         placements.add(sp);
         occupied.add(new Rect(sp.x(), sp.z(), sp.maxX(), sp.maxZ()));
+    }
+
+    /** Remembers that a placement stands on the ground: its height is the ground at (refX, refZ) plus dy once the ground is final. */
+    private StructurePlacement standing(StructurePlacement sp, int refX, int refZ, int dy) {
+        onGround.put(sp, new int[] {refX, refZ, dy});
+        return sp;
     }
 
     /** Buildings and quest objects always win over decorative trees. */
@@ -373,15 +468,19 @@ public final class DistrictPlan implements WorldPlan {
         if (!free(x, z, x + bp.sizeX() - 1, z + bp.sizeZ() - 1)) {
             return false;
         }
-        placements.add(new StructurePlacement(id, bp, x, GROUND + 1, z));
+        placements.add(standing(new StructurePlacement(id, bp, x, GROUND + 1, z), x + bp.sizeX() / 2, z + bp.sizeZ() / 2, 1));
         occupied.add(new Rect(x, z, x + bp.sizeX() - 1, z + bp.sizeZ() - 1));
         return true;
     }
 
-    /** Like {@link #prop} but ignores collisions (quest objects must exist). */
+    /**
+     * Like {@link #prop} but ignores collisions (quest objects must exist). A height within two blocks of {@link #GROUND} means
+     * "on the ground" (the ground may have risen or fallen there); any other height is taken as it is.
+     */
     private void propForce(String id, Blueprint bp, int x, int y, int z) {
         clearTrees(x - 1, z - 1, x + bp.sizeX(), z + bp.sizeZ());
-        placements.add(new StructurePlacement(id, bp, x, y, z));
+        StructurePlacement sp = new StructurePlacement(id, bp, x, y, z);
+        placements.add(Math.abs(y - GROUND) <= 2 ? standing(sp, x + bp.sizeX() / 2, z + bp.sizeZ() / 2, y - GROUND) : sp);
     }
 
     private void tree(int x, int z, int variant) {
@@ -400,12 +499,13 @@ public final class DistrictPlan implements WorldPlan {
                 return;
             }
         }
-        placements.add(sp);
+        placements.add(standing(sp, x, z, 1));
         occupied.add(new Rect(x - 1, z - 1, x + 1, z + 1));
     }
 
+    /** A marker of the plan; a height within two blocks of {@link #GROUND} follows the ground (see {@link #propForce}). */
     private void marker(String name, int x, int y, int z, String data) {
-        markers.add(new MarkerPos("district:" + name, x, y, z, 1, 1, 1, data));
+        pendingMarkers.add(new Object[] {name, x, y, z, data});
     }
 
     private void treeLineX(int x1, int x2, int z, int spacing, long seed) {
@@ -552,6 +652,7 @@ public final class DistrictPlan implements WorldPlan {
     private void garageCooperative() {
         Blueprint garage = GarageComplex.garage13();
         propForce("garage13", garage, GarageComplex.ORIGIN_X, GarageComplex.ORIGIN_Y, GarageComplex.ORIGIN_Z);
+        ground.plateau(GarageComplex.ORIGIN_X, GarageComplex.ORIGIN_Z, GarageComplex.ORIGIN_X + garage.sizeX() - 1, GarageComplex.ORIGIN_Z + garage.sizeZ() - 1, GROUND, 10);
         occupied.add(new Rect(GarageComplex.ORIGIN_X, GarageComplex.ORIGIN_Z,
                 GarageComplex.ORIGIN_X + garage.sizeX() - 1, GarageComplex.ORIGIN_Z + garage.sizeZ() - 1));
     }
@@ -588,7 +689,7 @@ public final class DistrictPlan implements WorldPlan {
     private void polePlacement(int x, int z) {
         Blueprint p = Props.utilityPole(true);
         if (free(x - 2, z - 2, x + 2, z + 2)) {
-            placements.add(new StructurePlacement("pole", p, x - 2, GROUND + 1, z - 2));
+            placements.add(standing(new StructurePlacement("pole", p, x - 2, GROUND + 1, z - 2), x, z, 1));
             occupied.add(new Rect(x - 1, z - 1, x + 1, z + 1));
         }
     }

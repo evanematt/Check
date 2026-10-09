@@ -62,7 +62,7 @@ public final class WorldMapMain {
         int cz = Integer.parseInt(System.getProperty("cz", "0"));
         int span = Integer.parseInt(System.getProperty("span", "3000"));
         int px = Integer.parseInt(System.getProperty("px", "1000"));
-        int caveY = Integer.parseInt(System.getProperty("cave", "-1"));
+        int caveY = Integer.parseInt(System.getProperty("cave", String.valueOf(Integer.MIN_VALUE)));
         File out = new File(System.getProperty("out", "build/renders/worldmap.png"));
         DistrictPlan plan = DistrictPlan.get();
         double step = (double) span / px;
@@ -111,7 +111,7 @@ public final class WorldMapMain {
                     double shade = Math.max(0.55, Math.min(1.35, 1.0 - dh * 0.035 + (col.height - 64) * 0.002));
                     c = new Color(clamp(c.getRed() * shade), clamp(c.getGreen() * shade), clamp(c.getBlue() * shade));
                 }
-                if (caveY >= 0) {
+                if (caveY != Integer.MIN_VALUE) {
                     boolean cave = plan.carved(x, caveY, z, col.height) && caveY <= col.height;
                     c = cave ? new Color(255, 200, 40) : new Color(40, 40, 50);
                 }

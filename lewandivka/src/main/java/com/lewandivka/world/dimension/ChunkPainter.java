@@ -2,6 +2,7 @@ package com.lewandivka.world.dimension;
 
 import com.lewandivka.core.structure.Blueprint;
 import com.lewandivka.core.structure.StructurePlacement;
+import com.lewandivka.core.world.Noise;
 import com.lewandivka.core.world.TerrainColumn;
 import com.lewandivka.core.world.WorldPlan;
 import com.lewandivka.world.structure.StateResolver;
@@ -49,27 +50,38 @@ public final class ChunkPainter {
         Heightmap.populateHeightmaps(chunk, EnumSet.of(Heightmap.Type.OCEAN_FLOOR_WG, Heightmap.Type.WORLD_SURFACE_WG));
     }
 
-    /** Caves that reach down this far are filled with lava (the lava lakes of the deep, as in the ordinary overworld). */
-    private static final int LAVA_LEVEL = 10;
+    /** Caves that reach down this far above the bottom are filled with lava (the lava lakes of the deep, as in the ordinary overworld). */
+    private static final int LAVA_ABOVE_FLOOR = 10;
+    private static final long SEED_BEDROCK = 0xBED20C4L;
+    private static final long SEED_DEEPSLATE = 0xDEE95A7EL;
+    private static final BlockState BEDROCK = Blocks.BEDROCK.getDefaultState();
+    private static final BlockState LAVA = Blocks.LAVA.getDefaultState();
+    private static final BlockState DEEPSLATE = Blocks.DEEPSLATE.getDefaultState();
 
     private static void paintColumn(WorldPlan plan, Chunk chunk, BlockPos.Mutable mp, int x, int z, TerrainColumn col, int minY, int maxY) {
         BlockState base = StateResolver.parse(col.base);
+        // the deep world (the district) has the layers of the ordinary overworld; the dimension of the other side keeps its flat floor
+        boolean stone = minY < 0 && col.base.equals("minecraft:stone");
+        boolean deepFloor = minY < 0;
         BlockState sub = StateResolver.parse(col.sub);
         BlockState top = StateResolver.parse(col.top);
         int surface = Math.min(col.height, maxY);
         for (int y = minY; y <= surface; y++) {
             BlockState s;
-            if (y == minY) {
-                s = Blocks.BEDROCK.getDefaultState();
+            if (y == minY || deepFloor && y < minY + 5 && Noise.hash01(SEED_BEDROCK, x, y, z) < (5 - (y - minY)) / 5.0) {
+                // the bedrock floor of the ordinary world: solid at the bottom, thinning out over five layers
+                s = BEDROCK;
             } else if (plan.carved(x, y, z, col.height)) {
-                if (y > minY + LAVA_LEVEL) {
+                if (y > minY + LAVA_ABOVE_FLOOR) {
                     continue;
                 }
-                s = Blocks.LAVA.getDefaultState();
+                s = LAVA;
             } else if (y == col.height) {
                 s = top;
             } else if (y >= col.height - col.subDepth) {
                 s = sub;
+            } else if (stone && deepslate(x, y, z)) {
+                s = DEEPSLATE;
             } else {
                 s = base;
             }
@@ -84,6 +96,11 @@ public final class ChunkPainter {
         } else if (col.decor != null && col.height + 1 <= maxY) {
             chunk.setBlockState(mp.set(x, col.height + 1, z), StateResolver.parse(col.decor), false);
         }
+    }
+
+    /** Stone turns into deepslate below y = 8, gradually down to y = 0 and entirely below that (as in the ordinary overworld). */
+    private static boolean deepslate(int x, int y, int z) {
+        return y < 0 || y < 8 && Noise.hash01(SEED_DEEPSLATE, x, y, z) < (8 - y) / 8.0;
     }
 
     private static void stamp(Chunk chunk, StructurePlacement p, int x0, int z0, int minY, int maxY, BlockPos.Mutable mp) {

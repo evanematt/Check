@@ -269,19 +269,24 @@ public final class WildTerrain {
 
     // ================================================================== caves
 
-    /** Where the caves stop being a wall of rock: nearest to the surface they may start. */
-    private static final int ROOF = 6;
+    /** Where the caves stop being a wall of rock in the open country: nearest to the surface they may start. */
+    public static final int ROOF = 6;
 
     /**
      * Whether the block at (x, y, z) belongs to a cave. Wide caverns (rare), winding tunnels (the line where two noises
-     * are both near zero) and a few openings to the daylight. Never at the very bottom (bedrock) and never under water.
+     * are both near zero) and, in the open country, a few openings to the daylight. Never at the very bottom (bedrock) and
+     * never under water.
+     *
+     * @param floor     the lowest block of the dimension (the caves stay three blocks above it)
+     * @param roof      how much rock stays over a cave
+     * @param entrances whether a tunnel may break through to the daylight (not under the streets of the city)
      */
-    public static boolean cave(int x, int y, int z, int surface) {
-        if (y < 3 || y > surface) {
+    public static boolean cave(int x, int y, int z, int surface, int floor, int roof, boolean entrances) {
+        if (y < floor + 3 || y > surface) {
             return false;
         }
-        boolean open = y > surface - ROOF;
-        if (open && !(y <= surface && entrance(x, z) > 0.9)) {
+        boolean open = y > surface - roof;
+        if (open && !(entrances && entrance(x, z) > 0.9)) {
             return false;
         }
         if (surface < SEA && y > surface - 10) {

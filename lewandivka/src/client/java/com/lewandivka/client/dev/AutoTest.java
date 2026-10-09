@@ -358,9 +358,9 @@ public final class AutoTest {
         shot(c, "wild_" + name, 8);
     }
 
-    /** Inside a cave of the open country: the picture shows what the player finds when he digs. */
-    private static void underground(MinecraftClient c, String name, double x, double y, double z) {
-        cmd(c, atIn("lewandivka:district", x, y, z, 90, 12), 20);
+    /** Inside a cave of the open country or of the rock under the city: the picture shows what the player finds when he digs. */
+    private static void underground(MinecraftClient c, String name, double x, double y, double z, float yaw, float pitch) {
+        cmd(c, atIn("lewandivka:district", x, y, z, yaw, pitch), 20);
         settle(c, "the " + name, 2400);
         add("check the " + name, 1, () -> expect("the player stands free in the " + name, !c.player.isInsideWall(),
                 "the player is at " + c.player.getBlockPos().toShortString() + " in " + c.world.getRegistryKey().getValue()));
@@ -881,8 +881,9 @@ public final class AutoTest {
         settle(c, "the edge of the city", 2400);
         shot(c, "wild_city_edge", 8);
         // underground: caves found offline in the noise (they are a pure function of the position)
-        underground(c, "cavern", 361.5, 50, 514.5);
-        underground(c, "lava_cave", 250.5, 12, 274.5);
+        underground(c, "cavern", 361.5, 50, 514.5, 90, 12);
+        // ... and under the streets of the city: the cavern of the deep, with its lake of lava, 110 blocks under the pavement
+        underground(c, "lava_cave", 142.5, -51, 128.5, -90, 18);
         // mobs of the district
         cmd(c, "lewandivka teleport tram_stop", 20);
         settle(c, "mobs", 2400);

@@ -56,10 +56,11 @@ public final class Survey {
                     for (int bz = 0; bz < 16; bz++) {
                         // the topmost block of the column (the air above it, if the heightmap counts it, is skipped)
                         int ground = chunk.sampleHeightmap(Heightmap.Type.WORLD_SURFACE, bx, bz);
-                        while (ground > 1 && chunk.getBlockState(p.set(x0 + bx, ground, z0 + bz)).isAir()) {
+                        int bottom = chunk.getBottomY();
+                        while (ground > bottom && chunk.getBlockState(p.set(x0 + bx, ground, z0 + bz)).isAir()) {
                             ground--;
                         }
-                        for (int y = 1; y <= ground; y++) {
+                        for (int y = bottom; y <= ground; y++) {
                             BlockState state = chunk.getBlockState(p.set(x0 + bx, y, z0 + bz));
                             String id = Registries.BLOCK.getId(state.getBlock()).getPath();
                             if (y == ground) {
@@ -81,6 +82,8 @@ public final class Survey {
                                 blocks.merge("lava", 1, Integer::sum);
                             } else if (id.equals("stone") && y < ground - 3) {
                                 blocks.merge("stone", 1, Integer::sum);
+                            } else if (id.equals("deepslate") || id.equals("bedrock")) {
+                                blocks.merge(id, 1, Integer::sum);
                             }
                         }
                     }

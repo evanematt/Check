@@ -68,6 +68,21 @@ tasks.register('worldMap', JavaExec) {
     }
 }
 
+// Development aid: gradle cityMap -Pcx=0 -Pcz=0 -Pspan=340 -Ppx=1020
+tasks.register('cityMap', JavaExec) {
+    group = 'verification'
+    description = 'Draws the ground and the buildings of the district (build/renders/citymap.png)'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.lewandivka.core.tools.CityMapMain'
+    systemProperty 'java.awt.headless', 'true'
+    maxHeapSize = '1g'
+    ['cx', 'cz', 'span', 'px', 'out'].each { k ->
+        if (project.hasProperty(k)) {
+            systemProperty k, project.property(k)
+        }
+    }
+}
+
 // Writes every block key the generators can place to build/palette.txt (checked by tools/validate_registry.py)
 tasks.register('dumpPalette', JavaExec) {
     group = 'verification'

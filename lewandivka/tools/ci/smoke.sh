@@ -71,9 +71,11 @@ session "$LOG" \
   "lewandivka joinreplay torture" \
   "!until 150 DONE lewandivka joinreplay result" \
   "lewandivka joinreplay report" \
+  "execute in lewandivka:district run forceload add -72 -72 72 72" \
   "execute in lewandivka:district run forceload add -72 308 72 452" \
   "execute in lewandivka:district run forceload add -522 -172 -378 -28" \
   "execute in lewandivka:district run forceload add 448 228 592 372" \
+  "!until 300 chunks=81 lewandivka survey 0 0 4" \
   "!until 300 chunks=81 lewandivka survey 0 380 4" \
   "!until 300 chunks=81 lewandivka survey -450 -100 4" \
   "!until 300 chunks=81 lewandivka survey 520 300 4" \
@@ -135,8 +137,38 @@ need = {"chunks": 200, "logs": 1, "leaves": 1, "water": 1, "cave_air": 1, "coal_
 missing = [k for k, v in need.items() if totals.get(k, 0) < v]
 animals = sum(totals.get(k, 0) for k in ("cow", "pig", "sheep", "chicken", "horse", "rabbit", "fox", "wolf", "llama", "goat"))
 print("totals:", {k: totals.get(k, 0) for k in need}, "animals:", animals)
-if len(lines) < 3 or missing or animals < 1:
+if len(lines) < 4 or missing or animals < 1:
     print("missing:", missing, "animals:", animals, "reports:", len(lines))
+    sys.exit(1)
+PY
+# under the streets of the city the rock is the rock of the ordinary game: bedrock at the bottom (the world is 384 blocks deep),
+# deepslate below y = 0, ore veins, caves
+echo "--- under the city"
+python3 - "$LOG.rcon" <<'PY' || { echo "SMOKE: the rock under the city is not the rock of the ordinary game"; ok=0; }
+import re, sys
+lines = [l for l in open(sys.argv[1], encoding="utf-8", errors="replace").read().splitlines() if l.startswith("survey 0,0 ")]
+if not lines:
+    print("no survey of the city centre")
+    sys.exit(1)
+line = lines[-1]
+blocks = dict((k, int(v)) for k, v in re.findall(r"([a-z_]+)=(\d+)", line.split("blocks=", 1)[1].split(" ores=", 1)[0]))
+ores = dict((k, int(v)) for k, v in re.findall(r"([a-z_]+)=(\d+)", line.split("ores=", 1)[1].split(" surface=", 1)[0]))
+print("the city centre:", {k: blocks.get(k, 0) for k in ("bedrock", "deepslate", "stone", "cave_air", "lava")}, "ores:", ores)
+problems = []
+if blocks.get("bedrock", 0) < 20000:
+    problems.append("bedrock %d" % blocks.get("bedrock", 0))
+if blocks.get("deepslate", 0) < 100000:
+    problems.append("deepslate %d" % blocks.get("deepslate", 0))
+if blocks.get("stone", 0) < 100000:
+    problems.append("stone %d" % blocks.get("stone", 0))
+if sum(ores.values()) < 100:
+    problems.append("ores %d" % sum(ores.values()))
+if not any(k.startswith("deepslate_") for k in ores):
+    problems.append("no ore in the deepslate")
+if blocks.get("cave_air", 0) < 1000:
+    problems.append("caves %d" % blocks.get("cave_air", 0))
+if problems:
+    print("missing under the city:", problems)
     sys.exit(1)
 PY
 # 24 small squares of chunks spread over 6000 x 6000 blocks went through the generator (the biomes with their features), and the

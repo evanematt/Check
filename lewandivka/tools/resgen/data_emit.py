@@ -78,7 +78,7 @@ def dimension_type(min_y: int, height: int, ambient: float, fixed_time: int | No
 
 
 def emit_dimensions() -> int:
-    write_json(DATA / "dimension_type" / "district.json", dimension_type(0, 256, 0.05, None, raids=True))
+    write_json(DATA / "dimension_type" / "district.json", dimension_type(-64, 384, 0.05, None, raids=True))
     write_json(DATA / "dimension_type" / "chromandivka.json", dimension_type(0, 320, 0.25, 6000))
     for name in ("district", "chromandivka"):
         write_json(DATA / "dimension" / f"{name}.json", {

@@ -38,17 +38,25 @@ class WildTerrainTest {
             assertEquals(a.height, b.height);
             assertEquals(a.top, b.top);
             assertEquals(a.fluidY, b.fluidY);
-            assertEquals(PLAN.biomeAt(x, 64, z), PLAN.biomeAt(x, 5, z), "the biome does not depend on the height");
+            if (Math.max(Math.abs(x), Math.abs(z)) > DistrictPlan.CITY_EDGE) {
+                assertEquals(PLAN.biomeAt(x, 64, z), PLAN.biomeAt(x, 5, z), "the biome of the open country does not depend on the height");
+            }
         }
     }
 
     @Test
     void theCityMeetsTheCountrysideWithoutAStep() {
-        // along the whole ring just outside the city square the ground is the ground of the city
+        // along the whole ring at the square edge of the city the ground goes on without a step (the hills of the city grow into the land)
         for (int i = -DistrictPlan.CITY_EDGE; i <= DistrictPlan.CITY_EDGE; i += 3) {
-            int e = DistrictPlan.CITY_EDGE + 1;
+            int e = DistrictPlan.CITY_EDGE;
             for (int[] p : new int[][] {{i, e}, {i, -e}, {e, i}, {-e, i}}) {
-                assertEquals(DistrictPlan.GROUND, height(p[0], p[1]), 1, "step at the edge of the city " + p[0] + "," + p[1]);
+                int outward = Math.abs(p[0]) == e ? (int) Math.signum(p[0]) : 0;
+                int outwardZ = Math.abs(p[1]) == e ? (int) Math.signum(p[1]) : 0;
+                for (int k = 0; k < 6; k++) {
+                    int a = height(p[0] + outward * k, p[1] + outwardZ * k);
+                    int b = height(p[0] + outward * (k + 1), p[1] + outwardZ * (k + 1));
+                    assertEquals(a, b, 1, "step at the edge of the city " + p[0] + "," + p[1] + " k=" + k);
+                }
             }
         }
     }
@@ -66,8 +74,9 @@ class WildTerrainTest {
                     assertFalse(col.fluidY > col.height, "water at " + x + "," + z);
                 }
                 if (Math.max(Math.abs(x), Math.abs(z)) <= DistrictPlan.CITY_EDGE + 24) {
-                    for (int y = 3; y <= h; y += 5) {
-                        assertFalse(PLAN.carved(x, y, z, h), "cave under the city at " + x + "," + y + "," + z);
+                    // there are caves under the city, but a roof of rock stays over them: nothing opens to the surface
+                    for (int y = h - 8; y <= h; y++) {
+                        assertFalse(PLAN.carved(x, y, z, h), "cave under the street at " + x + "," + y + "," + z);
                     }
                 }
             }
@@ -115,6 +124,7 @@ class WildTerrainTest {
     void cavesOpenTheRockWithoutTearingTheSurface() {
         Random rnd = new Random(3);
         TerrainColumn col = new TerrainColumn();
+        int floor = PLAN.minY();
         long cells = 0;
         long carved = 0;
         long nearSurface = 0;
@@ -125,10 +135,10 @@ class WildTerrainTest {
             if (col.height < WildTerrain.SEA + 2) {
                 continue;
             }
-            assertFalse(PLAN.carved(x, 0, z, col.height), "bedrock is never carved");
-            assertFalse(PLAN.carved(x, 2, z, col.height), "the floor under the lava is never carved");
+            assertFalse(PLAN.carved(x, floor, z, col.height), "bedrock is never carved");
+            assertFalse(PLAN.carved(x, floor + 2, z, col.height), "the floor under the lava is never carved");
             assertFalse(PLAN.carved(x, col.height + 1, z, col.height), "nothing above the surface is carved");
-            for (int y = 3; y <= col.height; y++) {
+            for (int y = floor + 3; y <= col.height; y++) {
                 cells++;
                 if (PLAN.carved(x, y, z, col.height)) {
                     carved++;
@@ -141,6 +151,29 @@ class WildTerrainTest {
         double share = 100.0 * carved / cells;
         assertTrue(share > 2.0 && share < 14.0, "caves take " + share + "% of the rock");
         assertTrue(nearSurface * 50 < carved, "caves reach the daylight everywhere: " + nearSurface + " of " + carved);
+    }
+
+    @Test
+    void underTheCityThereIsTheOrdinaryRockWithCavesOfItsOwn() {
+        TerrainColumn col = new TerrainColumn();
+        long cells = 0;
+        long carved = 0;
+        for (int x = -140; x <= 140; x += 7) {
+            for (int z = -140; z <= 140; z += 7) {
+                PLAN.column(x, z, col);
+                for (int y = PLAN.minY() + 3; y <= col.height - 9; y++) {
+                    cells++;
+                    carved += PLAN.carved(x, y, z, col.height) ? 1 : 0;
+                }
+                // the rock under the streets belongs to the ordinary underground, the streets themselves to the district
+                assertEquals(DistrictPlan.BIOME, PLAN.biomeAt(x, col.height, z), "the surface of the city is the district's");
+            }
+        }
+        double share = 100.0 * carved / cells;
+        assertTrue(share > 1.5 && share < 14.0, "caves take " + share + "% of the rock under the city");
+        assertEquals(DistrictPlan.UNDERGROUND_BIOME, PLAN.biomeAt(60, 0, 60), "deep under the street");
+        assertEquals(-64, PLAN.minY());
+        assertEquals(384, PLAN.height());
     }
 
     @Test
