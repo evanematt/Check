@@ -149,14 +149,21 @@ final class RoomKit {
             }
         }
         boolean ruin = s.mood() > 0;
+        // what is left standing in a room nobody lives in (the pieces next to each other join, so they have to be known first)
+        boolean[][] standing = new boolean[g.rows()][g.cols()];
+        for (int r = 0; r < g.rows(); r++) {
+            for (int c = 0; c < g.cols(); c++) {
+                long h = Noise.hash(hash, c, r);
+                standing[r][c] = !(ruin && (h & 3) < 2 && "BTcWHSVKXsFPRLtuyQN".indexOf(g.kind(c, r)) >= 0);
+            }
+        }
         for (int r = 0; r < g.rows(); r++) {
             for (int c = 0; c < g.cols(); c++) {
                 Token t = g.cells[r][c];
                 int x = plot.x(c, r);
                 int z = plot.z(c, r);
                 long h = Noise.hash(hash, c, r);
-                boolean skip = ruin && (h & 3) < 2 && "BTcWHSVKXsFPRLtuyQN".indexOf(t.kind()) >= 0;
-                if (skip) {
+                if (!standing[r][c]) {
                     continue;
                 }
                 switch (t.kind()) {
@@ -164,17 +171,23 @@ final class RoomKit {
                     case 'd' -> door(b, plot, g, c, r, y, s);
                     case 'B' -> Furnish.bed(b, x, y, z, plot.dir(t.dir()), s);
                     case 'T' -> {
-                        Furnish.table(b, x, y, z, s);
+                        String shape = Decor.tableShape(joins(g, plot, standing, c, r, Dir.NORTH, 'T', ' '), joins(g, plot, standing, c, r, Dir.EAST, 'T', ' '),
+                                joins(g, plot, standing, c, r, Dir.SOUTH, 'T', ' '), joins(g, plot, standing, c, r, Dir.WEST, 'T', ' '));
+                        Furnish.table(b, x, y, z, s, shape);
                         if ((h >>> 8) % 5 == 0) {
-                            Furnish.candle(b, x, y + 1, z, 1 + (int) ((h >>> 12) % 3));
+                            Furnish.tableSetting(b, x, y + 1, z, 1 + (int) ((h >>> 12) % 3), h);
                         }
                     }
                     case 'c' -> Furnish.chair(b, x, y, z, plot.dir(t.dir()), s);
-                    case 'W' -> Furnish.wardrobe(b, x, y, z, plot.dir(t.dir()));
-                    case 'H' -> Furnish.shelf(b, x, y, z);
-                    case 'S' -> Furnish.sofa(b, x, y, z, plot.dir(t.dir()), s);
+                    case 'W' -> Furnish.wardrobe(b, x, y, z, plot.dir(t.dir()), s);
+                    case 'H' -> Furnish.shelf(b, x, y, z, t.dir() == ' ' ? plot.dir('^') : plot.dir(t.dir()), s, h >>> 6);
+                    case 'S' -> {
+                        Dir front = plot.dir(t.dir());
+                        Furnish.sofa(b, x, y, z, front, s, Decor.couchShape(joins(g, plot, standing, c, r, front.left(), 'S', t.dir()),
+                                joins(g, plot, standing, c, r, front.right(), 'S', t.dir())));
+                    }
                     case 'V' -> Furnish.tv(b, x, y, z, plot.dir(t.dir()));
-                    case 'K' -> Furnish.counter(b, x, y, z, plot.dir(t.dir()));
+                    case 'K' -> Furnish.counter(b, x, y, z, plot.dir(t.dir()), s, h >>> 4);
                     case 'X' -> Furnish.stove(b, x, y, z, plot.dir(t.dir()));
                     case 's' -> Furnish.sink(b, x, y, z);
                     case 'F' -> Furnish.fridge(b, x, y, z);
@@ -183,7 +196,7 @@ final class RoomKit {
                     case 'L' -> Furnish.floorLamp(b, x, y, z, s);
                     case 't' -> Furnish.toilet(b, x, y, z, plot.dir(t.dir()));
                     case 'u' -> Furnish.tub(b, x, y, z);
-                    case 'y' -> b.set(x, y, z, TOYS[(int) Math.floorMod(h >>> 9, (long) TOYS.length)]);
+                    case 'y' -> Furnish.toy(b, x, y, z, TOYS[(int) Math.floorMod(h >>> 9, (long) TOYS.length)]);
                     case 'Q' -> {
                         b.set(x, y, z, Keys.barrel(plot.dir(t.dir())));
                         b.set(x, y + 1, z, TOYS[(int) Math.floorMod(h >>> 11, (long) TOYS.length)]);
@@ -210,6 +223,20 @@ final class RoomKit {
             Furnish.cobweb(b, plot.x(0, 0), floorY + 3, plot.z(0, 0));
             Furnish.cobweb(b, plot.x(g.cols() - 1, g.rows() - 1), floorY + 3, plot.z(g.cols() - 1, g.rows() - 1));
         }
+    }
+
+    /**
+     * Whether the cell next to (c, r) in the direction {@code d} of the building is a piece of the same kind that is really there
+     * (and, for a piece that faces somewhere, faces the same way when {@code facing} is an arrow): then the two join.
+     */
+    private static boolean joins(Grid g, Plot plot, boolean[][] standing, int c, int r, Dir d, char kind, char facing) {
+        char arrow = plot.arrow(d);
+        int c2 = c + Plot.da(arrow);
+        int r2 = r + Plot.db(arrow);
+        if (g.kind(c2, r2) != kind || !standing[r2][c2]) {
+            return false;
+        }
+        return facing == ' ' || g.cells[r2][c2].dir() == facing;
     }
 
     /** The cells under which a lamp hangs: the ones marked {@code l}. */

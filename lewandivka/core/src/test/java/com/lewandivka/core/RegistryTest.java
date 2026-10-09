@@ -94,6 +94,11 @@ class RegistryTest {
         JsonObject blocks = vanilla.getAsJsonObject("blocks");
         List<String> problems = new ArrayList<>();
         for (String key : allKeys()) {
+            if (Keys.isEither(key)) {
+                // a block of the furniture mod and the block of the game that stands in for it: both have to be right
+                problems.addAll(HandcraftedBlocks.check(Keys.preferred(key)));
+                key = Keys.fallback(key);
+            }
             String id = Keys.blockId(key);
             String props = key.length() > id.length() ? key.substring(id.length() + 1, key.length() - 1) : "";
             if (id.startsWith("minecraft:")) {

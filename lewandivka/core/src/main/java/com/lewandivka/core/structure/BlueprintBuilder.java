@@ -528,6 +528,11 @@ public final class BlueprintBuilder {
         if (t == 0 || key == null) {
             return key;
         }
+        int bar = key.indexOf('|');
+        if (bar >= 0) {
+            // a block of a furniture mod and its stand-in: both are turned
+            return rotateKey(key.substring(0, bar), turns) + "|" + rotateKey(key.substring(bar + 1), turns);
+        }
         int br = key.indexOf('[');
         if (br < 0) {
             return key;
@@ -552,6 +557,8 @@ public final class BlueprintBuilder {
                 out.put(k, d == null ? v : d.turn(t).key());
             } else if (k.equals("axis")) {
                 out.put(k, (t & 1) == 1 ? (v.equals("x") ? "z" : v.equals("z") ? "x" : v) : v);
+            } else if (k.equals("shape") && block.startsWith("handcrafted:") && block.endsWith("_table")) {
+                out.put(k, rotateTableShape(v, t));
             } else if (k.equals("rotation")) {
                 try {
                     out.put(k, String.valueOf(((Integer.parseInt(v) + 4 * t) % 16 + 16) % 16));
@@ -577,6 +584,34 @@ public final class BlueprintBuilder {
             sb.append(e.getKey()).append('=').append(e.getValue());
         }
         return sb.append(']').toString();
+    }
+
+    private static final Dir[] CANONICAL = {Dir.NORTH, Dir.SOUTH, Dir.EAST, Dir.WEST};
+
+    /**
+     * The shape of a table of the mod Handcrafted names the sides of the table that are free or joined
+     * ({@code north_east_corner}, {@code east_west_center}, {@code south_side}); turned by quarter turns the words change
+     * and the mod wants them in its own order again: north or south first, then east or west.
+     */
+    static String rotateTableShape(String shape, int turns) {
+        List<Dir> dirs = new ArrayList<>();
+        List<String> rest = new ArrayList<>();
+        for (String word : shape.split("_")) {
+            Dir d = Dir.byKey(word);
+            if (d == null) {
+                rest.add(word);
+            } else {
+                dirs.add(d.turn(turns));
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Dir c : CANONICAL) {
+            if (dirs.contains(c)) {
+                sb.append(c.key()).append('_');
+            }
+        }
+        sb.append(String.join("_", rest));
+        return sb.toString();
     }
 
     /** Rotates {@code facing=<dir>} entries inside a marker data string. */

@@ -48,6 +48,16 @@ final class Plot {
         };
     }
 
+    /** The local direction character that points to the direction {@code d} of the building. */
+    char arrow(Dir d) {
+        for (char c : new char[] {'>', '<', 'v', '^'}) {
+            if (dir(c) == d) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException("no local direction for " + d);
+    }
+
     static char opposite(char c) {
         return switch (c) {
             case '>' -> '<';

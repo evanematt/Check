@@ -6,8 +6,8 @@ import com.lewandivka.core.structure.Keys;
 
 /**
  * The furniture of the district's rooms, spoken in terms of what it is (a bed, a table, a sofa, a stove) and not of the blocks it
- * is made of. Every piece is built of ordinary blocks of the game here; {@link Decor} is the one place that may swap a piece for
- * the model of a furniture mod when such a mod is installed, with the blocks below as the fallback.
+ * is made of. Every piece is built of ordinary blocks of the game; where {@link Decor} knows the model of a furniture mod for it
+ * the key names that block as well, and the blocks of the game are what stands there when the mod is not installed.
  *
  * <p>All coordinates are in the frame of the builder; {@code y} is the first layer above the floor.</p>
  */
@@ -65,72 +65,76 @@ final class Furnish {
 
     /** A bed: {@code toHead} is the direction from the foot to the head. */
     static void bed(BlueprintBuilder b, int x, int y, int z, Dir toHead, Style s) {
-        String block = Decor.pick("bed", "minecraft:" + s.bed() + "_bed");
-        b.set(x, y, z, Keys.bed(block, toHead, false));
-        b.set(x + toHead.dx, y, z + toHead.dz, Keys.bed(block, toHead, true));
+        String block = "minecraft:" + s.bed() + "_bed";
+        b.set(x, y, z, Decor.bed(s.wood(), s.bed(), toHead, false, block));
+        b.set(x + toHead.dx, y, z + toHead.dz, Decor.bed(s.wood(), s.bed(), toHead, true, block));
     }
 
-    /** One cell of a table: a slab in the upper half of the cell. */
-    static void table(BlueprintBuilder b, int x, int y, int z, Style s) {
-        b.set(x, y, z, Keys.slab(Decor.pick("table", s.slab()), true));
+    /**
+     * One cell of a table: a slab in the upper half of the cell. {@code shape} says which of the four sides touch another
+     * table ({@link Decor#tableShape}); the stand-in does not care.
+     */
+    static void table(BlueprintBuilder b, int x, int y, int z, Style s, String shape) {
+        b.set(x, y, z, Decor.table(s.wood(), shape, s.slab()));
     }
 
     /** A chair; {@code front} is the direction the sitter looks in. */
     static void chair(BlueprintBuilder b, int x, int y, int z, Dir front, Style s) {
-        b.set(x, y, z, Keys.stairs(Decor.pick("chair", s.stairs()), front.opposite(), false));
+        b.set(x, y, z, Decor.chair(s.wood(), s.rug(), front, s.stairs()));
     }
 
-    /** One cell of a sofa; the back is behind the sitter. */
-    static void sofa(BlueprintBuilder b, int x, int y, int z, Dir front, Style s) {
-        b.set(x, y, z, Keys.stairs(Decor.pick("sofa", s.sofa()), front.opposite(), false));
+    /** One cell of a sofa; the back is behind the sitter; {@code shape} is {@link Decor#couchShape}. */
+    static void sofa(BlueprintBuilder b, int x, int y, int z, Dir front, Style s, String shape) {
+        b.set(x, y, z, Decor.couch(s.wood(), Decor.sofaColor(s.sofa()), front, shape, s.sofa()));
     }
 
     // ------------------------------------------------------------------ storage
 
     /** A tall cupboard of two cells. */
-    static void wardrobe(BlueprintBuilder b, int x, int y, int z, Dir front) {
-        b.set(x, y, z, Keys.barrel(front));
-        b.set(x, y + 1, z, Keys.barrel(front));
+    static void wardrobe(BlueprintBuilder b, int x, int y, int z, Dir front, Style s) {
+        b.set(x, y, z, Decor.cupboard(s.wood(), front, 1));
+        b.set(x, y + 1, z, Decor.cupboard(s.wood(), front, 1));
     }
 
-    /** Shelves with books, two cells high. */
-    static void shelf(BlueprintBuilder b, int x, int y, int z) {
-        b.set(x, y, z, Decor.pick("shelf", "minecraft:bookshelf"));
-        b.set(x, y + 1, z, Decor.pick("shelf", "minecraft:bookshelf"));
+    /** Shelves, two cells high: mostly books, now and then potions or pots, cobwebs in a room nobody lives in. */
+    static void shelf(BlueprintBuilder b, int x, int y, int z, Dir front, Style s, long hash) {
+        int type = s.mood() > 0 ? 3 : new int[] {2, 2, 2, 4, 2, 5}[(int) Math.floorMod(hash, 6L)];
+        b.set(x, y, z, Decor.shelf(s.wood(), front, type));
+        b.set(x, y + 1, z, Decor.shelf(s.wood(), front, 2));
     }
 
     /** A television on a stand. */
     static void tv(BlueprintBuilder b, int x, int y, int z, Dir front) {
         b.set(x, y, z, Keys.barrel(front));
-        b.set(x, y + 1, z, Decor.pick("tv", "minecraft:black_concrete"));
+        b.set(x, y + 1, z, "minecraft:black_concrete");
     }
 
     // ------------------------------------------------------------------ kitchen and bath
 
-    static void counter(BlueprintBuilder b, int x, int y, int z, Dir front) {
-        b.set(x, y, z, Keys.barrel(front));
+    static void counter(BlueprintBuilder b, int x, int y, int z, Dir front, Style s, long hash) {
+        b.set(x, y, z, Decor.counter(s.wood(), "smooth_stone", front, 1 + (int) Math.floorMod(hash, 3L)));
     }
 
     static void stove(BlueprintBuilder b, int x, int y, int z, Dir front) {
-        b.set(x, y, z, Keys.of(Decor.pick("stove", "minecraft:smoker"), "facing", front.key(), "lit", "false"));
+        b.set(x, y, z, Decor.oven(front));
     }
 
     static void sink(BlueprintBuilder b, int x, int y, int z) {
-        b.set(x, y, z, Keys.of(Decor.pick("sink", "minecraft:water_cauldron"), "level", "3"));
+        b.set(x, y, z, Keys.of("minecraft:water_cauldron", "level", "3"));
     }
 
     static void fridge(BlueprintBuilder b, int x, int y, int z) {
-        b.set(x, y, z, Decor.pick("fridge", "minecraft:white_concrete"));
-        b.set(x, y + 1, z, Decor.pick("fridge", "minecraft:white_concrete"));
+        b.set(x, y, z, "minecraft:white_concrete");
+        b.set(x, y + 1, z, "minecraft:white_concrete");
     }
 
     static void toilet(BlueprintBuilder b, int x, int y, int z, Dir front) {
-        b.set(x, y, z, Keys.stairs(Decor.pick("toilet", "minecraft:quartz_stairs"), front.opposite(), false));
+        b.set(x, y, z, Keys.stairs("minecraft:quartz_stairs", front.opposite(), false));
     }
 
     /** One cell of a bathtub (a basin of water). */
     static void tub(BlueprintBuilder b, int x, int y, int z) {
-        b.set(x, y, z, Keys.of(Decor.pick("tub", "minecraft:water_cauldron"), "level", "3"));
+        b.set(x, y, z, Keys.of("minecraft:water_cauldron", "level", "3"));
     }
 
     // ------------------------------------------------------------------ decoration
@@ -154,11 +158,18 @@ final class Furnish {
 
     /** A lamp under the ceiling (the ceiling is at {@code y + 1}). */
     static void ceilingLamp(BlueprintBuilder b, int x, int y, int z) {
-        b.set(x, y, z, Decor.pick("lamp", Keys.lantern(true)));
+        b.set(x, y, z, Keys.lantern(true));
     }
 
-    static void candle(BlueprintBuilder b, int x, int y, int z, int count) {
-        b.set(x, y, z, Keys.of("minecraft:candle", "candles", String.valueOf(count), "lit", "true"));
+    /** What stands on a table now and then: a candle or, with the furniture mod, plates and cups. */
+    static void tableSetting(BlueprintBuilder b, int x, int y, int z, int count, long hash) {
+        String candle = Keys.of("minecraft:candle", "candles", String.valueOf(count), "lit", "true");
+        b.set(x, y, z, Decor.crockery((int) (hash >>> 20), Dir.values()[(int) Math.floorMod(hash >>> 30, 4L)], candle));
+    }
+
+    /** A toy of the kindergarten: a block of wool and, with the furniture mod, a cushion of the same colour. */
+    static void toy(BlueprintBuilder b, int x, int y, int z, String wool) {
+        b.set(x, y, z, Decor.cushion(wool));
     }
 
     static void cobweb(BlueprintBuilder b, int x, int y, int z) {

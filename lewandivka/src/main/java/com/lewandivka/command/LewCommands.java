@@ -7,10 +7,12 @@ import com.lewandivka.core.campaign.CampaignStage;
 import com.lewandivka.core.campaign.PlayerProgress;
 import com.lewandivka.core.campaign.QuestStep;
 import com.lewandivka.core.campaign.WorldProgress;
+import com.lewandivka.core.structure.Keys;
 import com.lewandivka.flow.FlowHost;
 import com.lewandivka.quest.Dialogues;
 import com.lewandivka.quest.Travel;
 import com.lewandivka.world.dimension.Dimensions;
+import com.lewandivka.world.structure.StateResolver;
 import com.lewandivka.world.structure.StructureValidator;
 import com.lewandivka.world.structure.Structures;
 import com.mojang.brigadier.CommandDispatcher;
@@ -89,6 +91,7 @@ public final class LewCommands {
                         .then(CommandManager.literal("spot").then(CommandManager.argument("spot", StringArgumentType.word())
                                 .executes(c -> teleportToSpot(c.getSource(), StringArgumentType.getString(c, "structure"), StringArgumentType.getString(c, "spot")))))));
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
+        root.then(CommandManager.literal("decor").executes(c -> decor(c.getSource())));
         root.then(CommandManager.literal("dumpblocks")
                 .executes(c -> dumpBlocks(c.getSource(), null))
                 .then(CommandManager.argument("namespace", StringArgumentType.word()).executes(c -> dumpBlocks(c.getSource(), StringArgumentType.getString(c, "namespace")))));
@@ -464,6 +467,23 @@ public final class LewCommands {
         String shown = text;
         source.sendFeedback(() -> Text.literal(shown), false);
         return report.ok() ? 1 : 0;
+    }
+
+    /**
+     * Resolves every piece of furniture of every structure the way the generator does when it makes a chunk and says which blocks
+     * came out: with a furniture mod installed the blocks of that mod, otherwise the blocks of the game that stand in for them.
+     */
+    private static int decor(ServerCommandSource source) {
+        for (Structures.Site site : Structures.sites()) {
+            for (String key : site.placement().blueprint().paletteKeys()) {
+                if (Keys.isEither(key)) {
+                    StateResolver.parse(key);
+                }
+            }
+        }
+        String text = StateResolver.decorSummary();
+        com.lewandivka.LewandivkaMod.LOGGER.info("[decor] {}", text);
+        return feedback(source, text);
     }
 
     private static int validate(ServerCommandSource source) {

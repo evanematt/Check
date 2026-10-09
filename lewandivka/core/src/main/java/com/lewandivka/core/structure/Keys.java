@@ -110,8 +110,34 @@ public final class Keys {
         return of("lewandivka:" + name, kv);
     }
 
-    /** Strips the {@code [...]} property part. */
+    /**
+     * A block of another mod and, after a bar, the block of the game that stands in for it when that mod is not installed:
+     * {@code handcrafted:oak_chair[facing=north]|minecraft:oak_stairs[facing=south,half=bottom]}. Every analysis of the core (what
+     * can be walked on, what is solid) looks at the fallback only, because that is what is always there.
+     */
+    public static String either(String modKey, String fallbackKey) {
+        return modKey + "|" + fallbackKey;
+    }
+
+    /** The block that is always there: the part after the bar of an {@link #either} key, the key itself otherwise. */
+    public static String fallback(String key) {
+        int i = key == null ? -1 : key.indexOf('|');
+        return i < 0 ? key : key.substring(i + 1);
+    }
+
+    /** The block of the mod of an {@link #either} key, the key itself otherwise. */
+    public static String preferred(String key) {
+        int i = key == null ? -1 : key.indexOf('|');
+        return i < 0 ? key : key.substring(0, i);
+    }
+
+    public static boolean isEither(String key) {
+        return key != null && key.indexOf('|') >= 0;
+    }
+
+    /** Strips the {@code [...]} property part (of the fallback, when the key names a block of a mod and a stand-in). */
     public static String blockId(String key) {
+        key = fallback(key);
         int i = key.indexOf('[');
         return i < 0 ? key : key.substring(0, i);
     }

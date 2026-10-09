@@ -59,7 +59,7 @@ public final class Materials {
         if (key == null) {
             return Kind.PASS;
         }
-        String id = Keys.blockId(key);
+        String id = Keys.blockId(key);   // of the stand-in, when the key names a block of a furniture mod
         if (VANILLA_GATES.contains(id)) {
             return Kind.GATE;
         }

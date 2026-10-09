@@ -52,7 +52,7 @@ public final class Walk {
             return false;
         }
         String key = x < 0 || z < 0 || x >= bp.sizeX() || z >= bp.sizeZ() || y < 0 || y >= bp.sizeY() ? null : bp.keyAt(x, y, z);
-        return key != null && key.contains("_slab[type=top");
+        return key != null && Keys.fallback(key).contains("_slab[type=top");
     }
 
     /** Cells inside this box count as air when gates are open (region markers of quest gates). */

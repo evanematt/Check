@@ -477,6 +477,7 @@ if ! grep -q "eula=true" eula.txt 2>/dev/null; then
   [ "$answer" = "yes" ] || exit 1
   echo "eula=true" > eula.txt
 fi
+[ -f fetch-mods.sh ] && { sh ./fetch-mods.sh || exit 1; }
 exec java -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
 """
 
@@ -489,8 +490,41 @@ if errorlevel 1 (
   if /i not "%answer%"=="yes" exit /b 1
   echo eula=true> eula.txt
 )
+if exist fetch-mods.bat (
+  call fetch-mods.bat
+  if errorlevel 1 exit /b 1
+)
 java -Xms2G -Xmx4G -jar fabric-server-launch.jar nogui
 pause
+"""
+
+FETCH_SH = """#!/bin/sh
+# Downloads the mods this archive does not carry because their license does not let anybody pass the jar on.
+# mods-download.txt lists  <url> <sha1> <file name>  (Modrinth, hash checked); what is in mods/ already is left alone.
+cd "$(dirname "$0")"
+[ -f mods-download.txt ] || exit 0
+mkdir -p mods
+while read -r url sha1 file; do
+  [ -n "$url" ] || continue
+  [ -f "mods/$file" ] && continue
+  echo "downloading mods/$file"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "mods/$file" "$url" || { echo "could not download mods/$file"; rm -f "mods/$file"; exit 1; }
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q -O "mods/$file" "$url" || { echo "could not download mods/$file"; rm -f "mods/$file"; exit 1; }
+  else
+    echo "curl or wget is needed to download mods/$file"; exit 1
+  fi
+  if command -v sha1sum >/dev/null 2>&1; then sum=$(sha1sum "mods/$file" | cut -d' ' -f1); else sum=$(shasum -a 1 "mods/$file" | cut -d' ' -f1); fi
+  [ "$sum" = "$sha1" ] || { echo "hash mismatch for mods/$file"; rm -f "mods/$file"; exit 1; }
+done < mods-download.txt
+"""
+
+FETCH_BAT = """@echo off
+cd /d "%~dp0"
+if not exist mods-download.txt exit /b 0
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch { }; New-Item -ItemType Directory -Force -Path mods | Out-Null; foreach ($l in Get-Content mods-download.txt) { if (-not $l.Trim()) { continue }; $p = $l -split ' ', 3; $t = Join-Path 'mods' $p[2]; if (Test-Path $t) { continue }; Write-Host ('downloading ' + $t); Invoke-WebRequest -UseBasicParsing -Uri $p[0] -OutFile $t; if ((Get-FileHash -Algorithm SHA1 $t).Hash.ToLower() -ne $p[1]) { Remove-Item $t; throw ('hash mismatch for ' + $t) } }"
+exit /b %errorlevel%
 """
 
 SERVER_README = """Lewandivka - dedicated server pack ({version})
@@ -513,6 +547,10 @@ Admin commands (permission level 2):
   /lewandivka setstage <stage>             jump to a stage if the campaign got stuck
   /lewandivka party <1|2|3|auto>           force the scaling of puzzles and bosses
 Fabric API and GeckoLib are separate jars in mods/ (they are never embedded in lewandivka.jar).
+
+Mods that are not in this archive: when mods-download.txt exists, the license of those mods does not let anybody pass their
+jar on. The start script downloads them from Modrinth the first time (fetch-mods.sh / fetch-mods.bat, hash checked), so the
+first start needs internet access for that, too.
 """
 
 PS1 = r"""# Lewandivka installer for TLauncher (and any launcher that uses the .minecraft folder)
@@ -620,9 +658,18 @@ def write_server(path: Path, config, picks, jar_path: Path, jar_name: str, versi
         root = f"Lewandivka-Server-{version}/"
         z.write(jar_path, root + f"mods/{jar_name}")
         for p in picks:
-            if target_dir(p) != "mods" or side(p, "server") == "unsupported":
+            if target_dir(p) != "mods" or side(p, "server") == "unsupported" or not redistributable(p):
                 continue
             z.writestr(root + f"mods/{p.file['filename']}", p.jar)
+        # the mods whose license does not let this archive pass the jar on are downloaded from Modrinth at the start (hash checked)
+        later = [p for p in picks if target_dir(p) == "mods" and side(p, "server") != "unsupported" and not redistributable(p)]
+        if later:
+            z.writestr(root + "mods-download.txt", "".join(f"{p.file['url']} {p.file['hashes']['sha1']} {p.file['filename']}\n" for p in later))
+            info = zipfile.ZipInfo(root + "fetch-mods.sh")
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o755 << 16
+            z.writestr(info, FETCH_SH)
+            z.writestr(root + "fetch-mods.bat", FETCH_BAT)
         z.writestr(root + "fabric-server-launch.jar", launcher)
         z.writestr(root + "server.properties", SERVER_PROPERTIES)
         z.writestr(root + "eula.txt", "# Change to eula=true after reading https://aka.ms/MinecraftEULA (start.sh / start.bat ask you).\neula=false\n")
@@ -653,6 +700,16 @@ def write_tlauncher(path: Path, config, index, jar_path: Path, jar_name: str, sh
         z.writestr(root + "README-TLauncher.txt", TL_README.replace("{version}", version).replace("{loader}", fields["loader"]).replace("{minecraft}", fields["minecraft"]))
 
 
+FREE_LICENSES = ("MIT", "Apache-2.0", "LGPL", "GPL", "AGPL", "MPL-2.0", "BSD", "ISC", "Zlib", "CC0", "Unlicense", "EPL", "BSL-1.0")
+
+
+def redistributable(pick) -> bool:
+    """Whether the license lets this archive carry the jar itself. Anything else (all rights reserved, the licenses of the
+    authors' own, the source-available ones) is only ever downloaded from Modrinth, as the .mrpack and the installer do."""
+    lic = (pick.project.get("license") or {}).get("id") or ""
+    return lic.startswith(FREE_LICENSES)
+
+
 def license_text(project) -> str:
     lic = project.get("license") or {}
     name = lic.get("name") or lic.get("id") or "see project page"
@@ -666,17 +723,19 @@ def write_third_party(path: Path, config, picks, report, version, own_license: s
         "",
         f"Generated by `tools/modpack/build_modpack.py` for Minecraft {config['minecraft']} / Fabric Loader {config['loader_version']}.",
         "None of these projects is copied into `lewandivka-%s.jar`; the modpack references them by URL and hash" % version,
-        "(Modrinth `.mrpack`), the server pack and the installer download or contain the unmodified jars of the projects that",
-        "allow redistribution. Fabric API is **not** embedded in the mod.",
+        "(Modrinth `.mrpack`) and the installer downloads them from Modrinth (hash checked). The server pack contains the unmodified",
+        "jars of the projects whose license allows passing them on; for the others (marked below) its start script downloads the",
+        "jar from Modrinth the first time. Fabric API is **not** embedded in the mod.",
         "",
-        "| Project | Page | License | Version | Client | Server | Purpose |",
-        "|---|---|---|---|---|---|---|",
+        "| Project | Page | License | Version | Client | Server | Server pack | Purpose |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for p in sorted(picks, key=lambda x: x.project["title"].lower()):
         purpose = p.cfg.get("purpose", "")
-        lines.append("| {t} | https://modrinth.com/{kind}/{slug} | {lic} | {ver} | {c} | {s} | {purpose} |".format(
+        in_pack = "-" if side(p, "server") == "unsupported" or target_dir(p) != "mods" else "jar in the archive" if redistributable(p) else "downloaded from Modrinth at the first start"
+        lines.append("| {t} | https://modrinth.com/{kind}/{slug} | {lic} | {ver} | {c} | {s} | {pack} | {purpose} |".format(
             t=p.project["title"], kind=p.project.get("project_type", "mod"), slug=p.slug, lic=license_text(p.project),
-            ver=p.version["version_number"], c=side(p, "client"), s=side(p, "server"), purpose=purpose or p.reason))
+            ver=p.version["version_number"], c=side(p, "client"), s=side(p, "server"), pack=in_pack, purpose=purpose or p.reason))
     lines += [
         "| Fabric Loader / Fabric Installer | https://fabricmc.net | Apache-2.0 | %s | required | required | Mod loader (installed by the installer / bundled in the server launcher). |" % config["loader_version"],
         "",
