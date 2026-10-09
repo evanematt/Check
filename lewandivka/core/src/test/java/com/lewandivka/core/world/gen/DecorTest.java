@@ -216,7 +216,9 @@ class DecorTest {
         WorldPlan plan = DistrictPlan.get();
         int sets = 0;
         int atTheMarket = 0;
+        Set<String> ids = new HashSet<>();
         for (var p : plan.fixedPlacements()) {
+            ids.add(p.id());
             if (p.blueprint().id().equals("cafeset")) {
                 sets++;
                 if (p.x() >= 60 && p.x() <= 110 && p.z() >= 12 && p.z() <= 18) {
@@ -224,6 +226,8 @@ class DecorTest {
                 }
             }
         }
+        // the pictures of the client test go to these two
+        assertTrue(ids.contains("bench_n1") && ids.contains("cafe_n1"), "the bench and the set of the north courtyard are in the plan");
         assertTrue(sets >= 8, "there are " + sets + " sets of a table and chairs");
         assertTrue(atTheMarket >= 2, atTheMarket + " of them behind the stalls of the market");
     }

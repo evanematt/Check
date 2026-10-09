@@ -132,10 +132,13 @@ echo "screenshots: $(ls "$OUT/shots" 2>/dev/null | wc -l)"
 # Everything the game logged about the mod is a defect: entities that failed to load, models that could not be baked,
 # flows that threw, missing sounds. (The sound device and the narrator do not exist on the CI machine.)
 PROBLEMS="$OUT/clienttest-problems.txt"
+# The furniture mod of the pack makes the game say "No data fixer registered for <mod>" at the level ERROR when it starts: the line
+# is about the mod having no data fixer for old saves, not a defect of anything; only its mod ids are let through here.
+NOISE="No data fixer registered for (handcrafted|resourcefullib)"
 {
-  grep -nE "/ERROR\]|Exception loading entity|Exception ticking|Ticking entity|/WARN\] \(lewandivka\)" "$SERVER_LOG" | sed 's/^/server: /'
+  grep -nE "/ERROR\]|Exception loading entity|Exception ticking|Ticking entity|/WARN\] \(lewandivka\)" "$SERVER_LOG" | grep -vE "$NOISE" | sed 's/^/server: /'
   grep -nE "/ERROR\]|/WARN\] \(lewandivka\)|(Unable to bake model|Exception evaluating model definition|Missing sound for event|Unable to load|Failed to load).*lewandivka" "$CLIENT_LOG" \
-    | grep -v "Error starting SoundSystem\|Error while loading the narrator" | sed 's/^/client: /'
+    | grep -v "Error starting SoundSystem\|Error while loading the narrator" | grep -vE "$NOISE" | sed 's/^/client: /'
 } > "$PROBLEMS" 2>/dev/null
 N_PROBLEMS=$(wc -l < "$PROBLEMS" 2>/dev/null | tr -d ' ')
 N_PROBLEMS=${N_PROBLEMS:-0}

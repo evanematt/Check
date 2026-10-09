@@ -359,6 +359,12 @@ public final class AutoTest {
         shot(c, "room_" + name, 8);
     }
 
+    /** Another view from the place where the player stands: what the room has on its other walls. */
+    private static void look(MinecraftClient c, float yaw, float pitch, String name) {
+        cmd(c, "tp @s ~ ~ ~ " + yaw + " " + pitch, 6);
+        shot(c, "room_" + name, 8);
+    }
+
     /**
      * A building from the street: the player stands at the spot of its entrance, turns to {@code yaw} and steps back nine blocks
      * (backwards along the line of sight), so the picture shows the windows of its front.
@@ -987,6 +993,9 @@ public final class AutoTest {
         cmd(c, "effect give @s minecraft:night_vision 99999 0 true", 6);
         tour(c, "tram_stop", "tram_fight");
         tour(c, "old_shop", null);
+        // the furniture of the streets: a park bench and a table with chairs
+        tour(c, "bench_n1", null);
+        tour(c, "cafe_n1", null);
         add("grid at the old shop", 1, () -> chunkGrid(c, "at the old shop"));
         tour(c, "garage13", "garage_panels");
         for (String s : List.of("block_a", "house_ne0", "kindergarten", "playground_north", "tram_depot")) {
@@ -995,13 +1004,21 @@ public final class AutoTest {
         tour(c, "kiosk_foundation", "place_kiosk");
         // the insides of the buildings (behind the doors there are stairwells, flats, rooms with furniture)
         room(c, "block_a", "entrance", 180, 8, "block_a_lobby");
-        room(c, "block_a", "flat_a", 45, 14, "block_a_flat_1");
-        room(c, "block_a", "flat_a", 225, 14, "block_a_flat_2");
-        room(c, "block_a", "flat_b", 135, 14, "block_a_flat_3");
+        room(c, "block_a", "flat_a", 0, 18, "block_a_flat_1");
+        look(c, 90, 18, "block_a_flat_1_w");
+        look(c, 180, 18, "block_a_flat_1_n");
+        look(c, 270, 18, "block_a_flat_1_e");
+        room(c, "block_a", "flat_b", 0, 18, "block_a_flat_3");
+        look(c, 90, 18, "block_a_flat_3_w");
+        look(c, 180, 18, "block_a_flat_3_n");
+        look(c, 270, 18, "block_a_flat_3_e");
         room(c, "block_a", "landing", 180, 12, "block_a_stairs");
         room(c, "block_a", "roof", 0, 15, "block_a_roof");
         room(c, "house_ne0", "entrance", 180, 8, "house_hall");
         room(c, "house_ne0", "living", 45, 14, "house_living");
+        look(c, 135, 14, "house_living_2");
+        look(c, 225, 14, "house_living_3");
+        look(c, 315, 14, "house_living_4");
         room(c, "house_ne0", "bedroom", 225, 14, "house_bedroom");
         room(c, "kindergarten", "entrance", 0, 8, "kinder_hall");
         room(c, "kindergarten", "playroom", 45, 14, "kinder_playroom");
