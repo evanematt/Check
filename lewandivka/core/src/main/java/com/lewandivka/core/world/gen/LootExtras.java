@@ -10,6 +10,9 @@ import java.util.Set;
  * is there (a table with the name of an item that does not exist would not load at all, so the names cannot be in the files of the
  * tables), and leaves out what the game does not have: with none of the mods installed the tables are the ones of the files.
  * Nothing for the children: the kindergarten and the school have food and sweets only.
+ *
+ * <p>The drinks of Alcohol Only are its {@code *_item} items (a bottle that can be drunk and set down); the items without the suffix are the
+ * plain block items of the same bottles, which have no model in the mod and show as a purple and black square.</p>
  */
 public final class LootExtras {
 
@@ -34,10 +37,10 @@ public final class LootExtras {
         return new Extra(item, weight, min, max);
     }
 
-    private static final Extra BEER = e("shield:beer", 6, 1, 3);
-    private static final Extra VODKA = e("shield:vodka", 4, 1, 2);
-    private static final Extra WINE = e("shield:wine", 3, 1, 2);
-    private static final Extra JAEGER = e("shield:jaegermeister", 1, 1, 1);
+    private static final Extra BEER = e("shield:beer_item", 6, 1, 3);
+    private static final Extra VODKA = e("shield:vodka_item", 4, 1, 2);
+    private static final Extra WINE = e("shield:wine_item", 3, 1, 2);
+    private static final Extra JAEGER = e("shield:jaegermeister_item", 1, 1, 1);
     private static final Extra CIGARETTE = e("fumee-de-bushy:cigarette", 5, 2, 6);
     private static final Extra TOBACCO = e("fumee-de-bushy:tobacco", 2, 1, 3);
 
@@ -61,13 +64,13 @@ public final class LootExtras {
 
     private static final Map<String, Pool> POOLS = Map.of(
             "flat", new Pool(0.35, 1, 2, List.of(BAGUETTE, SAUSAGE_ROLL, PIE, CHEESE, OMELETTE, WAFFLE, HOTDOG, MASH, MILK, CUPCAKE,
-                    e("shield:beer", 3, 1, 2), e("shield:wine", 2, 1, 1), e("shield:vodka", 2, 1, 1), e("fumee-de-bushy:cigarette", 3, 2, 6), e("fumee-de-bushy:tobacco", 1, 1, 3))),
+                    e("shield:beer_item", 3, 1, 2), e("shield:wine_item", 2, 1, 1), e("shield:vodka_item", 2, 1, 1), e("fumee-de-bushy:cigarette", 3, 2, 6), e("fumee-de-bushy:tobacco", 1, 1, 3))),
             "house", new Pool(0.45, 1, 2, List.of(BAGUETTE, PIE, PASTRY, CHEESE, OMELETTE, MASH, HOTDOG, MILK, CUPCAKE,
-                    e("shield:wine", 3, 1, 2), e("shield:beer", 3, 1, 2), e("shield:vodka", 1, 1, 1), e("fumee-de-bushy:tobacco", 1, 1, 3))),
+                    e("shield:wine_item", 3, 1, 2), e("shield:beer_item", 3, 1, 2), e("shield:vodka_item", 1, 1, 1), e("fumee-de-bushy:tobacco", 1, 1, 3))),
             "kindergarten", new Pool(0.5, 1, 2, List.of(CUPCAKE, CHOCOLATE, DONUT, BERRY_DONUT, MILK, GUMMY, FLOSS)),
             "school", new Pool(0.45, 1, 2, List.of(CRISPS, CHOCOLATE, BAGUETTE, WAFFLE, MILK, CUPCAKE, SAUSAGE_ROLL)),
             "garage", new Pool(0.6, 1, 2, List.of(BEER, VODKA, JAEGER, CIGARETTE, TOBACCO, CRISPS, SAUSAGE_ROLL)),
-            "shed", new Pool(0.5, 1, 2, List.of(e("shield:beer", 4, 1, 2), e("shield:vodka", 2, 1, 1), e("fumee-de-bushy:cigarette", 3, 2, 5), TOBACCO, SAUSAGE_ROLL)),
+            "shed", new Pool(0.5, 1, 2, List.of(e("shield:beer_item", 4, 1, 2), e("shield:vodka_item", 2, 1, 1), e("fumee-de-bushy:cigarette", 3, 2, 5), TOBACCO, SAUSAGE_ROLL)),
             "shop", new Pool(0.9, 1, 3, List.of(BEER, VODKA, WINE, CIGARETTE, TOBACCO, CRISPS, CHOCOLATE, BAGUETTE, SAUSAGE_ROLL, WAFFLE, CUPCAKE, MILK, PASTRY)));
 
     /** The extras of a kind of place, or null when it has none. */

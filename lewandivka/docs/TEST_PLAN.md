@@ -100,4 +100,4 @@ should be walked through once with real players. Tick per party size.
   the blocks are taken away and the car of the mod stands there (the test builds such cars on purpose and checks it).
 * **Drinks, tobacco, food.** *Ciggycraft*, which was asked for, exists only for NeoForge 1.21.1 (all four of its versions): it cannot be used with
   Fabric 1.20.1. *Fumee de Bushy* (tobacco and cigarettes) is in the pack in its place. Alcohol Only, Fumee de Bushy and More Food are only checked
-  to load, to have the items the tables ask for and to turn up in the containers; nobody smoked, drank or ate them in the game by hand.
+  to load, to have the items the tables ask for and to turn up in the containers; nobody smoked, drank or ate them in the game by hand. Alcohol Only has a defect of its own: the plain items of its bottle blocks (`shield:beer`, `shield:vodka`, `shield:wine` ...) have no model and show as a purple and black square, so the tables use its drinkable `*_item` bottles, which do. The same mod's `beer_glass` is missing its textures; that item is not used.
