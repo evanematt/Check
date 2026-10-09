@@ -53,160 +53,15 @@ public final class Buildings {
     // ================================================================== panel block
 
     /**
-     * Five-storey (or fewer) panel apartment block. Footprint {@code length x 12} (depth), plus the
-     * front margin. Entrances every 12 blocks have canopies, lanterns and a small lobby.
+     * A panel apartment block of {@code sections} sections (17 blocks each, with an entrance, a stairwell and four furnished
+     * flats on every floor) and {@code floors} storeys. Footprint {@code (17 * sections + 1) x 13}, plus the margin in front.
      */
-    public static Blueprint panelBlock(int length, int floors, Theme theme, int turns, long seed) {
-        String key = "panel" + length + "_" + floors + "_" + theme + "_" + turns + "_" + seed;
-        return CACHE.computeIfAbsent(key, k -> buildPanelBlock(length, floors, theme, turns, seed));
+    public static Blueprint panelBlock(int sections, int floors, Theme theme, int turns, long seed) {
+        String key = "panel" + sections + "_" + floors + "_" + theme + "_" + turns + "_" + seed;
+        return CACHE.computeIfAbsent(key, k -> PanelBlock.build(sections, floors, theme, turns, seed));
     }
 
-    private static Blueprint buildPanelBlock(int length, int floors, Theme t, int turns, long seed) {
-        final int depth = 12;
-        final int wallTop = 3 * floors;
-        final int height = wallTop + 5;
-        final int sx = length;
-        final int sz = depth + FRONT + 1; // one extra layer behind for the rear window sills
-        boolean odd = (turns & 1) == 1;
-        BlueprintBuilder b = new BlueprintBuilder("panel_block", odd ? sz : sx, height, odd ? sx : sz);
-        b.orient(turns, sx, sz);
-        b.at(0, 0, FRONT);
-
-        // ---- body with weathered panel pattern
-        for (int y = 1; y <= wallTop; y++) {
-            for (int x = 0; x < length; x++) {
-                for (int z = 0; z < depth; z++) {
-                    boolean outer = x == 0 || x == length - 1 || z == 0 || z == depth - 1;
-                    if (!outer && y > 1 && y < wallTop) {
-                        continue; // keep the interior hollow-free: filled below by the cheap core
-                    }
-                    b.set(x, y, z, panelWall(t, seed, x, y, z));
-                }
-            }
-        }
-        // solid core so nothing is see-through and lighting stays cheap
-        b.fill(1, 1, 1, length - 2, wallTop, depth - 2, t.dirty);
-        // foundation row and plinth
-        for (int x = 0; x < length; x++) {
-            for (int z = 0; z < depth; z++) {
-                b.set(x, 0, z, ((x * 7 + z * 3) % 5 == 0) ? Pal.BRICKS_MOSSY : Pal.BRICKS);
-            }
-        }
-        b.fill(0, 1, 0, length - 1, 1, 0, Pal.BRICKS);
-        b.fill(0, 1, depth - 1, length - 1, 1, depth - 1, Pal.BRICKS);
-        // roof slab and parapet
-        b.fill(0, wallTop + 1, 0, length - 1, wallTop + 1, depth - 1, Pal.CONCRETE_DARK);
-        for (int x = 0; x < length; x++) {
-            b.set(x, wallTop + 2, 0, "minecraft:stone_brick_slab[type=bottom]");
-            b.set(x, wallTop + 2, depth - 1, "minecraft:stone_brick_slab[type=bottom]");
-        }
-        for (int z = 1; z < depth - 1; z++) {
-            b.set(0, wallTop + 2, z, "minecraft:stone_brick_slab[type=bottom]");
-            b.set(length - 1, wallTop + 2, z, "minecraft:stone_brick_slab[type=bottom]");
-        }
-        // roof furniture: vents, antenna, hatches
-        for (int i = 0; i < Math.max(2, length / 14); i++) {
-            int vx = 4 + Noise.range(seed, i, 1, length - 8);
-            b.fill(vx, wallTop + 2, 4, vx + 1, wallTop + 3, 5, Pal.BRICKS);
-            b.set(vx, wallTop + 4, 4, "minecraft:stone_brick_wall");
-        }
-        int ax = 3 + Noise.range(seed, 9, 9, length - 6);
-        b.set(ax, wallTop + 2, 8, "minecraft:iron_bars").set(ax, wallTop + 3, 8, "minecraft:iron_bars");
-        b.set(ax, wallTop + 4, 8, "minecraft:lightning_rod[facing=up]");
-
-        // ---- windows front (z = 0) and back (z = depth - 1)
-        for (int side = 0; side < 2; side++) {
-            int zWall = side == 0 ? 0 : depth - 1;
-            int inward = side == 0 ? 1 : -1;
-            for (int floor = 0; floor < floors; floor++) {
-                int y0 = 3 * floor + 2;
-                for (int bay = 0; bay + 3 < length; bay += 4) {
-                    boolean entranceBay = side == 0 && floor == 0 && isEntranceBay(bay, length);
-                    if (entranceBay) {
-                        continue;
-                    }
-                    long h = Noise.hash(seed + side, bay, floor);
-                    boolean lit = (h & 7) < 4;
-                    // white frame piers on both sides of the window rows
-                    for (int dy = 0; dy < 2; dy++) {
-                        b.set(bay, y0 + dy, zWall, t.frame);
-                        b.set(bay + 3, y0 + dy, zWall, t.frame);
-                    }
-                    for (int dx = 1; dx <= 2; dx++) {
-                        for (int dy = 0; dy < 2; dy++) {
-                            int x = bay + dx;
-                            int y = y0 + dy;
-                            b.set(x, y, zWall, Pal.AIR);
-                            b.set(x, y, zWall + inward, Pal.PANE);
-                            b.set(x, y, zWall + 2 * inward, lit ? Pal.light(6) : Pal.AIR);
-                            b.set(x, y, zWall + 3 * inward, lit ? ((h & 8) == 0 ? Pal.PLASTER_YELLOW : Pal.PLASTER_PEACH) : Pal.CONCRETE_BLACK);
-                        }
-                        // sill
-                        b.set(bay + dx, y0 - 1, zWall + (side == 0 ? -1 : 1), "minecraft:stone_brick_slab[type=bottom]");
-                    }
-                    if ((h >>> 4) % 4 == 0) {
-                        b.set(bay + 1, y0, zWall + (side == 0 ? -1 : 1), "minecraft:potted_red_tulip");
-                    } else if ((h >>> 4) % 4 == 1) {
-                        b.set(bay + 2, y0, zWall + (side == 0 ? -1 : 1), "minecraft:potted_fern");
-                    }
-                }
-            }
-        }
-
-        // ---- entrances
-        int entrances = Math.max(1, length / 12);
-        for (int e = 0; e < entrances; e++) {
-            int cx = 12 * e + 5;
-            entrance(b, cx, depth, t);
-        }
-        // side stairwell windows
-        for (int floor = 0; floor < floors; floor++) {
-            int y = 3 * floor + 3;
-            b.set(0, y, depth / 2, Pal.PANE);
-            b.set(length - 1, y, depth / 2, Pal.PANE);
-        }
-        b.region("body", 0, 0, 0, length - 1, wallTop + 2, depth - 1);
-        return b.build();
-    }
-
-    private static boolean isEntranceBay(int bay, int length) {
-        for (int e = 0; e < Math.max(1, length / 12); e++) {
-            int cx = 12 * e + 5;
-            if (bay <= cx && cx < bay + 4) {
-                return true;
-            }
-            if (bay <= cx + 1 && cx + 1 < bay + 4) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static void entrance(BlueprintBuilder b, int cx, int depth, Theme t) {
-        // frame around the door and the opening
-        b.fill(cx - 1, 1, 0, cx + 2, 3, 0, t.frame);
-        b.fill(cx, 1, 0, cx + 1, 2, 0, Pal.AIR);
-        b.set(cx, 1, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, false, false, false));
-        b.set(cx, 2, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, true, false, false));
-        b.set(cx + 1, 1, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, false, false, true));
-        b.set(cx + 1, 2, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, true, false, true));
-        // lobby
-        b.fill(cx - 1, 1, 1, cx + 2, 3, 3, Pal.AIR);
-        b.fill(cx - 1, 0, 1, cx + 2, 0, 3, Pal.POL_ANDESITE);
-        b.set(cx, 3, 2, Pal.light(9));
-        b.set(cx + 1, 2, 4, Pal.note(1, Dir.NORTH));
-        // canopy with lanterns and two posts
-        b.fill(cx - 1, 4, -1, cx + 2, 4, -2, "minecraft:stone_brick_slab[type=bottom]");
-        b.set(cx - 1, 1, -2, "minecraft:stone_brick_wall").set(cx - 1, 2, -2, "minecraft:stone_brick_wall").set(cx - 1, 3, -2, "minecraft:stone_brick_wall");
-        b.set(cx + 2, 1, -2, "minecraft:stone_brick_wall").set(cx + 2, 2, -2, "minecraft:stone_brick_wall").set(cx + 2, 3, -2, "minecraft:stone_brick_wall");
-        b.set(cx, 3, -1, Keys.lantern(true));
-        b.set(cx + 1, 3, -1, Keys.lantern(true));
-        // steps
-        b.fill(cx, 0, -1, cx + 1, 0, -1, Pal.BRICKS);
-        b.fill(cx - 1, 0, -2, cx + 2, 0, -2, "minecraft:stone_brick_slab[type=bottom]");
-    }
-
-    private static String panelWall(Theme t, long seed, int x, int y, int z) {
+    static String panelWall(Theme t, long seed, int x, int y, int z) {
         long h = Noise.hash(seed, x / 4, y / 3, z / 6);
         double r = (h >>> 11) * (1.0 / (1L << 53));
         long hf = Noise.hash(seed + 1, x, y, z);
@@ -258,10 +113,16 @@ public final class Buildings {
      */
     public static Blueprint plasterHouse(int width, int depth, HouseStyle style, int turns, long seed) {
         String key = "house" + width + "x" + depth + "_" + style + "_" + turns + "_" + seed;
-        return CACHE.computeIfAbsent(key, k -> buildHouse(width, depth, style, turns, seed));
+        return CACHE.computeIfAbsent(key, k -> buildHouse(width, depth, style, turns, seed, false));
     }
 
-    private static Blueprint buildHouse(int w, int d, HouseStyle st, int turns, long seed) {
+    /** The kindergarten: a large two-storey house (24 x 10) with two group rooms and a hall on each floor. */
+    public static Blueprint kindergarten(HouseStyle style, int turns, long seed) {
+        String key = "kindergarten_" + style + "_" + turns + "_" + seed;
+        return CACHE.computeIfAbsent(key, k -> buildHouse(24, 10, style, turns, seed, true));
+    }
+
+    private static Blueprint buildHouse(int w, int d, HouseStyle st, int turns, long seed, boolean kinder) {
         final int storeys = 2;
         final int storeyH = 4;
         final int wallTop = storeys * storeyH;       // 8
@@ -283,7 +144,8 @@ public final class Buildings {
                     if (outer) {
                         b.set(x, y, z, houseWall(st, seed, x, y, z));
                     } else {
-                        b.set(x, y, z, Pal.PLASTER_CLAY);
+                        // the floors of the storeys are planks, the rooms between them air (furnished below)
+                        b.set(x, y, z, y % storeyH == 0 ? Furnish.planks(Furnish.WOODS[(int) Math.floorMod(seed, (long) Furnish.WOODS.length)]) : Keys.AIR);
                     }
                 }
             }
@@ -324,7 +186,6 @@ public final class Buildings {
         b.set(dx + 1, 1, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, false, false, true));
         b.set(dx + 1, 2, 0, Keys.door("minecraft:dark_oak_door", Dir.NORTH, true, false, true));
         b.fill(dx, 1, 1, dx + 1, 3, 2, Pal.AIR);
-        b.set(dx, 3, 1, Pal.light(9));
         // porch roof: a lean-to of dark wood with a lantern
         for (int x = dx - 2; x <= dx + 3; x++) {
             b.set(x, 4, -2, Keys.stairs("minecraft:dark_oak_stairs", Dir.SOUTH, false));
@@ -338,11 +199,27 @@ public final class Buildings {
         b.fill(dx, 0, -3, dx + 1, 0, -3, "minecraft:stone_brick_slab[type=bottom]");
         // house number plate (the reference shows a red year plaque)
         b.set(dx + 3, 6, 0, Pal.note(2, Dir.NORTH));
+        // the rooms
+        long h = Noise.hash(seed, w, d);
+        String wood = Furnish.WOODS[(int) Math.floorMod(seed, (long) Furnish.WOODS.length)];
+        Furnish.Style inside = new Furnish.Style(wood, Furnish.planks(wood), Furnish.WALLS[(int) Math.floorMod(h, (long) Furnish.WALLS.length)],
+                Furnish.BEDS[(int) Math.floorMod(h >>> 8, (long) Furnish.BEDS.length)], Furnish.SOFAS[(int) Math.floorMod(h >>> 16, (long) Furnish.SOFAS.length)],
+                Furnish.RUGS[(int) Math.floorMod(h >>> 24, (long) Furnish.RUGS.length)], !(!kinder && (h >>> 32) % 5 == 0), !kinder && (h >>> 40) % 6 == 0 ? 1 : 0);
+        HouseKit.furnish(b, w, d, inside, seed, kinder);
         // chimney
         int cx = Math.min(w - 3, w / 2 + 3);
         b.fill(cx, wallTop, d / 2, cx + 1, wallTop + ridgeLayers + 1, d / 2, Pal.RED_BRICKS);
         b.set(cx, wallTop + ridgeLayers + 2, d / 2, "minecraft:stone_brick_wall");
         b.set(cx + 1, wallTop + ridgeLayers + 2, d / 2, "minecraft:stone_brick_wall");
+        b.marker("entrance", dx, 1, 1);
+        if (kinder) {
+            b.marker("playroom", 6, 1, 4);
+            b.marker("bedroom", 18, 1, 4);
+            b.marker("upper", 6, 5, 4);
+        } else {
+            b.marker("living", 3, 1, 3);
+            b.marker("bedroom", 4, 5, 3);
+        }
         b.region("body", 0, 0, 0, w - 1, wallTop, d - 1);
         return b.build();
     }
@@ -360,16 +237,7 @@ public final class Buildings {
         for (int dx = 0; dx < 2; dx++) {
             for (int dy = 0; dy < 2; dy++) {
                 b.set(wx + dx, y0 + dy, zWall, Pal.PANE);
-                b.set(wx + dx, y0 + dy, zWall + inward, lit ? Pal.light(7) : Pal.AIR);
-                b.set(wx + dx, y0 + dy, zWall + 2 * inward, lit ? Pal.PLASTER_YELLOW : Pal.CONCRETE_BLACK);
             }
-        }
-        if (lit) {
-            b.set(wx, y0, zWall + inward, Pal.AIR);
-        }
-        // curtains and a pot on the sill: small human touches from the references
-        if (deco == 0) {
-            b.set(wx + 1, y0 + 1, zWall + inward, "minecraft:pink_carpet");
         }
         if (front && deco <= 2) {
             b.set(wx + (int) (deco % 2), y0, zWall + out, deco == 1 ? "minecraft:potted_poppy" : "minecraft:potted_azure_bluet");

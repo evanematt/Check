@@ -22,8 +22,12 @@ final class CityGround {
     private static final long S_LOCAL = 0x51C0FFEFL;
     private static final long S_WARP = 0x51C0FFF0L;
 
-    /** How high the hills of the district get (the noise is about -1..1 and is scaled by the masks below). */
+    /** How high the hills get outside the built-up area (the noise is about -1..1 and is scaled by the masks below). */
     static final double AMPLITUDE = 15.0;
+    /** The undulation of the ground between the buildings: gentle, so that a row of buildings stands on one level. */
+    static final double INNER_AMPLITUDE = 5.0;
+    private static final double HILLS_FROM = 120;
+    private static final double HILLS_FULL = 215;
     /** Where the flat core ends and the hills begin to rise (distance from the tram stop, square metric). */
     private static final double CORE_FLAT = 40;
     private static final double CORE_FULL = 95;
@@ -80,7 +84,8 @@ final class CityGround {
         double r = Math.max(Math.abs(x), Math.abs(z)) + warp;
         double core = Noise.smoothstep(CORE_FLAT, CORE_FULL, r);
         double road = Noise.smoothstep(ROAD_FLAT, ROAD_FREE, distanceToRoad(x, z));
-        return level + AMPLITUDE * n * core * road;
+        double amplitude = Noise.lerp(INNER_AMPLITUDE, AMPLITUDE, Noise.smoothstep(HILLS_FROM, HILLS_FULL, Math.max(Math.abs(x), Math.abs(z))));
+        return level + amplitude * n * core * road;
     }
 
     double distanceToRoad(int x, int z) {
@@ -138,7 +143,10 @@ final class CityGround {
 
     // ------------------------------------------------------------------ the result
 
-    /** The height of the ground (as a real number: the wilderness blends from it before it is rounded). */
+    /**
+     * The height of the ground (as a real number: the wilderness blends from it before it is rounded). The streets win over
+     * everything: a plateau next to a street never lifts the street, it only makes the ground beside it climb.
+     */
     double exact(int x, int z) {
         double h = natural(x, z);
         if (index == null) {
@@ -146,12 +154,18 @@ final class CityGround {
         }
         int[] near = index.get(key(Math.floorDiv(x, CELL), Math.floorDiv(z, CELL)));
         if (near != null) {
+            boolean inside = false;
             for (int i : near) {
                 Plateau p = plateaus.get(i);
                 double w = p.weight(x, z);
                 if (w > 0) {
                     h = Noise.lerp(h, p.level, w);
+                    inside |= w >= 1.0;
                 }
+            }
+            double street = inside ? 0.0 : 1.0 - Noise.smoothstep(0.5, 3.0, distanceToRoad(x, z));
+            if (street > 0) {
+                h = Noise.lerp(h, level, street);
             }
         }
         return h;

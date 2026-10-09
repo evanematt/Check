@@ -76,6 +76,8 @@ public final class DistrictPlan implements WorldPlan {
     private final List<Object[]> pendingMarkers = new ArrayList<>();
     /** Where fixed structures reach deep under the ground: no caves, no ore, no dungeons around them. */
     private final List<Rect> deepStructures = new ArrayList<>();
+    /** Buildings that do not fit where the layout puts them (empty in a good plan; checked by the tests). */
+    private final List<String> layoutProblems = new ArrayList<>();
 
     private static DistrictPlan instance;
 
@@ -108,6 +110,11 @@ public final class DistrictPlan implements WorldPlan {
             out.add(new int[] {r.x1, r.z1, r.x2, r.z2});
         }
         return out;
+    }
+
+    /** What is wrong with the layout of the district: buildings on streets, on each other or on the places of the quests. */
+    public List<String> layoutProblems() {
+        return List.copyOf(layoutProblems);
     }
 
     /** The height of the ground of the district at a column (the same function the terrain uses). */
@@ -398,10 +405,67 @@ public final class DistrictPlan implements WorldPlan {
         westSide();
         northEast();
         southEast();
+        northStrip();
+        southStrip();
         garageCooperative();
         streetFurniture();
         questMarkers();
         postgame();
+    }
+
+    /** Where the quests put people: no building may stand on these cells (the cats, the groups of the night, the chase, the portal). */
+    private static final int[][] CATS = {
+            {-52, -41}, {-2, -52}, {30, -33}, {-72, 20}, {-20, 60}, {36, 52}, {70, -28},
+            {118, -30}, {144, 22}, {-124, 30}, {-98, 86}, {58, 82}
+    };
+    private static final int[][] NEUTRALS = {{-20, -30}, {30, 40}, {-45, 38}, {95, -45}};
+    private static final int[][] POIS = {{-30, -36}, {-17, 38}, {70, -9}, {-110, 72}, {110, -45}, {130, 45}};
+    private static final int[][] OTHER_SPOTS = {{-101, 37}, {61, -9}, {59, -10}, {16, -10}, {2, -3}, {-11, -1}};
+
+    /** The cells that stay free of buildings: the spots above, the nodes of the chase and the ways between them. */
+    private static List<int[]> keepFree() {
+        List<int[]> out = new ArrayList<>();
+        for (int[][] group : new int[][][] {CATS, NEUTRALS, POIS, OTHER_SPOTS, DEBTOR_NODES}) {
+            out.addAll(List.of(group));
+        }
+        for (int[] e : DEBTOR_EDGES) {
+            int[] a = DEBTOR_NODES[e[0]];
+            int[] b = DEBTOR_NODES[e[1]];
+            int n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) / 2;
+            for (int i = 1; i < n; i++) {
+                out.add(new int[] {a[0] + (b[0] - a[0]) * i / n, a[1] + (b[1] - a[1]) * i / n});
+            }
+        }
+        return out;
+    }
+
+    private static final List<int[]> KEEP_FREE = keepFree();
+
+    /** Whether a building may stand on the rectangle: off the streets, off the other buildings, off the places of the quests. */
+    private String whyNot(Rect r, Rect bodyRect) {
+        List<Rect> streets = new ArrayList<>();
+        for (Rect road : ROADS) {
+            streets.add(road.grow(3));
+        }
+        streets.add(PLAZA.grow(1));
+        streets.add(TRAM_BED.grow(1));
+        streets.addAll(LANES);
+        for (Rect street : streets) {
+            if (street.x1 <= r.x2 && street.x2 >= r.x1 && street.z1 <= r.z2 && street.z2 >= r.z1) {
+                return "it stands on a street " + street;
+            }
+        }
+        for (Rect o : occupied) {
+            if (o.x1 <= r.x2 && o.x2 >= r.x1 && o.z1 <= r.z2 && o.z2 >= r.z1) {
+                return "it overlaps another building " + o;
+            }
+        }
+        for (int[] k : KEEP_FREE) {
+            if (bodyRect.grow(1).has(k[0], k[1])) {
+                return "it covers the place of a quest at " + k[0] + "," + k[1];
+            }
+        }
+        return null;
     }
 
     /** Free-play objects: the seed bowls, the validator of the wrong tram stop and the bunker of Garage No. 0. */
@@ -412,7 +476,7 @@ public final class DistrictPlan implements WorldPlan {
         }
         propForce("wrong_stop", Props.wrongStop(), 1, GROUND + 1, 2);
         // two rubbish heaps with district tokens (the first night must not depend on luck)
-        propForce("stash_tokens_n", Props.stash("tokens"), -30, GROUND + 1, -44);
+        propForce("stash_tokens_n", Props.stash("tokens"), -24, GROUND + 1, -41);
         propForce("stash_tokens_shop", Props.stash("tokens"), 72, GROUND + 1, -23);
         StructurePlacement g0 = new StructurePlacement("garage0", Garage0.blueprint(), Garage0.ORIGIN_X, GROUND - Garage0.TOP, Garage0.ORIGIN_Z);
         ground.plateau(g0.x(), g0.z(), g0.maxX(), g0.maxZ(), GROUND, 10);
@@ -421,13 +485,40 @@ public final class DistrictPlan implements WorldPlan {
     }
 
     private void building(String id, Blueprint bp, int bodyX, int bodyZ) {
+        building(id, bp, bodyX, bodyZ, true);
+    }
+
+    /** A block of flats: {@code sections} entrances, {@code floors} storeys; (x, z) is the corner of the body at the lowest x and z. */
+    private void panel(String id, int sections, int floors, Buildings.Theme theme, int turns, long seed, int x, int z) {
+        building(id, Buildings.panelBlock(sections, floors, theme, turns, seed), x, z);
+    }
+
+    private void building(String id, Blueprint bp, int bodyX, int bodyZ, boolean strict) {
         Blueprint.Marker body = bp.marker("body");
         int ox = bodyX - body.x();
         int oz = bodyZ - body.z();
         StructurePlacement probe = new StructurePlacement(id, bp, ox, GROUND, oz);
+        if (strict) {
+            Rect bodyRect = new Rect(probe.x() + body.x(), probe.z() + body.z(), probe.x() + body.x() + body.sx() - 1, probe.z() + body.z() + body.sz() - 1);
+            String why = whyNot(new Rect(probe.x(), probe.z(), probe.maxX(), probe.maxZ()), bodyRect);
+            if (why != null) {
+                layoutProblems.add(id + " at " + probe.x() + "," + probe.z() + ".." + probe.maxX() + "," + probe.maxZ() + ": " + why);
+            }
+        }
         // the building stands at the natural height of the ground under its middle (the streets are level, so a building next to one
-        // stands at the level of the street), on a plateau that slopes back into the land around it
-        int level = (int) Math.round(ground.natural((probe.x() + probe.maxX()) / 2, (probe.z() + probe.maxZ()) / 2));
+        // stands at the level of the street), at most a few blocks off the level of the streets (the ground has to climb to it), on a
+        // plateau that slopes back into the land around it
+        int natural = (int) Math.round(ground.natural((probe.x() + probe.maxX()) / 2, (probe.z() + probe.maxZ()) / 2));
+        // ... and never further from the level of the street than the ground can climb on the way (one block per block)
+        double toStreet = Double.MAX_VALUE;
+        for (int x = probe.x(); x <= probe.maxX(); x += 4) {
+            toStreet = Math.min(toStreet, Math.min(ground.distanceToRoad(x, probe.z()), ground.distanceToRoad(x, probe.maxZ())));
+        }
+        for (int z = probe.z(); z <= probe.maxZ(); z += 4) {
+            toStreet = Math.min(toStreet, Math.min(ground.distanceToRoad(probe.x(), z), ground.distanceToRoad(probe.maxX(), z)));
+        }
+        int reach = (int) Math.max(0, Math.min(3, Math.floor(toStreet) - 1));
+        int level = Math.max(GROUND - reach, Math.min(GROUND + reach, natural));
         StructurePlacement sp = new StructurePlacement(id, bp, ox, level, oz);
         ground.plateau(sp.x(), sp.z(), sp.maxX(), sp.maxZ(), level, 8);
         clearTrees(sp.x(), sp.z(), sp.maxX(), sp.maxZ());
@@ -529,67 +620,67 @@ public final class DistrictPlan implements WorldPlan {
         placements.add(sp);
         occupied.add(new Rect(sp.x(), sp.z(), sp.maxX(), sp.maxZ()));
         // terminus: brick depot with the barred arch facing the turning loop
-        building("tram_depot", Buildings.tramDepot(1), -64, -9);
+        building("tram_depot", Buildings.tramDepot(1), -64, -9, false);
         // the flowerbed in the middle of the turning loop
         propForce("loop_flowers", Props.flowers(3), -37, GROUND + 1, -1);
     }
 
     private void northCourtyard() {
-        building("block_a", Buildings.panelBlock(48, 5, Buildings.Theme.PANEL_GREY, 2, 11), -60, -56);
-        building("block_c", Buildings.panelBlock(36, 5, Buildings.Theme.PANEL_BEIGE, 2, 12), -8, -56);
-        building("block_b", Buildings.panelBlock(48, 5, Buildings.Theme.PANEL_BEIGE, 0, 13), -60, -26);
-        building("block_d", Buildings.panelBlock(36, 5, Buildings.Theme.PANEL_GREY, 0, 14), -8, -26);
+        panel("block_a", 3, 5, Buildings.Theme.PANEL_GREY, 2, 11, -62, -57);
+        panel("block_c", 2, 5, Buildings.Theme.PANEL_BEIGE, 2, 12, 4, -57);
+        panel("block_b", 3, 5, Buildings.Theme.PANEL_BEIGE, 0, 13, -62, -26);
+        panel("block_d", 2, 5, Buildings.Theme.PANEL_GREY, 0, 14, 4, -26);
         prop("playground_north", Props.playground(), -30, -40);
         // courtyard life
-        treeLineX(-58, 38, -43, 9, 100);
-        treeLineX(-58, 38, -28, 9, 120);
+        treeLineX(-58, 38, -40, 9, 100);
+        treeLineX(-58, 38, -31, 9, 120);
         prop("bench_n1", Props.bench(), -48, -36);
         prop("bench_n2", Props.bench(), -6, -36);
         // bench clue: tea glass left on the seat
         Blueprint bench = Props.bench();
         propForce("bench_clue", bench, 14, GROUND + 1, -36);
         propForce("clue_bench", Props.clue(1), 15, GROUND + 2, -36);
-        prop("car_n1", Props.car(Props.CAR_BLUE, 0), -54, -41);
-        prop("car_n2", Props.car(Props.CAR_WHITE, 0), 22, -41);
+        prop("car_n1", Props.car(Props.CAR_BLUE, 0), -54, -40);
+        prop("car_n2", Props.car(Props.CAR_WHITE, 0), 22, -40);
         prop("car_n3", Props.car(Props.CAR_RUST, 1), -14, -34);
         // supply stashes for the kiosk (planks) and junk
-        propForce("stash_planks", Props.dumpster("kiosk_planks"), 33, GROUND + 1, -42);
-        propForce("dumpster_n1", Props.dumpster("junk"), -58, GROUND + 1, -30);
-        propForce("dumpster_n2", Props.dumpster("junk"), -24, GROUND + 1, -59);
-        propForce("stash_seeds_n", Props.stash("seeds"), -33, GROUND + 1, -44);
+        propForce("stash_planks", Props.dumpster("kiosk_planks"), 33, GROUND + 1, -40);
+        propForce("dumpster_n1", Props.dumpster("junk"), -58, GROUND + 1, -32);
+        propForce("dumpster_n2", Props.dumpster("junk"), -24, GROUND + 1, -60);
+        propForce("stash_seeds_n", Props.stash("seeds"), -28, GROUND + 1, -41);
         for (int x = -56; x <= 36; x += 14) {
-            prop("flowers_n" + x, Props.flowers(6), x, -41);
+            prop("flowers_n" + x, Props.flowers(6), x, -33);
         }
     }
 
     private void southCourtyard() {
-        building("block_e", Buildings.panelBlock(48, 5, Buildings.Theme.PANEL_GREY, 2, 21), -60, 16);
-        building("block_f", Buildings.panelBlock(36, 5, Buildings.Theme.PANEL_BEIGE, 2, 22), -8, 16);
-        building("block_g", Buildings.panelBlock(48, 5, Buildings.Theme.PANEL_ORANGE, 0, 23), -60, 46);
+        panel("block_e", 3, 5, Buildings.Theme.PANEL_GREY, 2, 21, -62, 16);
+        panel("block_f", 2, 5, Buildings.Theme.PANEL_BEIGE, 2, 22, 4, 16);
+        panel("block_g", 3, 5, Buildings.Theme.PANEL_ORANGE, 0, 23, -62, 45);
         // kindergarten
-        building("kindergarten", Buildings.plasterHouse(24, 10, Buildings.HouseStyle.LILAC, 0, 24), -2, 46);
-        prop("playground_south", Props.playground(), -26, 34);
+        building("kindergarten", Buildings.kindergarten(Buildings.HouseStyle.LILAC, 0, 24), 8, 46);
+        prop("playground_south", Props.playground(), -26, 33);
         propForce("clue_playground", Props.clue(2), -21, GROUND + 1, 37);
-        treeLineX(-58, 38, 31, 9, 140);
-        treeLineX(-58, -30, 44, 9, 160);
+        treeLineX(-58, 38, 32, 9, 140);
+        treeLineX(-58, -30, 40, 9, 160);
         prop("bench_s1", Props.bench(), -46, 38);
         prop("bench_s2", Props.bench(), 12, 38);
-        prop("car_s1", Props.car(Props.CAR_YELLOW, 0), 20, 40);
+        prop("car_s1", Props.car(Props.CAR_YELLOW, 0), 24, 36);
         prop("car_s2", Props.car(Props.CAR_GREEN, 0), -44, 33);
         propForce("stash_iron", Props.dumpster("kiosk_iron"), 34, GROUND + 1, 36);
-        propForce("dumpster_s1", Props.dumpster("junk"), 34, GROUND + 1, 42);
-        propForce("stash_seeds_s", Props.stash("seeds"), -8, GROUND + 1, 33);
-        prop("fence_k", Props.chainFence(26, true), -3, 44);
+        propForce("dumpster_s1", Props.dumpster("junk"), 34, GROUND + 1, 40);
+        propForce("stash_seeds_s", Props.stash("seeds"), -8, GROUND + 1, 35);
+        prop("fence_k", Props.chainFence(26, true), 7, 44);
         for (int x = -56; x <= 36; x += 16) {
-            prop("flowers_s" + x, Props.flowers(6), x, 33);
+            prop("flowers_s" + x, Props.flowers(6), x, 41);
         }
     }
 
     private void westSide() {
-        building("block_w1", Buildings.panelBlock(48, 5, Buildings.Theme.PANEL_GREY, 1, 31), -100, -40);
-        building("block_w2", Buildings.panelBlock(36, 5, Buildings.Theme.PANEL_BEIGE, 1, 32), -100, 14);
-        treeLineZ(-48, 56, -86, 8, 170);
-        treeLineZ(-48, 56, -110, 10, 171);
+        panel("block_w1", 3, 5, Buildings.Theme.PANEL_GREY, 1, 31, -100, -56);
+        panel("block_w2", 2, 5, Buildings.Theme.PANEL_BEIGE, 1, 32, -100, -1);
+        treeLineZ(-52, 30, -86, 8, 170);
+        treeLineZ(-52, 30, -110, 10, 171);
         prop("fence_w1", Props.chainFence(24, true), -130, -50);
         // a small allotment garden
         prop("garden_w1", Props.gardenPlot(10, 8), -130, -20);
@@ -598,7 +689,7 @@ public final class DistrictPlan implements WorldPlan {
     }
 
     private void northEast() {
-        building("old_shop", Buildings.oldShop(2), 64, -20);
+        building("old_shop", Buildings.oldShop(2), 64, -20, false);
         // the marked foundation for the abandoned kiosk
         propForce("kiosk_foundation", Props.kioskFoundation(), 58, GROUND, -11);
         propForce("clue_tea", Props.clue(0), 66, GROUND + 1, -23);
@@ -631,6 +722,75 @@ public final class DistrictPlan implements WorldPlan {
         propForce("pallets_t", Props.pallets(), 134, GROUND + 1, 46);
         prop("car_t", Props.car(Props.CAR_RUST, 1), 140, 40);
         treeLineX(58, 146, 9, 12, 190);
+    }
+
+    /**
+     * The north strip, behind the street at z = -66: two rows of blocks that face a courtyard between them (the row at the street
+     * has its back to the street and its entrances on the courtyard side, as in the courtyards near the tram), the houses of the
+     * private sector in the east and the garages of Garage No. 0 in the corner.
+     */
+    private void northStrip() {
+        Buildings.Theme grey = Buildings.Theme.PANEL_GREY;
+        Buildings.Theme beige = Buildings.Theme.PANEL_BEIGE;
+        Buildings.Theme orange = Buildings.Theme.PANEL_ORANGE;
+        // the row at the street (entrances to the north, into the courtyard) and the row at the back (entrances to the south)
+        panel("block_n1", 3, 5, beige, 0, 41, -62, -89);
+        panel("block_n2", 2, 5, grey, 0, 42, 4, -89);
+        panel("block_n3", 2, 5, orange, 0, 43, -146, -89);
+        panel("block_n4", 3, 5, grey, 2, 44, -62, -129);
+        panel("block_n5", 2, 5, beige, 2, 45, 4, -129);
+        panel("block_n6", 3, 5, orange, 2, 46, -146, -129);
+        panel("tower_n1", 1, 9, grey, 0, 47, -106, -89);
+        // the courtyards between the rows
+        for (int x : new int[] {-52, -4, 22}) {
+            prop("playground_n" + x, Props.playground(), x, -108);
+        }
+        treeLineX(-140, 38, -95, 9, 300);
+        treeLineX(-140, 38, -112, 9, 301);
+        for (int x = -140; x <= 36; x += 22) {
+            prop("bench_ns" + x, Props.bench(), x, -102);
+            prop("flowers_ns" + x, Props.flowers(6), x + 4, -99);
+        }
+        prop("car_ns1", Props.car(Props.CAR_WHITE, 0), -20, -100);
+        prop("car_ns2", Props.car(Props.CAR_BLUE, 1), 12, -104);
+        prop("car_ns3", Props.car(Props.CAR_RUST, 0), -96, -102);
+        // the east: the private sector (the lane runs between the two rows of houses)
+        for (int i = 0; i < 3; i++) {
+            houseLot("house_nn" + i, 62 + i * 21, -127, 12 + (i % 2) * 2, 9, Buildings.HouseStyle.values()[(i + 1) % 3], 2, 80 + i);
+        }
+        for (int i = 0; i < 4; i++) {
+            houseLot("house_nm" + i, 62 + i * 21, -92, 12 + ((i + 1) % 2) * 2, 9, Buildings.HouseStyle.values()[(i + 2) % 3], 0, 90 + i);
+        }
+        treeLineX(58, 146, -108, 12, 310);
+    }
+
+    /** The south strip: the same as in the north, mirrored around the main street; Garage No. 13 fills the south-west. */
+    private void southStrip() {
+        Buildings.Theme grey = Buildings.Theme.PANEL_GREY;
+        Buildings.Theme beige = Buildings.Theme.PANEL_BEIGE;
+        Buildings.Theme orange = Buildings.Theme.PANEL_ORANGE;
+        panel("block_s1", 3, 5, grey, 2, 51, -62, 78);
+        panel("block_s2", 2, 5, orange, 2, 52, 4, 78);
+        panel("block_s3", 3, 5, orange, 0, 53, -62, 118);
+        panel("block_s4", 2, 5, grey, 0, 54, 4, 118);
+        for (int x : new int[] {-48, -8, 18}) {
+            prop("playground_s" + x, Props.playground(), x, 98);
+        }
+        treeLineX(-58, 38, 95, 9, 320);
+        treeLineX(-58, 38, 112, 9, 321);
+        for (int x = -56; x <= 36; x += 22) {
+            prop("bench_ss" + x, Props.bench(), x, 104);
+            prop("flowers_ss" + x, Props.flowers(6), x + 4, 101);
+        }
+        prop("car_ss1", Props.car(Props.CAR_GREEN, 0), -30, 100);
+        prop("car_ss2", Props.car(Props.CAR_YELLOW, 1), 30, 106);
+        for (int i = 0; i < 4; i++) {
+            houseLot("house_sn" + i, 62 + i * 21, 84, 12 + (i % 2) * 2, 9, Buildings.HouseStyle.values()[i % 3], 2, 100 + i);
+        }
+        for (int i = 0; i < 4; i++) {
+            houseLot("house_sm" + i, 62 + i * 21, 119, 12 + ((i + 1) % 2) * 2, 9, Buildings.HouseStyle.values()[(i + 1) % 3], 0, 110 + i);
+        }
+        treeLineX(58, 146, 108, 12, 330);
     }
 
     /**
@@ -715,10 +875,9 @@ public final class DistrictPlan implements WorldPlan {
         }
         marker("debtor_spawn", -101, y, 37, "");
         // neutral seed-asking groups (appear at night)
-        marker("neutral_0", -20, y, -30, "");
-        marker("neutral_1", 30, y, 40, "");
-        marker("neutral_2", -45, y, 52, "");
-        marker("neutral_3", 95, y, -45, "");
+        for (int i = 0; i < NEUTRALS.length; i++) {
+            marker("neutral_" + i, NEUTRALS[i][0], y, NEUTRALS[i][1], "");
+        }
         // last tram event
         marker("tram_origin", -11, GROUND + 1, -1, "");
         marker("tram_fog_start", 120, GROUND + 1, 0, "");
@@ -728,10 +887,7 @@ public final class DistrictPlan implements WorldPlan {
             marker("wave_" + (i + 1), Integer.parseInt(waves[i][0]), y, Integer.parseInt(waves[i][1]), "");
         }
         // postgame: twelve hidden cats, seed bowls and the secret tram
-        int[][] cats = {
-                {-52, -41}, {-2, -52}, {30, -33}, {-72, 20}, {-20, 60}, {18, 48}, {70, -28},
-                {118, -30}, {136, 20}, {-124, 30}, {-98, 86}, {58, 82}
-        };
+        int[][] cats = CATS;
         for (int i = 0; i < cats.length; i++) {
             marker("cat_spot_" + (i + 1), cats[i][0], y, cats[i][1], "");
         }

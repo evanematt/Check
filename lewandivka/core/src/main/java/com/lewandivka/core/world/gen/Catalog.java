@@ -165,11 +165,12 @@ public final class Catalog {
         m.put("car_blue", Props.car(Props.CAR_BLUE, 0));
         m.put("pole", Props.utilityPole(true));
         m.put("bench", Props.bench());
-        m.put("panel_grey", rename(Buildings.panelBlock(48, 5, Buildings.Theme.PANEL_GREY, 0, 1), "panel_grey"));
-        m.put("panel_beige", rename(Buildings.panelBlock(36, 5, Buildings.Theme.PANEL_BEIGE, 0, 2), "panel_beige"));
+        m.put("panel_grey", rename(Buildings.panelBlock(3, 5, Buildings.Theme.PANEL_GREY, 0, 1), "panel_grey"));
+        m.put("panel_beige", rename(Buildings.panelBlock(2, 5, Buildings.Theme.PANEL_BEIGE, 0, 2), "panel_beige"));
         m.put("house_ochre", rename(Buildings.plasterHouse(12, 9, Buildings.HouseStyle.OCHRE, 0, 3), "house_ochre"));
         m.put("house_orange", rename(Buildings.plasterHouse(14, 9, Buildings.HouseStyle.ORANGE, 0, 4), "house_orange"));
         m.put("house_lilac", rename(Buildings.plasterHouse(12, 9, Buildings.HouseStyle.LILAC, 0, 5), "house_lilac"));
+        m.put("kindergarten", rename(Buildings.kindergarten(Buildings.HouseStyle.LILAC, 0, 24), "kindergarten"));
         m.put("old_shop", rename(Buildings.oldShop(0), "old_shop"));
         m.put("tram_depot", rename(Buildings.tramDepot(0), "tram_depot"));
         m.put("tram_stop", TramBuilders.tramStop());

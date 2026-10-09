@@ -6,6 +6,7 @@ import com.lewandivka.core.world.gen.DistrictPlan;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -88,15 +89,40 @@ public final class CityMapMain {
             int hh = (int) Math.round((sp.maxZ() - sp.z() + 1) * scale);
             boolean building = id.startsWith("block") || id.startsWith("house") && !id.contains("_garden") && !id.contains("_fence") && !id.contains("_bush")
                     || id.equals("kindergarten") || id.equals("old_shop") || id.equals("tram_depot") || id.startsWith("garage") || id.equals("tram_stop")
-                    || id.startsWith("school") || id.startsWith("boiler") || id.startsWith("sub") || id.startsWith("shed");
+                    || id.startsWith("tower") || id.startsWith("school") || id.startsWith("boiler") || id.startsWith("sub") || id.startsWith("shed");
             g.setColor(building ? new Color(190, 60, 50, 200) : new Color(40, 40, 160, 150));
             if (building) {
                 g.fillRect(x1, y1, Math.max(1, w), Math.max(1, hh));
                 g.setColor(Color.BLACK);
                 g.drawRect(x1, y1, Math.max(1, w), Math.max(1, hh));
+                g.setFont(new Font("SansSerif", Font.BOLD, 10));
+                g.setColor(Color.WHITE);
+                g.drawString(id, x1 + 3, y1 + 11);
             } else {
                 g.fillRect(x1, y1, Math.max(1, w), Math.max(1, hh));
             }
+        }
+        // the places the quests stand on: cats, groups, the chase
+        for (StructurePlacement.MarkerPos m : plan.planMarkers()) {
+            String id = m.id().substring(m.id().indexOf(':') + 1);
+            Color c = id.startsWith("cat_spot") ? Color.YELLOW : id.startsWith("debtor") ? Color.MAGENTA : id.startsWith("neutral") ? Color.CYAN
+                    : id.startsWith("poi_") ? Color.ORANGE : id.startsWith("stash") || id.startsWith("shlahbaum") || id.startsWith("kiosk") ? Color.GREEN : null;
+            if (c == null) {
+                continue;
+            }
+            int mx = (int) Math.round((m.x() - (cx - span / 2.0)) * scale);
+            int my = (int) Math.round((m.z() - (cz - span / 2.0)) * scale);
+            g.setColor(c);
+            g.fillOval(mx - 3, my - 3, 7, 7);
+            g.setColor(Color.BLACK);
+            g.drawOval(mx - 3, my - 3, 7, 7);
+        }
+        g.setColor(new Color(255, 0, 255, 180));
+        for (int[] e : DistrictPlan.DEBTOR_EDGES) {
+            int[] a = DistrictPlan.DEBTOR_NODES[e[0]];
+            int[] bb = DistrictPlan.DEBTOR_NODES[e[1]];
+            g.drawLine((int) Math.round((a[0] - (cx - span / 2.0)) * scale), (int) Math.round((a[1] - (cz - span / 2.0)) * scale),
+                    (int) Math.round((bb[0] - (cx - span / 2.0)) * scale), (int) Math.round((bb[1] - (cz - span / 2.0)) * scale));
         }
         g.dispose();
         out.getParentFile().mkdirs();

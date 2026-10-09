@@ -85,7 +85,9 @@ public final class LewCommands {
                             return b.buildFuture();
                         })
                         .executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure"), false))
-                        .then(CommandManager.literal("view").executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure"), true)))));
+                        .then(CommandManager.literal("view").executes(c -> teleport(c.getSource(), StringArgumentType.getString(c, "structure"), true)))
+                        .then(CommandManager.literal("spot").then(CommandManager.argument("spot", StringArgumentType.word())
+                                .executes(c -> teleportToSpot(c.getSource(), StringArgumentType.getString(c, "structure"), StringArgumentType.getString(c, "spot")))))));
         root.then(CommandManager.literal("validate").executes(c -> validate(c.getSource())));
         root.then(CommandManager.literal("selftest").executes(c -> selftest(c.getSource())));
         root.then(CommandManager.literal("probe")
@@ -286,6 +288,25 @@ public final class LewCommands {
             source.sendError(Text.literal("teleport failed: " + e));
             return 0;
         }
+    }
+
+    /** Development tool: to a named spot of a structure (a room of a building, the roof), keeping the way the player looks. */
+    private static int teleportToSpot(ServerCommandSource source, String structure, String spot) {
+        ServerPlayerEntity player = source.getPlayer();
+        Structures.Site site = Structures.site(structure);
+        Structures.Marker m = Structures.marker(structure + ":" + spot);
+        if (player == null || site == null || m == null) {
+            source.sendError(Text.literal("unknown spot " + structure + ":" + spot));
+            return 0;
+        }
+        ServerWorld world = Dimensions.world(source.getServer(), site.dimension());
+        if (world == null) {
+            source.sendError(Text.literal("dimension " + site.dimension() + " is not loaded"));
+            return 0;
+        }
+        player.teleport(world, m.x() + 0.5, m.y(), m.z() + 0.5, player.getYaw(), player.getPitch());
+        source.sendFeedback(() -> Text.literal("teleported to " + structure + ":" + spot), true);
+        return 1;
     }
 
     private static int teleportUnchecked(ServerCommandSource source, String structure, boolean view) {

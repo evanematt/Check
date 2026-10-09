@@ -22,6 +22,7 @@ public final class Walk {
     private final Map<String, Materials.Kind> cache = new HashMap<>();
     private final java.util.List<int[]> links = new java.util.ArrayList<>();
     private final java.util.List<int[]> openBoxes = new java.util.ArrayList<>();
+    private boolean halfSteps;
 
     /**
      * @param gatesOpen treat quest gates as open doors (the intended route after the puzzle is solved)
@@ -31,6 +32,27 @@ public final class Walk {
         this.bp = bp;
         this.gatesOpen = gatesOpen;
         this.groundY = groundY;
+    }
+
+    /**
+     * Stairs rise by half a block at a time, so the head of someone climbing needs only 0.3 blocks of the cell above the one he
+     * would step into: a slab in the upper half of that cell does not stop him. (A plain jump up one block would; this is for
+     * stairwells and has to be asked for.)
+     */
+    public Walk halfSteps() {
+        this.halfSteps = true;
+        return this;
+    }
+
+    private boolean headroom(int x, int y, int z) {
+        if (free(x, y, z)) {
+            return true;
+        }
+        if (!halfSteps) {
+            return false;
+        }
+        String key = x < 0 || z < 0 || x >= bp.sizeX() || z >= bp.sizeZ() || y < 0 || y >= bp.sizeY() ? null : bp.keyAt(x, y, z);
+        return key != null && key.contains("_slab[type=top");
     }
 
     /** Cells inside this box count as air when gates are open (region markers of quest gates). */
@@ -161,7 +183,7 @@ public final class Walk {
                 int nx = x + d[0];
                 int nz = z + d[1];
                 // step up one block (needs headroom above the starting cell)
-                if (free(x, y + 2, z) && canStand(nx, y + 1, nz) && free(nx, y + 2, nz) && r.add(nx, y + 1, nz)) {
+                if (headroom(x, y + 2, z) && canStand(nx, y + 1, nz) && free(nx, y + 2, nz) && r.add(nx, y + 1, nz)) {
                     queue.add(new int[] {nx, y + 1, nz});
                 }
                 // level
