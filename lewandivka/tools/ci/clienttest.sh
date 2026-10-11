@@ -11,7 +11,7 @@ CLIENT_LOG="$OUT/clienttest-client.txt"
 SRV=run/server
 CLI=run/client
 # The phases of the test (tools/ci/client-phases.txt): "all" is the tour of the whole game on a dedicated server, followed by the cars;
-# "cars" is only the second part (faster, for the work on the cars).
+# "cars" is only the second part (faster, for the work on the cars); "dungeons" is only the pictures from inside the dungeons.
 PHASES=$(tr -d '[:space:]' < tools/ci/client-phases.txt 2>/dev/null)
 PHASES=${PHASES:-all}
 echo "phases: $PHASES"
@@ -81,7 +81,7 @@ if ! grep -q "Done (" "$SERVER_LOG"; then
   kill "$SERVER_PID" 2>/dev/null
   exit 1
 fi
-if [ "$PHASES" = "all" ]; then
+if [ "$PHASES" != "cars" ]; then
 python3 tools/ci/gallery.py > "$OUT/gallery-commands.txt"
 mapfile -t CMDS < "$OUT/gallery-commands.txt"
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "${CMDS[@]}" > "$OUT/gallery-rcon.txt" 2>&1
@@ -116,7 +116,7 @@ PY
 ( while true; do sleep 240; publish_partial; done ) &
 UPLOADER=$!
 
-export LEWANDIVKA_AUTOTEST=1
+if [ "$PHASES" = "dungeons" ]; then export LEWANDIVKA_AUTOTEST=dungeons; else export LEWANDIVKA_AUTOTEST=1; fi
 export LIBGL_ALWAYS_SOFTWARE=1
 export MESA_GL_VERSION_OVERRIDE=4.5
 export MESA_GLSL_VERSION_OVERRIDE=450
@@ -128,7 +128,7 @@ kill "$UPLOADER" 2>/dev/null
 # an upload of the partial publisher that is in flight must be over before the final publication starts
 for i in $(seq 1 30); do pgrep -f "gh release upload" >/dev/null || break; sleep 2; done
 fi
-[ "$PHASES" = "all" ] && echo "client exit code $CLIENT_EXIT"
+[ "$PHASES" != "cars" ] && echo "client exit code $CLIENT_EXIT"
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "lewandivka decor" > "$OUT/clienttest-decor.txt" 2>&1
 python3 tools/ci/rcon.py 127.0.0.1 25576 ci-client "stop" > /dev/null 2>&1
 wait "$SERVER_PID" 2>/dev/null
@@ -153,7 +153,7 @@ N_PROBLEMS=${N_PROBLEMS:-0}
 echo "log problems: $N_PROBLEMS"
 if [ "$N_PROBLEMS" != "0" ]; then head -40 "$PROBLEMS"; fi
 MAIN_OK=0
-if [ "$PHASES" != "all" ]; then
+if [ "$PHASES" = "cars" ]; then
   MAIN_OK=1
   echo "the tour of the game was not asked for (phases: $PHASES)"
 elif grep -q "AUTOTEST-RESULT OK" "$OUT/autotest-result.txt" 2>/dev/null && [ "$N_PROBLEMS" = "0" ]; then
@@ -161,7 +161,7 @@ elif grep -q "AUTOTEST-RESULT OK" "$OUT/autotest-result.txt" 2>/dev/null && [ "$
 fi
 # the cars of Trep's Cars (a mod of the clients only): the game plays a world of its own, see carstest.sh
 CARS_OK=1
-if ls "$CLI/mods" 2>/dev/null | grep -qi "trep"; then
+if [ "$PHASES" != "dungeons" ] && ls "$CLI/mods" 2>/dev/null | grep -qi "trep"; then
   bash tools/ci/carstest.sh "$OUT" 2>&1 | tee "$OUT/clienttest-cars.txt"
   [ "${PIPESTATUS[0]}" = "0" ] || CARS_OK=0
 else

@@ -80,12 +80,14 @@ public final class AutoTest {
 
     /** {@code LEWANDIVKA_AUTOTEST=cars}: the second run of the client test, in a world of its own with the cars of Trep's Cars (see {@link #buildCars}). */
     private static final boolean CARS_MODE = "cars".equals(System.getenv("LEWANDIVKA_AUTOTEST"));
+    /** {@code LEWANDIVKA_AUTOTEST=dungeons}: only the pictures from inside the dungeons (see {@link #buildDungeons}). */
+    private static final boolean DUNGEONS_MODE = "dungeons".equals(System.getenv("LEWANDIVKA_AUTOTEST"));
 
     public static void register() {
         if (System.getenv("LEWANDIVKA_AUTOTEST") == null) {
             return;
         }
-        LewandivkaMod.LOGGER.info("AutoTest is enabled{}", CARS_MODE ? " (the cars)" : "");
+        LewandivkaMod.LOGGER.info("AutoTest is enabled{}", CARS_MODE ? " (the cars)" : DUNGEONS_MODE ? " (the dungeons)" : "");
         ClientTickEvents.END_CLIENT_TICK.register(AutoTest::tick);
     }
 
@@ -1285,6 +1287,176 @@ public final class AutoTest {
         cmd(c, "ride @s dismount", 10);
     }
 
+    // ------------------------------------------------------------------ the dungeons from inside
+
+    private static boolean standable(MinecraftClient c, BlockPos feet) {
+        return c.world.getBlockState(feet).getCollisionShape(c.world, feet).isEmpty()
+                && c.world.getBlockState(feet.up()).getCollisionShape(c.world, feet.up()).isEmpty()
+                && !c.world.getBlockState(feet.down()).getCollisionShape(c.world, feet.down()).isEmpty();
+    }
+
+    /**
+     * A picture from inside a dungeon: the player goes to the marker (the game puts him on safe ground there), then a vantage point is picked
+     * in the world of the client: ground around the marker that a player can stand on, at a few blocks' distance, with nothing between the eye
+     * and the marker. The player stands there, looks at the marker and the picture is taken (the interface is hidden).
+     */
+    private static void interiorView(MinecraftClient c, String structure, String markerName, String name) {
+        Marker m = Structures.marker(structure + ":" + markerName);
+        if (m == null) {
+            add("no marker " + structure + ":" + markerName, 1, () -> expect("the plan has the marker " + structure + ":" + markerName, false, "no such marker"));
+            return;
+        }
+        cmd(c, "lewandivka teleport " + structure + " spot " + markerName, 20);
+        settle(c, name, 2400);
+        double[] go = new double[3];
+        float[] look = new float[2];
+        boolean[] found = new boolean[1];
+        add("pick the view of " + name, 14, () -> {
+            found[0] = false;
+            Vec3d target = m.center();
+            BlockPos tb = BlockPos.ofFloored(target);
+            int level = m.y();
+            for (double dist : new double[] {6, 5, 7, 4, 8, 3, 9, 10}) {
+                for (int k = 0; k < 24 && !found[0]; k++) {
+                    double a = Math.toRadians(k * 15.0);
+                    double px = Math.floor(target.x + Math.sin(a) * dist) + 0.5;
+                    double pz = Math.floor(target.z + Math.cos(a) * dist) + 0.5;
+                    for (int dy : new int[] {0, 1, -1, 2, -2, 3, -3}) {
+                        BlockPos feet = BlockPos.ofFloored(px, level + dy, pz);
+                        if (!standable(c, feet)) {
+                            continue;
+                        }
+                        Vec3d eye = new Vec3d(px, feet.getY() + 1.62, pz);
+                        net.minecraft.util.hit.BlockHitResult hit = c.world.raycast(new net.minecraft.world.RaycastContext(eye, target,
+                                net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, c.player));
+                        boolean clear = hit.getType() == net.minecraft.util.hit.HitResult.Type.MISS || hit.getBlockPos().getManhattanDistance(tb) <= 1;
+                        if (!clear) {
+                            continue;
+                        }
+                        found[0] = true;
+                        go[0] = px;
+                        go[1] = feet.getY();
+                        go[2] = pz;
+                        look[0] = (float) Math.toDegrees(Math.atan2(px - target.x, target.z - pz));
+                        look[1] = (float) Math.toDegrees(Math.atan2(eye.y - target.y, Math.hypot(px - target.x, pz - target.z)));
+                        break;
+                    }
+                }
+                if (found[0]) {
+                    break;
+                }
+            }
+            note(found[0] ? String.format(Locale.ROOT, "view of %s from %.1f %.1f %.1f", name, go[0], go[1], go[2]) : "no free view of " + name + ": the picture is taken where the game put the player");
+            if (found[0]) {
+                c.player.networkHandler.sendChatCommand(at(go[0], go[1], go[2], look[0], look[1]));
+            }
+        });
+        add("wait for the picture of " + name, 24, () -> { });
+        shot(c, "dungeon_" + name, 4);
+    }
+
+    /** A boss in its arena: the creature is made at the marker of the boss (it does not move: the test only looks at it) and photographed from a vantage point. */
+    private static void arenaWithBoss(MinecraftClient c, String structure, String bossStep, String boss, String name) {
+        Marker spawn = Structures.marker(structure + ":boss_spawn");
+        if (spawn == null) {
+            add("no boss place " + structure, 1, () -> expect("the plan has the marker " + structure + ":boss_spawn", false, "no such marker"));
+            return;
+        }
+        cmd(c, "lewandivka step " + bossStep, 10);
+        cmd(c, "lewandivka teleport " + structure + " spot arena_entry", 20);
+        settle(c, name + " (arena)", 2400);
+        cmd(c, String.format(Locale.ROOT, "summon lewandivka:%s %.1f %.1f %.1f {NoAI:1b,Silent:1b,PersistenceRequired:1b}", boss, spawn.x() + 0.5, (double) spawn.y(), spawn.z() + 0.5), 60);
+        interiorView(c, structure, "boss_spawn", name);
+    }
+
+    /**
+     * The pictures from inside the dungeons: every dungeon of the story, at the places where its puzzles are (the story is moved to the step of
+     * the dungeon first, so that its devices are there), and the arenas of the bosses with the boss in them.
+     */
+    private static void buildDungeons(MinecraftClient c) {
+        add("settle", 200, () -> { });
+        cmd(c, "gamemode creative", 10);
+        cmd(c, "effect give @s minecraft:night_vision 99999 0 true", 6);
+        add("hide the interface", 2, () -> c.options.hudHidden = true);
+
+        // the district: the Last Tram, Garage No. 13
+        cmd(c, "lewandivka step tram_fight", 8);
+        interiorView(c, "tram_stop", "platform_center", "tram_stop_platform");
+        interiorView(c, "tram_stop", "validator_2", "tram_stop_validators");
+        cmd(c, "lewandivka step garage_panels", 8);
+        interiorView(c, "garage13", "yard_center", "garage13_yard");
+        interiorView(c, "garage13", "breaker_1", "garage13_breakers");
+        interiorView(c, "garage13", "sync_1", "garage13_switches");
+        interiorView(c, "garage13", "lever_2", "garage13_cellar_levers");
+        interiorView(c, "garage13", "gate_garage13", "garage13_wall");
+        interiorView(c, "garage13", "tunnel_start", "garage13_tunnels");
+
+        // the other side
+        cmd(c, "lewandivka step base_pedestals", 8);
+        interiorView(c, "base", "pedestal_token", "base_pedestals");
+        interiorView(c, "base", "portal_plane", "base_portal");
+        interiorView(c, "base", "bed_2", "base_beds");
+
+        cmd(c, "lewandivka step rg_wings", 8);
+        interiorView(c, "rainbow_garage", "tap_red", "rg_paint");
+        interiorView(c, "rainbow_garage", "grate_2", "rg_grates");
+        interiorView(c, "rainbow_garage", "lift_hall", "rg_lifts");
+        interiorView(c, "rainbow_garage", "press_start", "rg_presses");
+        interiorView(c, "rainbow_garage", "hub", "rg_hub");
+        interiorView(c, "rainbow_garage", "arena_center", "rg_arena");
+        arenaWithBoss(c, "rainbow_garage", "rg_boss", "garage_king", "rg_boss");
+
+        cmd(c, "lewandivka step sh_levers", 8);
+        interiorView(c, "shelter", "pit", "sh_pit");
+        interiorView(c, "shelter", "lever_2", "sh_levers");
+        interiorView(c, "shelter", "cat_hall", "sh_fish_hall");
+        interiorView(c, "shelter", "cat_rug", "sh_rug");
+        interiorView(c, "shelter", "boxes", "sh_warehouse");
+        interiorView(c, "shelter", "arena_center", "sh_arena");
+        arenaWithBoss(c, "shelter", "sh_boss", "collar_collector", "sh_boss");
+
+        cmd(c, "lewandivka step aq_pumps", 8);
+        interiorView(c, "aquapark", "lobby", "aq_lobby");
+        interiorView(c, "aquapark", "pump_2", "aq_pumps");
+        interiorView(c, "aquapark", "pool_1", "aq_pool");
+        interiorView(c, "aquapark", "arena_center", "aq_arena");
+        arenaWithBoss(c, "aquapark", "aq_boss", "lady_vortex", "aq_boss");
+
+        cmd(c, "lewandivka step sky_ascent", 8);
+        interiorView(c, "sky_ascent", "pad_0", "sky_pad");
+        interiorView(c, "sky_ascent", "isle_2", "sky_isle");
+        interiorView(c, "sky_ascent", "tunnel_bottom", "sky_tunnel");
+        interiorView(c, "sky_ascent", "stop_platform", "sky_stop");
+
+        cmd(c, "lewandivka step sky_tickets", 8);
+        interiorView(c, "sky_depot", "tram_arrive", "depot_arrival");
+        interiorView(c, "sky_depot", "switch_2", "depot_switches");
+        interiorView(c, "sky_depot", "dispatcher", "depot_dispatcher");
+        interiorView(c, "sky_depot", "ticket_window", "depot_office");
+        interiorView(c, "sky_depot", "arena_center", "depot_arena");
+        arenaWithBoss(c, "sky_depot", "sky_boss", "conductor", "depot_boss");
+
+        cmd(c, "lewandivka step tower_approach", 8);
+        interiorView(c, "tower_approach", "dash_door_1", "approach_dash");
+        interiorView(c, "tower_approach", "hidden_wall", "approach_wall");
+        interiorView(c, "tower_approach", "shaft_bottom", "approach_shaft");
+        interiorView(c, "tower_approach", "glide_start", "approach_glide");
+
+        cmd(c, "lewandivka step tower_climb", 8);
+        interiorView(c, "tower", "ticket_machine", "tower_lobby");
+        interiorView(c, "tower", "lever_2", "tower_archive");
+        interiorView(c, "tower", "tap_f3_red", "tower_colour");
+        interiorView(c, "tower", "hatch_f4", "tower_shaft");
+        interiorView(c, "tower", "arena_center", "tower_arena");
+        arenaWithBoss(c, "tower", "final_fight", "colorless_head", "tower_boss");
+
+        // back in the district: Garage No. 0 under it (the postgame)
+        cmd(c, "lewandivka step post_free", 8);
+        interiorView(c, "garage0", "arena_center", "garage0_arena");
+        interiorView(c, "garage0", "reward", "garage0_reward");
+        add("the end", 4, () -> c.options.hudHidden = false);
+    }
+
     /**
      * The second run of the client test: the game plays a world of its own (so its server is inside the game and can run the mod of the
      * cars, which a dedicated server cannot), a new world made by the plan with the mod in it. Some places get the cars built of blocks first,
@@ -1374,6 +1546,10 @@ public final class AutoTest {
     private static void build(MinecraftClient c) {
         if (CARS_MODE) {
             buildCars(c);
+            return;
+        }
+        if (DUNGEONS_MODE) {
+            buildDungeons(c);
             return;
         }
         add("settle", 180, () -> { });
