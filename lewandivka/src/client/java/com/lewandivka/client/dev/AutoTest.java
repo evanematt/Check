@@ -1317,8 +1317,11 @@ public final class AutoTest {
         return sum / n;
     }
 
+    /** The vantage point may be on any side of the place. */
+    private static final double ANY_SIDE = Double.NaN;
+
     private static void interiorView(MinecraftClient c, String structure, String markerName, String name) {
-        interiorView(c, structure, markerName, markerName, 0.0, NEAR_FIRST, name);
+        interiorView(c, structure, markerName, markerName, 0.0, NEAR_FIRST, ANY_SIDE, name);
     }
 
     /**
@@ -1331,8 +1334,11 @@ public final class AutoTest {
      * @param groundName the marker whose height is the ground the player stands on and goes to first (a boss that hovers above its arena is
      *                   looked at from the floor)
      * @param lift       how many blocks above the marker the thing to look at is
+     * @param azimuth    the side to look from, in degrees: 0 is the south of the place (in front of a creature that looks south), 90 the
+     *                   east, 180 the north; the nearest side that has a good view is taken. {@link #ANY_SIDE}: the first that has one
      */
-    private static void interiorView(MinecraftClient c, String structure, String markerName, String groundName, double lift, double[] distances, String name) {
+    private static void interiorView(MinecraftClient c, String structure, String markerName, String groundName, double lift, double[] distances,
+                                     double azimuth, String name) {
         Marker m = Structures.marker(structure + ":" + markerName);
         Marker ground = Structures.marker(structure + ":" + groundName);
         if (m == null || ground == null) {
@@ -1352,9 +1358,16 @@ public final class AutoTest {
             Vec3d target = m.center().add(0.0, lift, 0.0);
             BlockPos tb = BlockPos.ofFloored(target);
             int level = ground.y();
+            Integer[] sides = new Integer[24];
+            for (int k = 0; k < 24; k++) {
+                sides[k] = k;
+            }
+            if (!Double.isNaN(azimuth)) {
+                java.util.Arrays.sort(sides, java.util.Comparator.comparingDouble(k -> Math.abs(((k * 15.0 - azimuth) % 360 + 540) % 360 - 180)));
+            }
             search:
             for (double dist : distances) {
-                for (int k = 0; k < 24; k++) {
+                for (int k : sides) {
                     double a = Math.toRadians(k * 15.0);
                     double px = Math.floor(target.x + Math.sin(a) * dist) + 0.5;
                     double pz = Math.floor(target.z + Math.cos(a) * dist) + 0.5;
@@ -1400,7 +1413,7 @@ public final class AutoTest {
     }
 
     private static void arenaWithBoss(MinecraftClient c, String structure, String bossStep, String boss, String name) {
-        arenaWithBoss(c, structure, bossStep, boss, name, "boss_spawn", 0.0);
+        arenaWithBoss(c, structure, bossStep, boss, name, "boss_spawn", 1.5);
     }
 
     /**
@@ -1417,7 +1430,11 @@ public final class AutoTest {
         cmd(c, "lewandivka teleport " + structure + " spot arena_entry", 20);
         settle(c, name + " (arena)", 2400);
         cmd(c, String.format(Locale.ROOT, "summon lewandivka:%s %.1f %.1f %.1f {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b}", boss, spawn.x() + 0.5, (double) spawn.y(), spawn.z() + 0.5), 60);
-        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, name);
+        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, ANY_SIDE, name);
+        // the model of a boss from the sides the first picture does not show: the three-quarter view, the side and the back
+        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, 45, name + "_three_quarters");
+        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, 90, name + "_side");
+        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, 180, name + "_back");
     }
 
     /**
@@ -1504,7 +1521,7 @@ public final class AutoTest {
 
         // back in the district: Garage No. 0 under it (the postgame)
         cmd(c, "lewandivka step post_free", 8);
-        interiorView(c, "garage0", "arena", "arena", -2.0, FAR_FIRST, "garage0_arena");
+        interiorView(c, "garage0", "arena", "arena", -2.0, FAR_FIRST, ANY_SIDE, "garage0_arena");
         interiorView(c, "garage0", "entry", "garage0_entry");
         interiorView(c, "garage0", "exit_ladder", "garage0_ladder");
         interiorView(c, "garage0", "reward", "garage0_reward");

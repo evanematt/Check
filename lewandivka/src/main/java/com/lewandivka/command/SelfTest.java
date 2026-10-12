@@ -3,10 +3,13 @@ package com.lewandivka.command;
 import com.lewandivka.LewandivkaMod;
 import com.lewandivka.campaign.Campaign;
 import com.lewandivka.campaign.PartyService;
+import com.lewandivka.core.campaign.QuestStep;
 import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.world.WorldPlan;
 import com.lewandivka.core.world.gen.ChromaPlan;
 import com.lewandivka.core.world.gen.DistrictPlan;
+import com.lewandivka.item.GameItems;
+import com.lewandivka.quest.ChromaService;
 import com.lewandivka.quest.NetherGate;
 import com.lewandivka.quest.QuestInventory;
 import com.lewandivka.quest.Travel;
@@ -26,9 +29,11 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameMode;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -44,7 +49,8 @@ import java.util.UUID;
  *   <li>the chunks the real dimensions generated are the chunks the plan paints (nothing else writes into the world);</li>
  *   <li>the first arrival is not inside a block and has floor under it;</li>
  *   <li>a player (a Fabric fake player with a dummy connection) can cross between the dimensions with the same
- *       {@link Travel} calls the story uses, the first time and the following times.</li>
+ *       {@link Travel} calls the story uses, the first time and the following times, and in creative mode with the Chroma
+ *       tablet at any time of the story.</li>
  * </ul>
  */
 public final class SelfTest {
@@ -304,6 +310,27 @@ public final class SelfTest {
         }
     }
 
+    /** A player in creative mode swallows the Chroma tablet and crosses on his own, whatever the story is at; in survival nothing happens. */
+    private static void creativeTablet(MinecraftServer server, ServerPlayerEntity player, Report report) {
+        if (Campaign.step(server) == QuestStep.CHROMA_TAKE) {
+            report.notes().add("the tablet in creative mode was not tried: the story is at the step of the tablet");
+            return;
+        }
+        player.setStackInHand(Hand.MAIN_HAND, GameItems.stack(QuestItems.TABLET));
+        player.interactionManager.changeGameMode(GameMode.SURVIVAL);
+        ChromaService.use(player, Hand.MAIN_HAND);
+        expectIn(player, Dimensions.DISTRICT_ID, "the tablet in survival mode must not take the player anywhere", report);
+        player.interactionManager.changeGameMode(GameMode.CREATIVE);
+        ChromaService.use(player, Hand.MAIN_HAND);
+        expectIn(player, Dimensions.CHROMA_ID, "the tablet in creative mode takes the player to Chromandivka", report);
+        ChromaService.use(player, Hand.MAIN_HAND);
+        expectIn(player, Dimensions.DISTRICT_ID, "the tablet in creative mode takes the player home", report);
+        if (player.getStackInHand(Hand.MAIN_HAND).isEmpty()) {
+            report.problems().add("the tablet was used up in creative mode");
+        }
+        player.interactionManager.changeGameMode(GameMode.SURVIVAL);
+    }
+
     private static void crossing(MinecraftServer server, ServerWorld district, ServerWorld chroma, Report report) {
         ServerWorld overworld = server.getOverworld();
         ServerPlayerEntity player = FakePlayer.get(overworld, new GameProfile(UUID.randomUUID(), "lewandivka-selftest"));
@@ -330,6 +357,7 @@ public final class SelfTest {
                 Travel.to(player, Dimensions.DISTRICT_ID, spawn);
                 expectIn(player, Dimensions.DISTRICT_ID, "back to the district", report);
             }
+            creativeTablet(server, player, report);
         } finally {
             player.getServerWorld().removePlayer(player, Entity.RemovalReason.DISCARDED);
         }

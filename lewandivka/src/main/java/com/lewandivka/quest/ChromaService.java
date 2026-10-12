@@ -6,7 +6,9 @@ import com.lewandivka.core.campaign.QuestStep;
 import com.lewandivka.core.quest.QuestItems;
 import com.lewandivka.core.story.Events;
 import com.lewandivka.core.sync.ChromaSync;
+import com.lewandivka.core.world.gen.DistrictPlan;
 import com.lewandivka.sound.GameSounds;
+import com.lewandivka.world.dimension.Dimensions;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.entity.boss.BossBar;
@@ -18,6 +20,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +28,8 @@ import java.util.UUID;
 
 /**
  * The Chroma tablet: the first player to swallow it starts five minutes in which everyone who takes part has to do the
- * same. Tablets are only removed when the whole party made it, so a failed attempt never costs the quest item.
+ * same. Tablets are only removed when the whole party made it, so a failed attempt never costs the quest item. A player in
+ * creative mode swallows it at any other time of the story to cross to the other world on his own, and back.
  */
 public final class ChromaService {
 
@@ -59,6 +63,9 @@ public final class ChromaService {
         MinecraftServer server = player.getServer();
         ItemStack stack = player.getStackInHand(hand);
         if (Campaign.step(server) != QuestStep.CHROMA_TAKE) {
+            if (player.isCreative()) {
+                return cross(player, stack);
+            }
             player.sendMessage(Text.translatable("message.lewandivka.wrong_stage"), true);
             return TypedActionResult.fail(stack);
         }
@@ -77,6 +84,24 @@ public final class ChromaService {
             complete(server);
         } else {
             refreshBar(server);
+        }
+        return TypedActionResult.success(stack);
+    }
+
+    /**
+     * Creative mode: the tablet takes the player to Chromandivka (the base) from every other world, and home to the district from
+     * Chromandivka. It is not used up and the story does not notice: only this player moves.
+     */
+    private static TypedActionResult<ItemStack> cross(ServerPlayerEntity player, ItemStack stack) {
+        player.getServerWorld().playSound(null, player.getBlockPos(), GameSounds.get("chroma.consume"), SoundCategory.PLAYERS, 1.0f, 1.0f);
+        if (Dimensions.CHROMA_ID.equals(Dimensions.idOf(player.getWorld()))) {
+            int[] s = DistrictPlan.get().spawn();
+            Travel.to(player, Dimensions.DISTRICT_ID, new Vec3d(s[0] + 0.5, s[1], s[2] + 0.5));
+            player.sendMessage(Text.translatable("message.lewandivka.chroma.creative_home"), true);
+        } else if (Travel.toMarker(player, "base:spawn")) {
+            player.sendMessage(Text.translatable("message.lewandivka.chroma.creative_cross"), true);
+        } else {
+            return TypedActionResult.fail(stack);
         }
         return TypedActionResult.success(stack);
     }

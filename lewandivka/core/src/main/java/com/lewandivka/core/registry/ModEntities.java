@@ -77,16 +77,16 @@ public final class ModEntities {
                     .stats(30, 0, 0.2).visual("humanoid", (String) v[0]).egg((int) v[3], (int) v[4]).anims(ModEntities.HUMANOID_ANIMS));
         }
         // ---- bosses ----
-        l.add(EntitySpec.of("garage_king", Role.BOSS, Group.MONSTER).name("Гаражний Король", "Garage King").size(2.6f, 3.4f).stats(300, 8, 0.22)
-                .armor(8, 1.0).visual("garage_king", "garage_king").egg(0xb05a20, 0x404040).boss().anims(ModEntities.BOSS_ANIMS));
-        l.add(EntitySpec.of("collar_collector", Role.BOSS, Group.MONSTER).name("Колекціонер Нашийників", "Collar Collector").size(1.0f, 2.8f).stats(260, 7, 0.26)
-                .armor(4, 1.0).visual("collar_collector", "collar_collector").egg(0x30204a, 0xc0a040).boss().anims(ModEntities.BOSS_ANIMS));
+        l.add(EntitySpec.of("garage_king", Role.BOSS, Group.MONSTER).name("Гаражний Король", "Garage King").size(2.2f, 3.4f).stats(300, 8, 0.22)
+                .armor(8, 1.0).visual("garage_king", "garage_king").egg(0xb02a6a, 0xe6e2d2).boss().anims(ModEntities.BOSS_ANIMS).scale(1.45f));
+        l.add(EntitySpec.of("collar_collector", Role.BOSS, Group.MONSTER).name("Колекціонер Нашийників", "Collar Collector").size(1.2f, 2.8f).stats(260, 7, 0.26)
+                .armor(4, 1.0).visual("collar_collector", "collar_collector").egg(0x6a2c3c, 0x2d6a62).boss().anims(ModEntities.BOSS_ANIMS).scale(1.3f));
         l.add(EntitySpec.of("lady_vortex", Role.BOSS, Group.MONSTER).name("Пані Вирва", "Lady Vortex").size(1.2f, 3.0f).stats(280, 7, 0.24)
                 .armor(4, 1.0).visual("lady_vortex", "lady_vortex").egg(0x2080c0, 0xe0e040).boss().anims(ModEntities.BOSS_ANIMS));
-        l.add(EntitySpec.of("conductor", Role.BOSS, Group.MONSTER).name("Кондуктор", "The Conductor").size(1.0f, 2.9f).stats(320, 8, 0.26)
-                .armor(6, 1.0).visual("conductor", "conductor").egg(0x202a40, 0xd0b050).boss().anims(ModEntities.BOSS_ANIMS));
-        l.add(EntitySpec.of("colorless_head", Role.BOSS, Group.MONSTER).name("Безбарвний Голова", "The Colorless Head").size(1.6f, 4.0f).stats(500, 10, 0.22)
-                .armor(8, 1.0).visual("colorless_head", "colorless_head").egg(0x808080, 0xe8e8e8).boss().anims(ModEntities.BOSS_ANIMS));
+        l.add(EntitySpec.of("conductor", Role.BOSS, Group.MONSTER).name("Кондуктор", "The Conductor").size(1.1f, 3.0f).stats(320, 8, 0.26)
+                .armor(6, 1.0).visual("conductor", "conductor").egg(0x0c0c10, 0xf0c030).boss().anims(ModEntities.BOSS_ANIMS).scale(1.15f));
+        l.add(EntitySpec.of("colorless_head", Role.BOSS, Group.MONSTER).name("Безбарвний Голова", "The Colorless Head").size(1.7f, 3.7f).stats(500, 10, 0.22)
+                .armor(8, 1.0).visual("colorless_head", "colorless_head").egg(0xc8c8b8, 0x2a6ad0).boss().anims(ModEntities.BOSS_ANIMS).scale(1.75f));
         // ---- boss helpers ----
         l.add(EntitySpec.of("mechanic_minion", Role.MINION, Group.MONSTER).name("Механік-міньйон", "Mechanic Minion").size(0.6f, 0.8f).stats(10, 2, 0.34)
                 .visual("minion", "mechanic_minion").egg(0xb05a20, 0xcccccc).anims("idle", "walk", "attack"));

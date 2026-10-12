@@ -1,6 +1,7 @@
 """Writes the GeckoLib geometry, animation and texture files of every entity."""
 from __future__ import annotations
 
+from . import entities_blockbench as BB
 from . import entities_bosses as B
 from . import entities_cats as K
 from . import entities_humanoid as H
@@ -9,11 +10,9 @@ from .spec import ASSETS, entities, write_json
 MODELS = {
     "humanoid": (H.humanoid_model, H.humanoid_animations),
     "cat": (K.cat_model, K.cat_animations),
-    "garage_king": (B.garage_king_model, B.garage_king_animations),
-    "collar_collector": (B.collar_collector_model, lambda: B.boss_animations("collar_collector", legs=False)),
+    # four bosses are models made in Blockbench (tools/models); Lady Vortex is built here
+    **{name: (lambda n=name: BB.model(n), lambda n=name: BB.animations(n)) for name in BB.SOURCES},
     "lady_vortex": (B.lady_vortex_model, B.lady_vortex_animations),
-    "conductor": (B.conductor_model, lambda: B.boss_animations("conductor")),
-    "colorless_head": (B.colorless_head_model, lambda: B.boss_animations("colorless_head", legs=False)),
     "minion": (B.minion_model, B.minion_animations),
     "leash_anchor": (B.anchor_model, B.anchor_animations),
     "tram": (lambda: B.tram_model("sky_tram"), lambda: B.tram_animations("tram")),
@@ -35,11 +34,8 @@ TEXTURES = {
         "vendor_gardener")},
     "chinazik": lambda: K.paint("chinazik"),
     "metadonna": lambda: K.paint("metadonna"),
-    "garage_king": B.paint_garage_king,
-    "collar_collector": B.paint_collar_collector,
+    **{name: (lambda n=name: BB.texture(n)) for name in BB.SOURCES},
     "lady_vortex": B.paint_lady_vortex,
-    "conductor": B.paint_conductor,
-    "colorless_head": B.paint_colorless_head,
     "mechanic_minion": B.paint_minion,
     "leash_anchor": B.paint_anchor,
     "arena_tram": lambda: B.paint_tram("arena_tram"),

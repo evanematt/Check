@@ -521,6 +521,8 @@
   "message.lewandivka.charge.passed": "Charge passed to %s",
   "message.lewandivka.charge.relay": "The relay returns the charge",
   "message.lewandivka.chroma.consumed": "%s swallowed Chroma",
+  "message.lewandivka.chroma.creative_cross": "The tablet dissolves and the world turns colourful: Chromandivka",
+  "message.lewandivka.chroma.creative_home": "The tablet dissolves: back to Lewandivka",
   "message.lewandivka.chroma.expired": "Time ran out. The tablets are untouched.",
   "message.lewandivka.chroma.need_all": "Not everyone has swallowed it yet",
   "message.lewandivka.chroma.start": "Chroma: you have five minutes. Swallow it together.",

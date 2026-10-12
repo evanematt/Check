@@ -37,6 +37,11 @@ world is decided in `core`** and covered by tests; the glue only turns decisions
 Block properties of the enum kind are stored as integer indices in the blockstates, so the Java side and the generator
 cannot drift apart.
 
+Four of the five bosses are not built by the generator but made in Blockbench: `tools/models/*.bbmodel` (as supplied) are turned into
+GeckoLib geometry by `tools/resgen/blockbench.py` (x is mirrored the way GeckoLib reads a cube, the rotations and the east and west faces
+follow; the rules are in its header and were checked against the pictures that came with the models by a renderer that builds the quads the
+way GeckoLib does). The animations of those bosses are written by `tools/resgen/entities_blockbench.py` on top of the nine every boss has.
+
 ## 3. The campaign
 
 * `CampaignModel` = one `WorldProgress` (step, counter, flags, defeated bosses, encounter records, ring fragments,

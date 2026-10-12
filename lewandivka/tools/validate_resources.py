@@ -209,6 +209,13 @@ def check_entities() -> None:
             bad(f"entity {e['id']}: texture {w}x{h} does not match model {desc['texture_width']}x{desc['texture_height']}")
         for bone in geo["minecraft:geometry"][0]["bones"]:
             for c in bone.get("cubes", []):
+                if isinstance(c["uv"], dict):
+                    # a picture for every face (the models made in Blockbench): both corners of every face must be on the texture
+                    for face, f in c["uv"].items():
+                        (u, v), (du, dv) = f["uv"], f["uv_size"]
+                        if min(u, u + du, v, v + dv) < 0 or max(u, u + du) > w or max(v, v + dv) > h:
+                            bad(f"entity {e['id']}: the {face} face of a cube of bone {bone['name']} has UV outside the texture")
+                    continue
                 u, v = c["uv"]
                 sx, sy, sz = c["size"]
                 if u < 0 or v < 0 or u + 2 * (sx + sz) > w or v + sy + sz > h:

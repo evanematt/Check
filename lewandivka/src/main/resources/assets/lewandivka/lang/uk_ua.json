@@ -521,6 +521,8 @@
   "message.lewandivka.charge.passed": "Заряд передано: %s",
   "message.lewandivka.charge.relay": "Реле повертає заряд",
   "message.lewandivka.chroma.consumed": "%s проковтнув(ла) Хрому",
+  "message.lewandivka.chroma.creative_cross": "Таблетка розчиняється, і світ стає кольоровим: Хромандівка",
+  "message.lewandivka.chroma.creative_home": "Таблетка розчиняється: назад до Левандівки",
   "message.lewandivka.chroma.expired": "Час вийшов. Таблетки лишилися цілі.",
   "message.lewandivka.chroma.need_all": "Ще не всі проковтнули",
   "message.lewandivka.chroma.start": "Хрома: у вас п'ять хвилин. Проковтніть разом.",

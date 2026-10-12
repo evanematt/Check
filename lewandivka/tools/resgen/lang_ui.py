@@ -125,6 +125,8 @@ UI = {
     "message.lewandivka.chroma.consumed": ("%s проковтнув(ла) Хрому", "%s swallowed Chroma"),
     "message.lewandivka.chroma.expired": ("Час вийшов. Таблетки лишилися цілі.", "Time ran out. The tablets are untouched."),
     "message.lewandivka.chroma.need_all": ("Ще не всі проковтнули", "Not everyone has swallowed it yet"),
+    "message.lewandivka.chroma.creative_cross": ("Таблетка розчиняється, і світ стає кольоровим: Хромандівка", "The tablet dissolves and the world turns colourful: Chromandivka"),
+    "message.lewandivka.chroma.creative_home": ("Таблетка розчиняється: назад до Левандівки", "The tablet dissolves: back to Lewandivka"),
     # ---- Chromandivka events
     "message.lewandivka.pedestal.filled": ("Постамент приймає предмет (%s/%s)", "The pedestal accepts the item (%s/%s)"),
     "message.lewandivka.portal.open": ("Кольоровий портал відчинено", "The Colored Portal is open"),

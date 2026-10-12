@@ -129,6 +129,44 @@
       ]
      }
     },
+    "leg_left": {
+     "rotation": {
+      "0": [
+       -24,
+       0,
+       0
+      ],
+      "0.6": [
+       24,
+       0,
+       0
+      ],
+      "1.2": [
+       -24,
+       0,
+       0
+      ]
+     }
+    },
+    "leg_right": {
+     "rotation": {
+      "0": [
+       24,
+       0,
+       0
+      ],
+      "0.6": [
+       -24,
+       0,
+       0
+      ],
+      "1.2": [
+       24,
+       0,
+       0
+      ]
+     }
+    },
     "body": {
      "position": {
       "0": [
@@ -703,60 +741,6 @@
      }
     }
    }
-  },
-  "animation.garage_king.core_open": {
-   "animation_length": 1.0,
-   "bones": {
-    "core": {
-     "scale": {
-      "0": [
-       1,
-       1,
-       1
-      ],
-      "1.0": [
-       1.35,
-       1.35,
-       1.35
-      ]
-     }
-    }
-   },
-   "loop": "hold_on_last_frame"
-  },
-  "animation.garage_king.wheels": {
-   "animation_length": 1.0,
-   "bones": {
-    "wheel_l": {
-     "rotation": {
-      "0": [
-       0,
-       0,
-       0
-      ],
-      "1.0": [
-       360,
-       0,
-       0
-      ]
-     }
-    },
-    "wheel_r": {
-     "rotation": {
-      "0": [
-       0,
-       0,
-       0
-      ],
-      "1.0": [
-       360,
-       0,
-       0
-      ]
-     }
-    }
-   },
-   "loop": true
   }
  }
 }
