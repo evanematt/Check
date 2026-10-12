@@ -1417,24 +1417,26 @@ public final class AutoTest {
     }
 
     /**
-     * A boss in its arena: the creature is made at the marker of the boss (it does not move or fall: the test only looks at it) and photographed
-     * from a vantage point on {@code groundName}, looking {@code lift} blocks above the marker of the boss.
+     * A boss in its arena: the creature is made above the marker of the boss, as high as the ground marker {@code groundName} (it does not move
+     * or fall: the test only looks at it; the Colorless Head hovers six blocks up in the fight, here it stands on the floor, where a player can
+     * see it from the side) and photographed from a vantage point on that ground, looking {@code lift} blocks above it.
      */
     private static void arenaWithBoss(MinecraftClient c, String structure, String bossStep, String boss, String name, String groundName, double lift) {
         Marker spawn = Structures.marker(structure + ":boss_spawn");
-        if (spawn == null) {
-            add("no boss place " + structure, 1, () -> expect("the plan has the marker " + structure + ":boss_spawn", false, "no such marker"));
+        Marker ground = Structures.marker(structure + ":" + groundName);
+        if (spawn == null || ground == null) {
+            add("no boss place " + structure, 1, () -> expect("the plan has the markers " + structure + ":boss_spawn and " + structure + ":" + groundName, false, "no such marker"));
             return;
         }
         cmd(c, "lewandivka step " + bossStep, 10);
         cmd(c, "lewandivka teleport " + structure + " spot arena_entry", 20);
         settle(c, name + " (arena)", 2400);
-        cmd(c, String.format(Locale.ROOT, "summon lewandivka:%s %.1f %.1f %.1f {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b}", boss, spawn.x() + 0.5, (double) spawn.y(), spawn.z() + 0.5), 60);
-        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, ANY_SIDE, name);
+        cmd(c, String.format(Locale.ROOT, "summon lewandivka:%s %.1f %.1f %.1f {NoAI:1b,NoGravity:1b,Silent:1b,PersistenceRequired:1b}", boss, spawn.x() + 0.5, (double) ground.y(), spawn.z() + 0.5), 60);
+        interiorView(c, structure, groundName, groundName, lift, NEAR_FIRST, ANY_SIDE, name);
         // the model of a boss from the sides the first picture does not show: the three-quarter view, the side and the back
-        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, 45, name + "_three_quarters");
-        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, 90, name + "_side");
-        interiorView(c, structure, "boss_spawn", groundName, lift, NEAR_FIRST, 180, name + "_back");
+        interiorView(c, structure, groundName, groundName, lift, NEAR_FIRST, 45, name + "_three_quarters");
+        interiorView(c, structure, groundName, groundName, lift, NEAR_FIRST, 90, name + "_side");
+        interiorView(c, structure, groundName, groundName, lift, NEAR_FIRST, 180, name + "_back");
     }
 
     /**
