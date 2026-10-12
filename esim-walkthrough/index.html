@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>eSIM demo walkthrough — design variants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#FAF9F6; --surface:#fff; --ink:#1E1B2E; --muted:#6B6780; --line:#E7E4EF;
+  --indigo:#3B2F8F; --indigo-700:#2D2470; --indigo-900:#1B1736; --lav:#EDEBFF; --lav-2:#DCD8FA;
+  --amber:#FFB524; --amber-ink:#3A2500; --amber-soft:#FFF4D9; --amber-line:#F2C46A;
+  --ok:#0B6B52; --ok-soft:#E3F6EE;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+h1,h2,h3,h4,p,ul{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding:40px 20px 80px}
+
+/* ---------- page chrome ---------- */
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--indigo)}
+.head h1{font-size:34px;line-height:1.1;letter-spacing:-.02em;margin:8px 0 12px;font-weight:800}
+.lede{max-width:70ch;color:var(--muted);font-size:16px;line-height:1.55}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:18px;font-size:13px;font-weight:600}
+.flow span{padding:6px 10px;border-radius:999px;background:#F0EFEA;border:1px solid #DAD8D0;color:#3E3C37}
+.flow span.p{background:var(--lav);border-color:#C9C3F3;color:var(--indigo)}
+.flow span.g{background:var(--amber-soft);border-color:var(--amber-line);color:#6B4300}
+.flow i{font-style:normal;color:#A9A6B8}
+
+.sec-title{font-size:20px;font-weight:800;letter-spacing:-.01em;margin:56px 0 6px}
+.sec-sub{color:var(--muted);font-size:14.5px;max-width:70ch;line-height:1.5;margin-bottom:18px}
+
+.vcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:32px}
+.vcard{text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:6px;transition:border-color .15s,box-shadow .15s}
+.vcard:hover{border-color:#C4BFE8}
+.vcard[aria-checked="true"]{border-color:var(--indigo);box-shadow:0 0 0 3px var(--lav)}
+.vcard:focus-visible,.seg button:focus-visible,.frame:focus-visible,.btn-page:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+.vcard .k{display:flex;align-items:center;gap:10px}
+.vcard .letter{width:28px;height:28px;border-radius:9px;background:var(--lav);color:var(--indigo);font-weight:800;display:grid;place-items:center;font-size:14px}
+.vcard[aria-checked="true"] .letter{background:var(--indigo);color:#fff}
+.vcard h3{font-size:16px;font-weight:800}
+.vcard .tag{font-size:12.5px;color:var(--indigo);font-weight:700}
+.vcard p{font-size:13.5px;line-height:1.45;color:var(--muted)}
+
+.controls{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;margin-top:26px}
+.controls label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-right:8px}
+.seg{display:inline-flex;background:#EFEDE7;border-radius:12px;padding:3px}
+.seg button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font-size:13.5px;font-weight:600;color:#55526A}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--indigo);box-shadow:0 1px 3px rgba(30,27,46,.15)}
+.btn-page{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:9px 14px;font-size:13.5px;font-weight:700;color:var(--indigo);display:inline-flex;gap:6px;align-items:center}
+
+.stage{display:grid;grid-template-columns:392px 1fr;gap:40px;margin-top:26px;align-items:start}
+.live-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.cap{font-size:14px;font-weight:600;color:var(--indigo);background:var(--lav);padding:8px 14px;border-radius:999px;text-align:center;max-width:360px}
+.notes{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px 28px}
+.notes h2{font-size:24px;font-weight:800;letter-spacing:-.01em}
+.notes .tagline{color:var(--indigo);font-weight:700;margin:2px 0 10px}
+.notes .blurb{color:var(--muted);line-height:1.55;font-size:15px}
+.notes h4{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px}
+.brief{list-style:none;padding:0;display:grid;gap:10px}
+.brief li{display:grid;grid-template-columns:150px 1fr;gap:12px;font-size:14px;line-height:1.45}
+.brief b{font-weight:700}
+.pm{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.pm ul{padding:0;list-style:none;display:grid;gap:8px;font-size:14px;line-height:1.45}
+.pm li{padding-left:18px;position:relative}
+.pm .plus li::before{content:"+";position:absolute;left:0;color:var(--ok);font-weight:800}
+.pm .minus li::before{content:"–";position:absolute;left:0;color:#B4540A;font-weight:800}
+
+.film{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:22px 16px}
+.frame{border:0;background:transparent;padding:0;text-align:left;display:flex;flex-direction:column;gap:8px;border-radius:16px}
+.frame .mh{width:202px;height:417px;position:relative;border-radius:18px;transition:transform .15s}
+.frame:hover .mh{transform:translateY(-3px)}
+.frame.on .mh{outline:3px solid var(--indigo);outline-offset:4px}
+.frame .fl{font-size:13px;font-weight:700}
+.frame .fs{font-size:12.5px;color:var(--muted);margin-top:-6px;line-height:1.35;max-width:200px}
+.scaled{transform:scale(.56);transform-origin:0 0;position:absolute;left:0;top:0}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:18px;background:#fff}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+th,td{padding:13px 16px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);line-height:1.45}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:#FCFBF9}
+td:first-child{font-weight:700;width:150px}
+tr:last-child td{border-bottom:0}
+.dots{letter-spacing:3px;color:var(--indigo);font-size:15px}
+.dots s{text-decoration:none;color:#D3CFE6}
+
+.decide{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+.dcard h3{font-size:16px;font-weight:800;margin-bottom:8px}
+.dcard ul{padding-left:18px;font-size:14px;line-height:1.5;color:#3D3A52;display:grid;gap:4px}
+.reco{margin-top:14px;background:var(--lav);border:1.5px solid #C9C3F3;border-radius:18px;padding:20px 22px}
+.reco h3{font-size:16px;font-weight:800;color:var(--indigo);margin-bottom:8px}
+.reco p,.reco li{font-size:14.5px;line-height:1.55}
+.reco ul{padding-left:18px;margin-top:6px;display:grid;gap:4px}
+.foot{margin-top:40px;font-size:12.5px;color:var(--muted)}
+
+@media (max-width:980px){
+  .stage{grid-template-columns:1fr}
+  .vcards,.decide,.pm{grid-template-columns:1fr}
+  .brief li{grid-template-columns:1fr;gap:2px}
+}
+@media (max-width:420px){ .live-wrap .phone-host{zoom:.88} .head h1{font-size:28px} }
+
+/* ======================================================================
+   PHONE (the product UI being designed)
+   ====================================================================== */
+.phone{position:relative;width:360px;height:744px;border-radius:52px;background:#0C0C10;padding:9px;box-shadow:0 30px 60px -20px rgba(27,23,54,.45),0 0 0 1px rgba(0,0,0,.25)}
+.mini{pointer-events:none}
+.mini *{animation:none!important;transition:none!important}
+.device{position:relative;width:100%;height:100%;border-radius:43px;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;background:linear-gradient(180deg,#2D2468 0%,#1B1736 62%);color:var(--ink);font-size:14px}
+.sb{height:36px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 26px 0;color:#fff;font-size:13px;font-weight:700;position:relative;z-index:30}
+.sb .d{display:flex;gap:3px}.sb .d i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.8)}
+
+.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;animation:in .25s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hdr{flex:none;padding:4px 18px 16px;color:#fff;display:flex;align-items:center;gap:12px}
+.hdr.tall{flex-direction:column;align-items:stretch;gap:12px;padding-bottom:20px}
+.hdr .toprow{display:flex;align-items:center;justify-content:space-between}
+.acct{display:flex;align-items:center;gap:6px;font-size:20px;font-weight:700}
+.back{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;flex:none}
+.hdr h2{font-size:21px;font-weight:700;letter-spacing:-.01em;line-height:1.15}
+.hdr .sub{font-size:12.5px;color:rgba(255,255,255,.7);margin-top:2px}
+.bal .lbl{font-size:12.5px;color:rgba(255,255,255,.7)}
+.bal .amt{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.bal small{font-size:15px;font-weight:700;letter-spacing:.02em}
+
+.sheet{flex:1;min-height:0;background:#fff;border-radius:28px 28px 0 0;padding:18px 18px 0;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
+.sec{font-size:15px;font-weight:700}
+.muted{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:6px;min-height:88px;background:#fff}
+.tile b{font-size:14px;font-weight:700}.tile span{font-size:12px;color:var(--muted)}
+.itile{width:34px;height:34px;border-radius:11px;background:var(--lav);color:var(--indigo);display:grid;place-items:center;flex:none}
+.card{border:1px solid var(--line);border-radius:18px;padding:12px 14px;background:#fff}
+.usage{display:grid;gap:10px}
+.u .ul{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.u .ul b{font-weight:700}
+.bar{height:6px;border-radius:3px;background:#EEECF6;overflow:hidden}.bar i{display:block;height:100%;background:var(--indigo);border-radius:3px}
+.tabbar{margin:auto -18px 0;padding:8px 12px 16px;border-top:1px solid var(--line);display:flex;justify-content:space-around;background:#fff}
+.tb{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#85819A;min-width:60px}
+.tb.on{color:var(--indigo)}
+
+.numcard{border:1px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:10px;background:#fff}
+.numcard .t{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.num{font-size:20px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:11px;background:#F2F1F6;color:#4A4760;font-size:11.5px;font-weight:600}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.ro{background:var(--amber-soft);color:#7A4B00}
+.chip.lav{background:var(--lav);color:var(--indigo)}
+.add{border:1.5px dashed #CFCBE3;border-radius:18px;height:52px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--indigo);font-weight:700;font-size:14px}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sum .l{font-size:12px;color:var(--muted)}.sum .v{font-size:18px;font-weight:800;margin-top:2px}
+.rows{display:grid;gap:8px}
+.row{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:14px;min-height:54px;background:#fff;border:1px solid var(--line);font-weight:600;font-size:14.5px}
+.row .grow{flex:1}
+.row small{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:1px}
+.row .chev{color:#A4A0B8}
+.badge{background:var(--lav);color:var(--indigo);font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px}
+.simcard{display:flex;gap:12px;align-items:center}
+.checks{display:grid;gap:8px}
+.checks div{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+.checks .ci{width:22px;height:22px;border-radius:50%;background:var(--lav);color:var(--indigo);display:grid;place-items:center;flex:none}
+.warn{background:#FFF1EC;border:1px solid #F7CDBF;color:#7A2B12;border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.4}
+.cta{margin:auto -18px 0;padding:12px 18px 20px;border-top:1px solid var(--line);background:#fff;display:grid;gap:6px}
+.cta .hint{text-align:center;font-size:12px;color:var(--muted)}
+.btn{border:0;border-radius:999px;height:52px;padding:0 20px;font-weight:700;font-size:15.5px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--indigo);color:#fff}
+.btn.soft{background:var(--lav);color:var(--indigo)}
+.btn.wide{width:100%}
+.btn.demo{position:relative;outline:2px dashed var(--amber);outline-offset:3px}
+.btn.demo .tagd{position:absolute;right:14px;top:-9px;background:var(--amber);color:var(--amber-ink);font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:6px}
+
+/* ---- What's new entry sheet (from the product screenshot) ---- */
+.scrim{position:absolute;inset:0;background:rgba(10,8,30,.58);z-index:20}
+.wn{position:absolute;left:0;right:0;bottom:0;top:140px;z-index:21;background:#fff;border-radius:28px 28px 0 0;padding:20px 20px 16px;display:flex;flex-direction:column;animation:up .3s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.wn-top{display:flex;justify-content:space-between;align-items:flex-start}
+.mega{width:52px;height:52px;border-radius:16px;background:var(--indigo);color:#fff;display:grid;place-items:center}
+.xbtn{border:0;background:transparent;width:44px;height:44px;margin:-8px -10px 0 0;display:grid;place-items:center;color:var(--ink)}
+.wn h2{font-size:30px;font-weight:700;letter-spacing:-.02em;margin-top:12px}
+.wn .ver{color:#8A869A;font-size:14px;margin-top:2px}
+.wn h4{font-size:15px;font-weight:700;margin-top:16px}
+.wn ul{list-style:none;padding:0;margin:10px 0 14px;display:grid;gap:12px}
+.wn li{position:relative;padding-left:20px;font-size:15px;line-height:1.35;color:#3D3A52;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.wn li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:50%;background:#8A869A}
+.pill{border:0;background:var(--lav);color:var(--indigo);font-weight:700;font-size:13.5px;height:34px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;position:relative}
+.pill::before{content:"";position:absolute;inset:-9px -4px}
+.pill.pulse::after{content:"";position:absolute;inset:-4px;border-radius:999px;border:2px solid var(--indigo);animation:pulse 1.6s ease-out infinite}
+.wn .btn{margin-top:auto}
+.scrolldown{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);display:none;place-items:center}
+
+/* ---- tour layer ---- */
+.tour{position:absolute;inset:0;z-index:10;pointer-events:none}
+.blocker{position:absolute;inset:0;pointer-events:auto}
+.spot{position:absolute;border-radius:16px;box-shadow:0 0 0 1200px var(--dim,rgba(20,14,50,.74));pointer-events:none}
+.spot::after{content:"";position:absolute;inset:-5px;border-radius:inherit;border:2px solid #fff;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.95}100%{transform:scale(1.1);opacity:0}}
+.hit{position:absolute;border:0;background:transparent;pointer-events:auto;cursor:pointer}
+.hit:focus-visible{outline:3px solid var(--amber);outline-offset:4px}
+.nudge{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.tapfx{position:absolute;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 0 0 0 rgba(255,255,255,.7);animation:tapfx .52s ease-out forwards;z-index:40;pointer-events:none}
+@keyframes tapfx{0%{transform:scale(.4);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(1.5);opacity:0;box-shadow:0 0 0 14px rgba(255,255,255,0)}}
+
+/* ---- A: strip + anchored card ---- */
+.bannerA{flex:none;position:relative;z-index:30;height:42px;display:flex;align-items:center;gap:10px;padding:0 10px 0 14px;background:var(--amber);color:var(--amber-ink)}
+.bannerA .bi{flex:none;display:grid;place-items:center}
+.bannerA .bt{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.bannerA .b1{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+.bannerA .b2{font-size:12px;font-weight:600;white-space:nowrap}
+.exit{margin-left:auto;position:relative;flex:none;display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 11px;border:0;border-radius:14px;background:var(--amber-ink);color:#FFE7A8;font-weight:700;font-size:12.5px}
+.exit::before{content:"";position:absolute;inset:-8px -6px}
+.exit:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.tip{position:absolute;z-index:12;width:300px;background:#fff;border-radius:18px;padding:14px 16px 12px;box-shadow:0 14px 36px rgba(10,6,40,.45);pointer-events:auto;animation:in .3s .1s both}
+.tip::before{content:"";position:absolute;left:var(--ax,50%);width:14px;height:14px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:3px}
+.tip.below::before{top:-6px}.tip.above::before{bottom:-6px}
+.step{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--indigo);display:flex;justify-content:space-between;align-items:center}
+.sdots{display:flex;gap:4px}.sdots i{width:6px;height:6px;border-radius:3px;background:#D8D4EE}.sdots i.on{width:18px;background:var(--indigo)}.sdots i.done{background:var(--indigo)}
+.tip h3,.dk h3,.bub h3{font-size:16px;font-weight:800;letter-spacing:-.01em;margin:6px 0 3px;line-height:1.25}
+.tip p,.dk p,.bub p{font-size:13.5px;line-height:1.42;color:#4A4760}
+.tip .hint{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--indigo)}
+.tip .hint .lnk{margin-left:auto;border:0;background:none;color:#6B6780;font-weight:700;font-size:12.5px;padding:8px 0 8px 10px;position:relative}
+
+/* ---- B: bottom dock ---- */
+.dock{position:absolute;left:8px;right:8px;z-index:30;background:#fff;border-radius:24px;box-shadow:0 14px 40px rgba(10,6,40,.5),0 0 0 1px rgba(0,0,0,.06);overflow:hidden;pointer-events:auto;animation:in .3s both}
+.dock.bottom{bottom:10px}.dock.top{top:42px}
+.dkb{background:var(--amber);color:var(--amber-ink);padding:9px 14px;display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.dkb b{font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:10.5px}
+.dkb .bi{display:grid;place-items:center}
+.dk{padding:12px 16px 12px}
+.dk .actions{display:flex;align-items:center;gap:8px;margin-top:12px}
+.ghost{border:0;background:transparent;color:#6B6780;font-weight:700;font-size:13px;height:44px;padding:0 8px;display:inline-flex;align-items:center;gap:5px;border-radius:12px;margin-left:-8px}
+.sq{width:44px;height:44px;border-radius:50%;border:0;background:var(--lav);color:var(--indigo);display:grid;place-items:center}
+.nx{height:44px;padding:0 18px;border-radius:999px;border:0;background:var(--indigo);color:#fff;font-weight:700;font-size:14.5px;display:inline-flex;align-items:center;gap:6px}
+.endmodal{position:absolute;left:14px;right:14px;top:0;bottom:0;margin:auto;height:fit-content;z-index:25;background:#fff;border-radius:26px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5);animation:in .3s both}
+.endmodal .em{padding:20px 20px 18px;text-align:center}
+.endmodal .end-icon{margin:0 auto 10px}
+.endmodal .facts{text-align:left}
+
+/* ---- C: frame + ribbon + bubble ---- */
+.frame4{position:absolute;inset:0;z-index:40;pointer-events:none;border-radius:43px;box-shadow:inset 0 0 0 4px var(--amber)}
+.ribbonC{flex:none;position:relative;z-index:30;height:34px;display:flex;align-items:center;gap:7px;padding:0 10px 0 14px;color:var(--amber-ink);font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:repeating-linear-gradient(-45deg,#FFB524 0 12px,#FFC95A 12px 24px)}
+.ribbonC .exit{height:26px;font-size:12px;letter-spacing:0;text-transform:none}
+.bub{position:absolute;z-index:12;width:276px;background:#fff;border-radius:18px;padding:14px 14px 12px;box-shadow:0 14px 36px rgba(10,6,40,.45);pointer-events:auto;animation:in .3s .1s both}
+.bub::before{content:"";position:absolute;left:var(--ax,50%);width:14px;height:14px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:3px}
+.bub.below::before{top:-6px}.bub.above::before{bottom:-6px}
+.bub .foot2{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px}
+.bub .nx{height:40px;padding:0 14px;font-size:13.5px}
+.bub .bk{border:0;background:none;color:#6B6780;font-weight:700;font-size:13px;height:40px;padding:0 6px}
+.tapbadge{position:absolute;z-index:13;background:var(--amber);color:var(--amber-ink);font-weight:800;font-size:11.5px;letter-spacing:.04em;padding:5px 9px 5px 7px;border-radius:999px;display:flex;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(0,0,0,.3);pointer-events:none;animation:bob 1.1s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.recap{display:grid;gap:6px}
+.recap div{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600}
+.recap .n{width:22px;height:22px;border-radius:50%;background:var(--lav);color:var(--indigo);font-size:11.5px;font-weight:800;display:grid;place-items:center;flex:none}
+.recap .m{color:var(--muted);font-weight:500}
+.recap .z{background:var(--amber-soft);color:#7A4B00}
+
+/* ---- end card (shared) ---- */
+.endsheet{position:absolute;left:0;right:0;bottom:0;z-index:25;background:#fff;border-radius:28px 28px 0 0;padding:22px 20px 22px;animation:up .3s ease-out}
+.end-icon{width:52px;height:52px;border-radius:16px;background:var(--amber-soft);color:#8A5200;display:grid;place-items:center;border:1.5px solid var(--amber-line)}
+.end-title{font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:12px 0 10px}
+.facts{list-style:none;padding:0;display:grid;gap:7px;margin:0 0 16px}
+.facts li{position:relative;padding-left:18px;font-size:14px;color:#3D3A52}
+.facts li::before{content:"";position:absolute;left:0;top:7px;width:7px;height:7px;border-radius:50%;background:#8A869A}
+.end-actions{display:grid;gap:8px}
+.end-actions .btn{height:48px;font-size:15px}
+
+.toast{position:absolute;left:16px;right:16px;bottom:88px;z-index:50;background:#1E1B2E;color:#fff;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.35;display:flex;gap:10px;align-items:center;animation:toast 3.2s forwards}
+@keyframes toast{0%{opacity:0;transform:translateY(10px)}10%,85%{opacity:1;transform:none}100%{opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .spot::after{opacity:.9}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="head">
+    <p class="eyebrow">Design variants · Demo walkthrough</p>
+    <h1>“Show me” — replace SIM with eSIM</h1>
+    <p class="lede">Three ways to run the scripted tour that starts from the <em>What’s new</em> sheet. All three drive the same real-looking screens, so you can compare how each one <em>feels</em>, not just how it looks. Pick a variant, play it in the phone, or jump to any step in the filmstrip.</p>
+    <div class="flow" aria-label="Tour path">
+      <span>What’s new → “Show me”</span><i>›</i><span class="p">Home</span><i>›</i><span class="p">Numbers</span><i>›</i><span class="p">Number detail</span><i>›</i><span class="p">SIM settings</span><i>›</i><span class="p">eSIM replacement</span><i>›</i><span class="g">Demo complete</span>
+    </div>
+  </header>
+
+  <div class="vcards" id="vcards" role="radiogroup" aria-label="Design variant"></div>
+
+  <div class="controls">
+    <div><label>Demo data</label>
+      <span class="seg" id="dataSeg" role="group" aria-label="Demo data">
+        <button data-d="demo" aria-pressed="true">Placeholder number</button>
+        <button data-d="real" aria-pressed="false">My number · read-only</button>
+      </span>
+    </div>
+    <button class="btn-page" id="restart" type="button">↺ Restart from “What’s new”</button>
+  </div>
+
+  <section class="stage">
+    <div class="live-wrap">
+      <div class="phone-host" id="live"></div>
+      <div class="cap" id="cap" role="status" aria-live="polite"></div>
+    </div>
+    <aside class="notes" id="notes"></aside>
+  </section>
+
+  <h2 class="sec-title">The whole path, step by step</h2>
+  <p class="sec-sub">Same variant, every frame. Click a frame to load it in the phone above.</p>
+  <div class="film" id="film"></div>
+
+  <h2 class="sec-title">Side by side</h2>
+  <p class="sec-sub">How each variant answers the brief. Dot ratings are my judgement, not measured.</p>
+  <div class="tbl-wrap"><table id="cmp"></table></div>
+
+  <h2 class="sec-title">Product call: which data does the demo use?</h2>
+  <p class="sec-sub">Toggle “Demo data” above to see both in any variant. The label chips change; nothing else does.</p>
+  <div class="decide">
+    <div class="dcard"><h3>(a) The user’s own number, read-only</h3>
+      <ul><li>Most relevant — they see <em>their</em> line and SIM</li>
+      <li>Needs airtight guarantees: every write path must be unreachable, not just the last button</li>
+      <li>Personal numbers appear in screenshots and screen-shares sent to support</li>
+      <li>Breaks for users with no eligible line (already eSIM, corporate, blocked)</li></ul></div>
+    <div class="dcard"><h3>(b) A placeholder number</h3>
+      <ul><li>Safe by construction — no real account data on screen</li>
+      <li>Identical for every user, so the script never dead-ends</li>
+      <li>Less concrete; “Demo number” tags carry the message</li>
+      <li>Needs a fixtures layer, which also makes the tour testable</li></ul></div>
+  </div>
+  <div class="reco">
+    <h3>Recommendation</h3>
+    <p><strong>Variant A’s strict tap-through, plus two things borrowed from C</strong> — the read-only/“nothing changed” cues and the three-facts end card — on <strong>placeholder data</strong>.</p>
+    <ul>
+      <li>Build demo mode as a flag that swaps the data layer for fixtures, so there is no write call to guard. Revisit own-number only after that layer has shipped.</li>
+      <li>Keep B’s Next/Back as the fallback when a screen reader or switch control is active, since tapping a spotlit element is the hard part there.</li>
+      <li>Store the launch route when the tour starts; Exit returns to it. Here it is always Home.</li>
+    </ul>
+  </div>
+  <p class="foot">All numbers, names and balances are fictional. Prototype only — no network calls.</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- icons ---------- */
+const P={
+ back:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',down:'<path d="m6 9 6 6 6-6"/>',
+ bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+ mega:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+ flask:'<path d="M10 2v7.5a2 2 0 0 1-.2.9L4.7 20.6a1 1 0 0 0 .9 1.4h12.8a1 1 0 0 0 .9-1.4L14.2 10.4a2 2 0 0 1-.2-.9V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>',
+ lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ pointer:'<path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+ x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>',arrow:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',arrowdown:'<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>',
+ home:'<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+ wallet:'<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+ grid:'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+ user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+ phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
+ tag:'<path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r=".6" fill="currentColor"/>',
+ help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ ban:'<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+ key:'<path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
+ sim:'<path d="M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><rect x="9" y="12" width="6" height="6" rx="1"/>',
+ wifi:'<path d="M12 20h.01"/><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.9a10 10 0 0 1 14 0"/><path d="M8.5 16.4a5 5 0 0 1 7 0"/>',
+ smartphone:'<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/>',
+ plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',
+ replay:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+ pkg:'<path d="m7.5 4.3 9 5.2"/><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+ plus2:'<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>'
+};
+const ic=(n,s=20)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+const it=n=>`<span class="itile">${ic(n,18)}</span>`;
+
+/* ---------- content ---------- */
+const D={
+  demo:{acct:'Demo account',num:'050 000 00 00',num2:'055 000 00 01',tag:'Demo number',bal:'24.60',iccid:'8994 01•• •••• 0000'},
+  real:{acct:'My account',num:'050 482 19 36',num2:'055 214 70 08',tag:'Your number',bal:'18.35',iccid:'8994 01•• •••• 3321'}
+};
+const STEPS=[
+ {screen:'home',target:'numbers',r:18,pad:5,title:'Open “My numbers”',body:'Every line on your account lives here. Start with this tile.',hint:'Tap “My numbers”'},
+ {screen:'numbers',target:'num1',r:20,pad:5,title:'Pick a line',body:'Choose the number whose physical SIM you want to swap for an eSIM.',hint:'Tap the number'},
+ {screen:'detail',target:'sim',r:14,pad:4,title:'Open SIM settings',body:'Everything about this number’s SIM card lives in this row.',hint:'Tap “SIM settings”'},
+ {screen:'sim',target:'esim',r:14,pad:4,title:'Choose “Replace with eSIM”',body:'Swap the physical card for a digital one, with no shop visit.',hint:'Tap “Replace with eSIM”'},
+ {screen:'esim',target:'confirm',r:26,pad:6,title:'Confirm the replacement',body:'In the real flow this button replaces your SIM. In the demo it does nothing, so go ahead and try it.',hint:'Tap “Confirm (demo)”'}
+];
+const FRAMES=[
+ {s:-1,l:'Entry · What’s new',d:'Sheet opens over Home. “Show me” starts the tour.'},
+ {s:0,l:'1 · Home',d:'Banner appears the moment the tour starts.'},
+ {s:1,l:'2 · Numbers',d:'Navigated to the real list.'},
+ {s:2,l:'3 · Number detail',d:'Spotlight on the SIM settings row.'},
+ {s:3,l:'4 · SIM settings',d:'Spotlight on Replace with eSIM.'},
+ {s:4,l:'5 · eSIM replacement',d:'Terminal button is relabeled Confirm (demo).'},
+ {s:5,l:'End · Demo complete',d:'Neutral end card: nothing was changed.'}
+];
+const META={
+ A:{name:'Strip & tap',tag:'Learn by doing',card:'A thin amber strip rides under the status bar on every screen. Only the spotlit element is live, so every tap is the real gesture.',
+  brief:[['Demo banner','Amber strip in the layout flow: “Demo walkthrough — nothing will be submitted”, with Exit on the right. Visible from step 1 through the end card.'],
+   ['Real screens, scripted path','Tapping the spotlit element navigates. Anything else is blocked and nudges the coach card.'],
+   ['Neutral terminal step','“Confirm (demo)” with a dashed amber outline and a DEMO tag. Tapping opens an end card: nothing was changed. No success toast, no green check.'],
+   ['Exit always available','Strip → Exit returns to Home from any step, then a small toast confirms nothing changed.']],
+  plus:['Closest to the real app, so it builds muscle memory','Lightest footprint: one strip, one card'],
+  minus:['Strict tap-through can strand a lost user (Back and the pulse help)','Strip pushes screens down 42px, so layout differs slightly from live']},
+ B:{name:'Dock & Next',tag:'Watch, then do',card:'A bottom dock carries the label, the instruction and Next/Back. The demo taps for the user, so no real tap is needed.',
+  brief:[['Demo banner','Amber header on a dock that is on screen at every step. The live screens are untouched above it.'],
+   ['Real screens, scripted path','Next plays a tap ripple on the target, then navigates. Fully passive.'],
+   ['Neutral terminal step','Finish taps “Confirm (demo)” for the user and opens a centered end card with the same amber header.'],
+   ['Exit always available','“Leave demo” is in the dock on every step. The dock flips to the top when the target sits low (step 5).']],
+  plus:['Lowest anxiety, and no stuck states','Good for screen readers, switch control and low dexterity','Screens are not shifted'],
+  minus:['Least muscle memory: users never touch the real controls','Dock covers the bottom third, including the tab bar','Label is less top-of-mind than a top strip']},
+ C:{name:'Sandbox frame',tag:'Reassure first',card:'An amber frame around the whole screen plus a striped ribbon. Hybrid input: tap the badge, or press Next.',
+  brief:[['Demo banner','Amber inset frame and a striped ribbon, “Demo · nothing is submitted”. Even a cropped screenshot reads as a demo.'],
+   ['Real screens, scripted path','Tap the target (a “Tap” badge bobs on it) or press Next in the bubble. Both navigate.'],
+   ['Neutral terminal step','“Confirm (demo)” opens a full-screen end card: what you did, what did not change. No success state.'],
+   ['Exit always available','Ribbon → Exit returns to Home from any step.']],
+  plus:['Strongest “nothing will happen” signal, also in shared screenshots','Recap turns the demo into something to remember','Hybrid input means nobody is stuck'],
+  minus:['Visually loudest; frame costs 4px each side','Most build work: frame, ribbon, takeover screen']}
+};
+const CAPS={
+ A:['Tap “Show me” to start','Tap the highlighted element — it’s the real tap','Tour closed. Nothing was changed.'],
+ B:['Tap “Show me” to start','Press Next — the demo taps for you','Tour closed. Nothing was changed.'],
+ C:['Tap “Show me” to start','Tap the badge, or press Next','Tour closed. Nothing was changed.']
+};
+
+/* ---------- screens ---------- */
+const ro=c=>c.dk==='real'?`<span class="chip ro">${ic('lock',11)} Read-only</span>`:'';
+const sbar='<div class="sb"><span>9:41</span><span class="d"><i></i><i></i><i></i><i></i></span></div>';
+
+function hdrSimple(title,sub){return `<div class="hdr"><span class="back">${ic('back',20)}</span><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:''}</div></div>`}
+function tabbar(){return `<nav class="tabbar"><div class="tb on">${ic('home',22)}Home</div><div class="tb">${ic('wallet',22)}Payments</div><div class="tb">${ic('grid',22)}Services</div><div class="tb">${ic('user',22)}Profile</div></nav>`}
+
+const SCREENS={
+ home:c=>`<div class="app"><div class="hdr tall"><div class="toprow"><div class="acct">${c.d.acct} ${ic('down',16)}</div>${ic('bell',22)}</div>
+  <div class="bal"><div class="lbl">Balance</div><div class="amt">${c.d.bal} <small>AZN</small></div></div></div>
+  <div class="sheet"><h3 class="sec">Quick actions</h3>
+   <div class="grid2">
+    <div class="tile" data-t="numbers">${it('phone')}<b>My numbers</b><span>2 lines</span></div>
+    <div class="tile">${it('wallet')}<b>Top up</b><span>Cards, cash</span></div>
+    <div class="tile">${it('tag')}<b>Tariffs</b><span>Plans &amp; packs</span></div>
+    <div class="tile">${it('help')}<b>Support</b><span>Chat, call</span></div>
+   </div>
+   <h3 class="sec" style="margin-top:2px">This month</h3>
+   <div class="card usage">
+    <div class="u"><div class="ul"><span>Internet</span><b>12.4 / 30 GB</b></div><div class="bar"><i style="width:41%"></i></div></div>
+    <div class="u"><div class="ul"><span>Minutes</span><b>210 / 500</b></div><div class="bar"><i style="width:42%"></i></div></div>
+    <div class="u"><div class="ul"><span>SMS</span><b>14 / 100</b></div><div class="bar"><i style="width:14%"></i></div></div>
+   </div>${tabbar()}</div></div>`,
+ numbers:c=>`<div class="app">${hdrSimple('Numbers')}<div class="sheet">
+   <div class="numcard" data-t="num1"><div class="t"><div><div class="num">${c.d.num}</div><div class="meta">Unlimited 30 · ${c.d.tag}</div></div>${ic('right',20)}</div>
+    <div class="chips"><span class="chip">${ic('sim',12)} Physical SIM</span><span class="chip ok">Active</span>${ro(c)}</div></div>
+   <div class="numcard"><div class="t"><div><div class="num">${c.d.num2}</div><div class="meta">Basic 10</div></div>${ic('right',20)}</div>
+    <div class="chips"><span class="chip lav">${ic('smartphone',12)} eSIM</span><span class="chip ok">Active</span></div></div>
+   <div class="add">${ic('plus',16)} Add number</div></div></div>`,
+ detail:c=>`<div class="app">${hdrSimple(c.d.num,'Unlimited 30 · Active')}<div class="sheet">
+   <div class="card sum"><div><div class="l">Balance</div><div class="v">${c.d.bal} AZN</div></div><div><div class="l">Renews</div><div class="v">Nov 3</div></div></div>
+   ${c.dk==='real'?`<div class="chips">${ro(c)}</div>`:''}
+   <div class="rows">
+    <div class="row">${it('pkg')}<span class="grow">Packages &amp; tariff</span>${ic('right',18).replace('<svg','<svg class="chev"')}</div>
+    <div class="row">${it('wallet')}<span class="grow">Top up</span>${ic('right',18)}</div>
+    <div class="row" data-t="sim">${it('sim')}<span class="grow">SIM settings</span>${ic('right',18)}</div>
+    <div class="row">${it('clock')}<span class="grow">Usage history</span>${ic('right',18)}</div>
+    <div class="row">${it('ban')}<span class="grow">Block number</span>${ic('right',18)}</div>
+   </div></div></div>`,
+ sim:c=>`<div class="app">${hdrSimple('SIM settings',c.d.num)}<div class="sheet">
+   <div class="card simcard">${it('sim')}<div class="grow"><b>Physical SIM</b><div class="meta">ICCID ${c.d.iccid}</div></div><span class="chip ok">Active</span></div>
+   ${c.dk==='real'?`<div class="chips">${ro(c)}</div>`:''}
+   <div class="rows">
+    <div class="row" data-t="esim">${it('smartphone')}<span class="grow">Replace with eSIM<small>Use this phone as your SIM</small></span><span class="badge">New</span></div>
+    <div class="row">${it('plus2')}<span class="grow">Order a new SIM card</span>${ic('right',18)}</div>
+    <div class="row">${it('ban')}<span class="grow">Report lost or stolen SIM</span>${ic('right',18)}</div>
+    <div class="row">${it('key')}<span class="grow">PUK codes</span>${ic('right',18)}</div>
+   </div></div></div>`,
+ esim:c=>`<div class="app">${hdrSimple('Replace with eSIM',c.d.num)}<div class="sheet">
+   <p style="font-size:14px;line-height:1.45;color:#4A4760">Move this number from your physical SIM to an eSIM on this phone.</p>
+   <div class="checks">
+    <div><span class="ci">${ic('check',13)}</span>This phone supports eSIM</div>
+    <div><span class="ci">${ic('wifi',13)}</span>Connected to Wi-Fi</div>
+    <div><span class="ci">${ic('phone',13)}</span>Number ${c.d.num}</div>
+   </div>
+   <div class="warn">Your physical SIM stops working once the eSIM is active.</div>
+   ${c.dk==='real'?`<div class="chips">${ro(c)}</div>`:''}
+   <div class="cta"><button class="btn primary demo wide" tabindex="-1" data-t="confirm" type="button"><span class="tagd">DEMO</span>${ic('flask',18)} Confirm (demo)</button><div class="hint">Takes about 2 minutes</div></div></div></div>`,
+ done:c=>`<div class="app"><div class="hdr"><div><h2>Demo complete</h2><div class="sub">${c.d.num}</div></div></div><div class="sheet">
+   <div class="end-icon">${ic('flask',26)}</div>
+   <h3 class="end-title" style="margin:2px 0 0">Nothing was changed</h3>
+   <ul class="facts" style="margin-bottom:6px"><li>No eSIM was ordered</li><li>No charge was made</li><li>Your SIM and number work as before</li></ul>
+   <h4 style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">What you just did</h4>
+   <div class="recap">
+    <div><span class="n">1</span>Home <span class="m">› My numbers</span></div>
+    <div><span class="n">2</span>Numbers <span class="m">› pick a line</span></div>
+    <div><span class="n">3</span>Number detail <span class="m">› SIM settings</span></div>
+    <div><span class="n">4</span>SIM settings <span class="m">› Replace with eSIM</span></div>
+    <div><span class="n z">5</span>Confirm <span class="m">· inert in the demo</span></div>
+   </div>
+   <div class="end-actions" style="margin-top:auto;padding-bottom:18px"><button class="btn primary" data-act="home" type="button">Back to Home</button><button class="btn soft" data-act="replay" type="button">${ic('replay',16)} Replay</button></div></div></div>`
+};
+
+/* ---------- banners & overlays ---------- */
+const bannerText2=c=>c.dk==='real'?'Read-only · nothing will be submitted':'Nothing will be submitted';
+const exitBtn='<button class="exit" data-act="exit" type="button" aria-label="Exit demo walkthrough">Exit '+ic('x',13)+'</button>';
+const bannerA=c=>`<div class="bannerA" role="status"><span class="bi">${ic(c.dk==='real'?'lock':'flask',18)}</span><div class="bt"><span class="b1">Demo walkthrough</span><span class="b2">${bannerText2(c)}</span></div>${exitBtn}</div>`;
+const ribbonC=c=>`<div class="ribbonC" role="status">${ic('lock',13)}<span>Demo · ${c.dk==='real'?'read-only':'nothing is submitted'}</span>${exitBtn}</div>`;
+const dkBanner=c=>`<div class="dkb" role="status"><span class="bi">${ic(c.dk==='real'?'lock':'flask',15)}</span><span><b>Demo walkthrough</b> · ${c.dk==='real'?'read-only':'nothing will be submitted'}</span></div>`;
+const sdots=i=>`<span class="sdots" aria-hidden="true">${STEPS.map((_,k)=>`<i class="${k===i?'on':k<i?'done':''}"></i>`).join('')}</span>`;
+
+const tipA=(c,i)=>{const s=STEPS[i];return `<div class="tip" aria-live="polite"><div class="step"><span>Step ${i+1} of 5</span>${sdots(i)}</div><h3>${s.title}</h3><p>${s.body}</p>
+ <div class="hint">${ic('pointer',15)}<span>${s.hint}</span>${i>0?`<button class="lnk" data-act="back" type="button">Back</button>`:''}</div></div>`};
+const dockB=(c,i)=>{const s=STEPS[i];const last=i===4;return `<div class="dock bottom" data-dock>${dkBanner(c)}<div class="dk" aria-live="polite">
+ <div class="step"><span>Step ${i+1} of 5</span>${sdots(i)}</div><h3>${s.title}</h3><p>${s.body}</p>
+ <div class="actions"><button class="ghost" data-act="exit" type="button">${ic('x',15)} Leave demo</button><span style="flex:1"></span>
+ ${i>0?`<button class="sq" data-act="back" type="button" aria-label="Back">${ic('back',20)}</button>`:''}
+ <button class="nx" data-act="next" type="button">${last?'Finish':'Next'} ${ic('arrow',16)}</button></div></div></div>`};
+const bubbleC=(c,i)=>{const s=STEPS[i];return `<div class="bub" aria-live="polite"><div class="step"><span>Step ${i+1} of 5</span>${sdots(i)}</div><h3>${s.title}</h3><p>${s.body}</p>
+ <div class="foot2">${i>0?`<button class="bk" data-act="back" type="button">‹ Back</button>`:'<span></span>'}<button class="nx" data-act="next" type="button">${i===4?'Finish':'Next'} ${ic('arrow',15)}</button></div></div>`};
+
+const endBody=c=>`<div class="end-icon">${ic('flask',26)}</div><h3 class="end-title">Demo complete.<br>Nothing was changed.</h3>
+ <ul class="facts"><li>No eSIM was ordered</li><li>No charge was made</li><li>Your SIM and number work as before</li>${c.dk==='real'?'<li>Your account data was only read, never written</li>':''}</ul>
+ <div class="end-actions"><button class="btn primary" data-act="home" type="button">Back to Home</button><button class="btn soft" data-act="replay" type="button">${ic('replay',16)} Replay</button></div>`;
+
+const entrySheet=()=>`<div class="scrim"></div><div class="wn"><div class="wn-top"><span class="mega">${ic('mega',26)}</span><button class="xbtn" data-act="close" aria-label="Close" type="button">${ic('x',22)}</button></div>
+ <h2>What’s new</h2><div class="ver">App version: 1.04.00</div><h4>New services</h4>
+ <ul><li>Opportunity to rate the app;</li><li>Replace your SIM with an eSIM directly from the app;<button class="pill pulse" data-act="show" type="button">Show me ${ic('arrow',14)}</button></li><li>Possibility to use the sales and service center map;</li></ul>
+ <button class="btn soft wide" data-act="close" type="button">Close</button></div>`;
+
+function overlay(c,step){
+  const v=c.v;
+  if(step===-1) return entrySheet();
+  if(step<0||step>5) return '';
+  if(step===5){
+    if(v==='A') return `<div class="scrim"></div><div class="endsheet">${endBody(c)}</div>`;
+    if(v==='B') return `<div class="scrim"></div><div class="endmodal">${dkBanner(c)}<div class="em">${endBody(c)}</div></div>`;
+    return '';
+  }
+  const s=STEPS[step];
+  let h=`<div class="tour"><div class="blocker" data-act="stray"></div><div class="spot"></div>`;
+  if(v!=='B') h+=`<button class="hit" data-act="hit" aria-label="${s.hint}" type="button"></button>`;
+  if(v==='A') h+=tipA(c,step);
+  if(v==='B') h+=dockB(c,step);
+  if(v==='C') h+=bubbleC(c,step)+`<div class="tapbadge">${ic('pointer',13)} Tap</div>`;
+  return h+'</div>';
+}
+
+/* ---------- layout of the tour layer (after insertion) ---------- */
+function relRect(el,root){let x=0,y=0,n=el;while(n&&n!==root){x+=n.offsetLeft;y+=n.offsetTop;n=n.offsetParent}return{x,y,w:el.offsetWidth,h:el.offsetHeight}}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function layout(dev,v,step){
+  const tour=dev.querySelector('.tour'); if(!tour) return;
+  const s=STEPS[step], t=dev.querySelector(`[data-t="${s.target}"]`); if(!t) return;
+  const r=relRect(t,dev), W=dev.clientWidth, H=dev.clientHeight, p=s.pad;
+  const spot=tour.querySelector('.spot');
+  Object.assign(spot.style,{left:(r.x-p)+'px',top:(r.y-p)+'px',width:(r.w+2*p)+'px',height:(r.h+2*p)+'px',borderRadius:s.r+'px'});
+  const hit=tour.querySelector('.hit');
+  if(hit) Object.assign(hit.style,{left:r.x+'px',top:r.y+'px',width:r.w+'px',height:r.h+'px',borderRadius:(s.r-4)+'px'});
+  const card=tour.querySelector('.tip,.bub');
+  if(card){
+    const tw=card.offsetWidth, th=card.offsetHeight, gap=16;
+    const below=(H-(r.y+r.h+p))>=th+gap+10;
+    const left=clamp(r.x+r.w/2-tw/2,12,W-tw-12);
+    card.style.left=left+'px';
+    card.style.top=(below?r.y+r.h+p+gap:r.y-p-gap-th)+'px';
+    card.style.setProperty('--ax',clamp(r.x+r.w/2-left,24,tw-24)+'px');
+    card.classList.add(below?'below':'above');
+    const b=tour.querySelector('.tapbadge');
+    if(b){ b.style.left=(r.x+r.w-60)+'px'; b.style.top=(r.y-p-12)+'px';
+      if(!below){ /* card is above: badge goes to the bottom edge */ b.style.top=(r.y+r.h+p-14)+'px'; } }
+  }
+  const dock=tour.querySelector('[data-dock]');
+  if(dock){ const low=(r.y+r.h/2)>H*0.55; dock.classList.toggle('top',low); dock.classList.toggle('bottom',!low); }
+}
+
+/* ---------- phone assembly ---------- */
+function phoneHTML(v,dk,step,mini,toast){
+  const c={v,dk,d:D[dk]};
+  const inTour=step>=0&&step<=5;
+  const scr=step===5?(v==='C'?'done':'esim'):(step>=0&&step<=4?STEPS[step].screen:'home');
+  let top='',extra='';
+  if(inTour&&v==='A') top=bannerA(c);
+  if(inTour&&v==='C'){top=ribbonC(c);extra='<div class="frame4"></div>'}
+  const tst=(step===6&&toast&&!mini)?`<div class="toast" role="status">${ic('lock',16)}<span>Demo closed. Nothing was changed.</span></div>`:'';
+  return `<div class="phone${mini?' mini':''}"><div class="device" data-v="${v}">${sbar}${top}${SCREENS[scr](c)}${overlay(c,step)}${extra}${tst}</div></div>`;
+}
+function mount(host,v,dk,step,mini,toast){
+  host.innerHTML=phoneHTML(v,dk,step,mini,toast);
+  const dev=host.querySelector('.device');
+  if(step>=0&&step<=4) layout(dev,v,step);
+  return dev;
+}
+
+/* ---------- app state ---------- */
+const state={v:'A',dk:'demo',step:-1,toast:false};
+let busy=false;
+const live=$('#live');
+
+function go(step,toast){state.step=step;state.toast=!!toast;busy=false;renderLive();markFilm();renderCap()}
+function exit(){go(6,true)}
+function advance(){go(state.step+1)}
+function nudge(){
+  const el=live.querySelector('.tip,.bub,[data-dock]'), sp=live.querySelector('.spot');
+  [el,sp].forEach(e=>{if(!e)return;e.classList.remove('nudge');void e.offsetWidth;e.classList.add('nudge')});
+}
+function simulateTap(){
+  if(busy)return; busy=true;
+  const sp=live.querySelector('.spot'), tour=live.querySelector('.tour');
+  if(!sp||!tour){advance();return}
+  const fx=document.createElement('div'); fx.className='tapfx';
+  fx.style.left=(sp.offsetLeft+sp.offsetWidth/2)+'px'; fx.style.top=(sp.offsetTop+sp.offsetHeight/2)+'px';
+  tour.appendChild(fx);
+  setTimeout(advance,reduce?0:520);
+}
+live.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]'); if(!a||busy&&a.dataset.act!=='exit')return;
+  switch(a.dataset.act){
+    case 'show':go(0);break;
+    case 'close':go(6,false);break;
+    case 'hit':advance();break;
+    case 'next':simulateTap();break;
+    case 'back':go(state.step-1);break;
+    case 'exit':case 'home':exit();break;
+    case 'replay':go(0);break;
+    case 'stray':nudge();break;
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.step>=0&&state.step<=5)exit()});
+
+/* ---------- renderers ---------- */
+function renderLive(){mount(live,state.v,state.dk,state.step,false,state.toast)}
+function renderCap(){
+  const st=state.step; const t=CAPS[state.v];
+  $('#cap').textContent= st===-1?t[0] : st>=0&&st<=4?t[1] : st===5?'Tap “Back to Home” or “Replay”' : t[2];
+}
+function renderCards(){
+  $('#vcards').innerHTML=Object.keys(META).map(k=>{const m=META[k];
+    return `<button class="vcard" role="radio" aria-checked="${state.v===k}" data-v="${k}" type="button"><span class="k"><span class="letter">${k}</span><h3>${m.name}</h3></span><span class="tag">${m.tag}</span><p>${m.card}</p></button>`}).join('');
+}
+function renderNotes(){
+  const m=META[state.v];
+  $('#notes').innerHTML=`<h2>${state.v} — ${m.name}</h2><p class="tagline">${m.tag}</p><p class="blurb">${m.card}</p>
+   <h4>How it meets the brief</h4><ul class="brief">${m.brief.map(b=>`<li><b>${b[0]}</b><span>${b[1]}</span></li>`).join('')}</ul>
+   <div class="pm"><div><h4>Strengths</h4><ul class="plus">${m.plus.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><h4>Watch-outs</h4><ul class="minus">${m.minus.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>`;
+}
+function renderFilm(){
+  const f=$('#film'); f.innerHTML='';
+  FRAMES.forEach(fr=>{
+    const b=document.createElement('button'); b.type='button'; b.className='frame'; b.dataset.step=fr.s;
+    b.setAttribute('aria-label','Load frame: '+fr.l);
+    b.innerHTML='<div class="mh"><div class="scaled"></div></div><div class="fl"></div><div class="fs"></div>';
+    b.querySelector('.fl').textContent=fr.l; b.querySelector('.fs').textContent=fr.d;
+    f.appendChild(b);
+    mount(b.querySelector('.scaled'),state.v,state.dk,fr.s,true,false);
+  });
+  markFilm();
+}
+function markFilm(){document.querySelectorAll('.frame').forEach(b=>b.classList.toggle('on',+b.dataset.step===state.step))}
+function renderCmp(){
+  const d=(n)=>`<span class="dots" aria-label="${n} of 3">${'●'.repeat(n)}<s>${'●'.repeat(3-n)}</s></span>`;
+  const rows=[
+   ['Demo label','Amber strip under the status bar, in layout flow','Amber header on a bottom dock','Amber frame + striped ribbon'],
+   ['How the user moves','Taps the spotlit element; all else blocked','Presses Next/Back; demo plays the tap','Taps the badge or presses Next'],
+   ['Coach mark','Anchored card, step dots, stray-tap nudge','Dock with title, text, dots; flips to top when target is low','Speech bubble + bobbing “Tap” badge'],
+   ['Terminal step','“Confirm (demo)” → bottom-sheet end card','Finish taps “Confirm (demo)” → centered end card','“Confirm (demo)” → full-screen recap'],
+   ['Exit','Strip, every step','“Leave demo” in dock, every step','Ribbon, every step'],
+   ['Muscle memory',d(3),d(1),d(2)],
+   ['Reassurance',d(2),d(2),d(3)],
+   ['Risk of getting stuck',d(2)+' <span class="muted">(Back + pulse help)</span>',d(0)+' <span class="muted">none</span>',d(1)],
+   ['Build effort (my estimate)',d(1),d(2),d(3)]
+  ];
+  $('#cmp').innerHTML=`<thead><tr><th></th><th>A · Strip &amp; tap</th><th>B · Dock &amp; Next</th><th>C · Sandbox frame</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')}</tbody>`;
+}
+function renderAll(){renderCards();renderNotes();renderLive();renderFilm();renderCap();
+  document.querySelectorAll('#dataSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.d===state.dk))}
+
+$('#vcards').addEventListener('click',e=>{const b=e.target.closest('.vcard');if(!b)return;state.v=b.dataset.v;state.toast=false;renderAll()});
+$('#dataSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state.dk=b.dataset.d;renderAll()});
+$('#restart').addEventListener('click',()=>{go(-1)});
+$('#film').addEventListener('click',e=>{const b=e.target.closest('.frame');if(!b)return;go(+b.dataset.step);$('.live-wrap').scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'})});
+
+renderCmp();renderAll();
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{renderLive();renderFilm()});
+window.__state=state; window.__go=go;
+})();
+</script>
+</body>
+</html>
