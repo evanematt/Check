@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Walkthrough template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#FAF9F6; --surface:#fff; --ink:#1E1B2E; --muted:#6B6780; --line:#E7E4EF;
+  --indigo:#3B2F8F; --lav:#EDEBFF; --amber:#FFB524; --amber-ink:#3A2500; --amber-soft:#FFF4D9; --amber-line:#F2C46A;
+  --ok:#0B6B52; --ok-soft:#E3F6EE; color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,h4,p,ul{margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 20px 80px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--indigo)}
+h1{font-size:34px;line-height:1.1;letter-spacing:-.02em;margin:8px 0 10px;font-weight:800}
+.lede{color:var(--muted);font-size:16px;line-height:1.55;max-width:60ch}
+.main{display:grid;grid-template-columns:392px 1fr;gap:40px;margin-top:30px;align-items:start}
+.left{display:flex;flex-direction:column;align-items:center;gap:14px;position:sticky;top:20px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.tabs button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-size:13.5px;font-weight:700;color:#55526A}
+.tabs button[aria-pressed="true"]{border-color:var(--indigo);background:var(--lav);color:var(--indigo)}
+.tabs .new{border-style:dashed;color:var(--indigo)}
+.cap{font-size:14px;font-weight:600;color:var(--indigo);background:var(--lav);padding:8px 14px;border-radius:999px;text-align:center}
+.restart{border:0;background:none;color:var(--indigo);font-weight:700;font-size:13.5px;padding:6px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--indigo);outline-offset:2px}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px 24px}
+.card+.card{margin-top:16px}
+.card h2{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.card .sub{color:var(--muted);font-size:14px;margin:2px 0 14px;line-height:1.45}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.col h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.col.fixed h3{color:var(--muted)}.col.fill h3{color:var(--indigo)}
+.col ul{list-style:none;padding:0;display:grid;gap:8px;font-size:14px;line-height:1.4}
+.col li{display:flex;gap:8px;align-items:flex-start}
+.col li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;margin-top:6px;background:#B8B4CC}
+.col.fill li::before{background:var(--indigo)}
+.fixedbox{background:#F6F5F1;border-radius:14px;padding:14px}
+.fillbox{background:var(--lav);border-radius:14px;padding:14px}
+
+label.f{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+input[type=text],select,textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-size:14px;background:#fff}
+textarea{resize:vertical;min-height:62px;line-height:1.4}
+.fgroup{margin-bottom:14px}
+.steprow{border:1.5px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;display:grid;gap:10px;background:#FCFBF9}
+.steprow.on{border-color:var(--indigo);background:#fff;box-shadow:0 0 0 3px var(--lav)}
+.steprow .top{display:flex;align-items:center;gap:8px}
+.steprow .n{width:24px;height:24px;border-radius:50%;background:var(--indigo);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;flex:none}
+.steprow .top select{flex:1}
+.steprow .rm{border:0;background:none;color:#8A869A;font-size:18px;width:36px;height:36px;border-radius:10px}
+.steprow .rm:hover{background:#F0EFEA}
+.add{border:1.5px dashed #CFCBE3;background:none;border-radius:12px;padding:10px 14px;width:100%;color:var(--indigo);font-weight:700;font-size:14px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btnp{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:9px 14px;font-weight:700;font-size:13.5px;color:var(--indigo)}
+details{margin-top:12px;font-size:13.5px;color:#3D3A52}
+summary{cursor:pointer;font-weight:700;color:var(--indigo)}
+details table{border-collapse:collapse;margin-top:8px;width:100%}
+details td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+details td:first-child{font-weight:700;width:110px}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+pre{background:#1E1B2E;color:#E9E6FF;border-radius:12px;padding:14px;overflow:auto;max-height:260px;margin-top:12px}
+
+@media (max-width:980px){.main{grid-template-columns:1fr}.left{position:static}.two{grid-template-columns:1fr}}
+@media (max-width:420px){.phone-host{zoom:.88}h1{font-size:28px}}
+
+/* ================= PHONE ================= */
+.phone{position:relative;width:360px;height:744px;border-radius:52px;background:#0C0C10;padding:9px;box-shadow:0 30px 60px -20px rgba(27,23,54,.45),0 0 0 1px rgba(0,0,0,.25)}
+.device{position:relative;width:100%;height:100%;border-radius:43px;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;background:linear-gradient(180deg,#2D2468 0%,#1B1736 62%);color:var(--ink);font-size:14px}
+.sb{height:36px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:8px 26px 0;color:#fff;font-size:13px;font-weight:700;position:relative;z-index:30}
+.sb .d{display:flex;gap:3px}.sb .d i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.8)}
+.app{flex:1;min-height:0;display:flex;flex-direction:column;position:relative;animation:in .25s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.hdr{flex:none;padding:4px 18px 16px;color:#fff;display:flex;align-items:center;gap:12px}
+.hdr.tall{flex-direction:column;align-items:stretch;gap:12px;padding-bottom:20px}
+.toprow{display:flex;align-items:center;justify-content:space-between}
+.acct{display:flex;align-items:center;gap:6px;font-size:20px;font-weight:700}
+.back{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.14);display:grid;place-items:center;flex:none}
+.hdr h2{font-size:21px;font-weight:700;letter-spacing:-.01em;line-height:1.15}
+.hdr .sub{font-size:12.5px;color:rgba(255,255,255,.7);margin-top:2px}
+.bal .lbl{font-size:12.5px;color:rgba(255,255,255,.7)}
+.bal .amt{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.bal small{font-size:15px;font-weight:700}
+.sheet{flex:1;min-height:0;background:#fff;border-radius:28px 28px 0 0;padding:18px 18px 0;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
+.sec{font-size:15px;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:6px;min-height:88px;background:#fff}
+.tile b{font-size:14px;font-weight:700}.tile span{font-size:12px;color:var(--muted)}
+.itile{width:34px;height:34px;border-radius:11px;background:var(--lav);color:var(--indigo);display:grid;place-items:center;flex:none}
+.pcard{border:1px solid var(--line);border-radius:18px;padding:12px 14px;background:#fff}
+.usage{display:grid;gap:10px}
+.u .ul{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.bar{height:6px;border-radius:3px;background:#EEECF6;overflow:hidden}.bar i{display:block;height:100%;background:var(--indigo);border-radius:3px}
+.tabbar{margin:auto -18px 0;padding:8px 12px 16px;border-top:1px solid var(--line);display:flex;justify-content:space-around;background:#fff}
+.tb{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:#85819A;min-width:60px}
+.tb.on{color:var(--indigo)}
+.numcard{border:1px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:10px;background:#fff}
+.numcard .t{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.num{font-size:20px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 10px;border-radius:13px;background:#F2F1F6;color:#4A4760;font-size:12px;font-weight:600}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.lav{background:var(--lav);color:var(--indigo)}
+.addn{border:1.5px dashed #CFCBE3;border-radius:18px;height:52px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--indigo);font-weight:700;font-size:14px}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sum .l{font-size:12px;color:var(--muted)}.sum .v{font-size:18px;font-weight:800;margin-top:2px}
+.rows{display:grid;gap:8px}
+.row{display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:14px;min-height:54px;background:#fff;border:1px solid var(--line);font-weight:600;font-size:14.5px}
+.row .grow{flex:1}
+.row small{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:1px}
+.badge{background:var(--lav);color:var(--indigo);font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px}
+.simcard{display:flex;gap:12px;align-items:center}.simcard .grow{flex:1}
+.checks{display:grid;gap:8px}
+.checks div{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+.ci{width:22px;height:22px;border-radius:50%;background:var(--lav);color:var(--indigo);display:grid;place-items:center;flex:none}
+.warn{background:#FFF1EC;border:1px solid #F7CDBF;color:#7A2B12;border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.4}
+.cta{margin:auto -18px 0;padding:12px 18px 20px;border-top:1px solid var(--line);background:#fff;display:grid;gap:6px}
+.cta .hint{text-align:center;font-size:12px;color:var(--muted)}
+.btn{border:0;border-radius:999px;height:52px;padding:0 20px;font-weight:700;font-size:15.5px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--indigo);color:#fff}
+.btn.soft{background:var(--lav);color:var(--indigo)}
+.btn.wide{width:100%}
+.btn.demo{position:relative;outline:2px dashed var(--amber);outline-offset:3px}
+.tagd{position:absolute;right:14px;top:-9px;background:var(--amber);color:var(--amber-ink);font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:6px}
+.map{position:relative;height:190px;border-radius:18px;overflow:hidden;background:#E8EAF6}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.pin{position:absolute;width:30px;height:30px;margin:-30px 0 0 -15px;color:var(--indigo)}
+
+/* entry sheet */
+.scrim{position:absolute;inset:0;background:rgba(10,8,30,.58);z-index:20}
+.wn{position:absolute;left:0;right:0;bottom:0;top:140px;z-index:21;background:#fff;border-radius:28px 28px 0 0;padding:20px 20px 16px;display:flex;flex-direction:column;animation:up .3s ease-out}
+.wn-top{display:flex;justify-content:space-between;align-items:flex-start}
+.mega{width:52px;height:52px;border-radius:16px;background:var(--indigo);color:#fff;display:grid;place-items:center}
+.xbtn{border:0;background:transparent;width:44px;height:44px;margin:-8px -10px 0 0;display:grid;place-items:center}
+.wn h2{font-size:30px;font-weight:700;letter-spacing:-.02em;margin-top:12px}
+.wn .ver{color:#8A869A;font-size:14px;margin-top:2px}
+.wn h4{font-size:15px;font-weight:700;margin-top:16px}
+.wn ul{list-style:none;padding:0;margin:10px 0 14px}
+.wn li{position:relative;padding-left:20px;font-size:15px;line-height:1.35;color:#3D3A52;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.wn li::before{content:"";position:absolute;left:0;top:7px;width:8px;height:8px;border-radius:50%;background:#8A869A}
+.pill{border:0;background:var(--lav);color:var(--indigo);font-weight:700;font-size:13.5px;height:34px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;position:relative}
+.pill::before{content:"";position:absolute;inset:-9px -4px}
+.pill::after{content:"";position:absolute;inset:-4px;border-radius:999px;border:2px solid var(--indigo);animation:pulse 1.6s ease-out infinite}
+.wn .btn{margin-top:auto}
+
+/* ====== THE FIXED WALKTHROUGH DESIGN ====== */
+.banner{flex:none;position:relative;z-index:30;height:42px;display:flex;align-items:center;gap:10px;padding:0 10px 0 14px;background:var(--amber);color:var(--amber-ink)}
+.banner .bt{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.banner .b1{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+.banner .b2{font-size:12px;font-weight:600;white-space:nowrap}
+.exit{margin-left:auto;position:relative;flex:none;display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 11px;border:0;border-radius:14px;background:var(--amber-ink);color:#FFE7A8;font-weight:700;font-size:12.5px}
+.exit::before{content:"";position:absolute;inset:-8px -6px}
+.exit:focus-visible{outline-color:#fff}
+.tour{position:absolute;inset:0;z-index:10;pointer-events:none}
+.blocker{position:absolute;inset:0;pointer-events:auto}
+.spot{position:absolute;border-radius:16px;box-shadow:0 0 0 1200px rgba(20,14,50,.74);pointer-events:none}
+.spot::after{content:"";position:absolute;inset:-5px;border-radius:inherit;border:2px solid #fff;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.95}100%{transform:scale(1.1);opacity:0}}
+.hit{position:absolute;border:0;background:transparent;pointer-events:auto;cursor:pointer}
+.hit:focus-visible{outline:3px solid var(--amber);outline-offset:4px}
+.nudge{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.tip{position:absolute;z-index:12;width:300px;background:#fff;border-radius:18px;padding:14px 16px 12px;box-shadow:0 14px 36px rgba(10,6,40,.45);pointer-events:auto;animation:in .3s .1s both}
+.tip::before{content:"";position:absolute;left:var(--ax,50%);width:14px;height:14px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:3px}
+.tip.below::before{top:-6px}.tip.above::before{bottom:-6px}
+.step{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--indigo);display:flex;justify-content:space-between;align-items:center}
+.sdots{display:flex;gap:4px}.sdots i{width:6px;height:6px;border-radius:3px;background:#D8D4EE}.sdots i.on{width:18px;background:var(--indigo)}.sdots i.done{background:var(--indigo)}
+.tip h3{font-size:16px;font-weight:800;letter-spacing:-.01em;margin:6px 0 3px;line-height:1.25}
+.tip p{font-size:13.5px;line-height:1.42;color:#4A4760}
+.tip .hint{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--indigo)}
+.tip .lnk{margin-left:auto;border:0;background:none;color:#6B6780;font-weight:700;font-size:12.5px;padding:8px 0 8px 10px}
+.endsheet{position:absolute;left:0;right:0;bottom:0;z-index:25;background:#fff;border-radius:28px 28px 0 0;padding:22px 20px 22px;animation:up .3s ease-out}
+.end-icon{width:52px;height:52px;border-radius:16px;background:var(--amber-soft);color:#8A5200;display:grid;place-items:center;border:1.5px solid var(--amber-line)}
+.end-title{font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:12px 0 10px}
+.facts{list-style:none;padding:0;display:grid;gap:7px;margin:0 0 16px}
+.facts li{position:relative;padding-left:18px;font-size:14px;color:#3D3A52}
+.facts li::before{content:"";position:absolute;left:0;top:7px;width:7px;height:7px;border-radius:50%;background:#8A869A}
+.end-actions{display:grid;gap:8px}.end-actions .btn{height:48px;font-size:15px}
+.toast{position:absolute;left:16px;right:16px;bottom:88px;z-index:50;background:#1E1B2E;color:#fff;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.35;display:flex;gap:10px;align-items:center;animation:toast 3.2s forwards}
+@keyframes toast{0%{opacity:0;transform:translateY(10px)}10%,85%{opacity:1;transform:none}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Walkthrough template</p>
+  <h1>One design. Every new feature.</h1>
+  <p class="lede">The demo walkthrough looks and behaves the same for every feature. To add a new one you fill in a few lines of text. No new design, no new build. Try it: switch features, edit a step on the right, or start a new one.</p>
+
+  <div class="main">
+    <div class="left">
+      <div class="tabs" id="tabs"></div>
+      <div class="phone-host" id="live"></div>
+      <div class="cap" id="cap" role="status" aria-live="polite"></div>
+      <button class="restart" id="restart" type="button">↺ Restart</button>
+    </div>
+
+    <div>
+      <section class="card">
+        <h2>What is fixed, and what you fill in</h2>
+        <p class="sub">Product and design decided the left column once. A feature owner only writes the right column.</p>
+        <div class="two">
+          <div class="col fixed"><h3>Fixed (same everywhere)</h3><div class="fixedbox"><ul>
+            <li>Amber “Demo walkthrough” strip with Exit, on every screen</li>
+            <li>Spotlight on the element to tap, with a pulse</li>
+            <li>Coach card: step count, title, text, Back</li>
+            <li>Only the spotlit element works; the real button is relabeled “(demo)”</li>
+            <li>“Nothing was changed” end card, Back to Home, Replay</li>
+          </ul></div></div>
+          <div class="col fill"><h3>You fill in (per feature)</h3><div class="fillbox"><ul>
+            <li>One line for the “What’s new” sheet</li>
+            <li>Steps: which screen, which element, a title, one sentence</li>
+            <li><span>What did not change (end card, 2–3 lines)</span></li>
+          </ul></div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 id="edTitle">Feature setup</h2>
+        <p class="sub">Edit anything. The phone updates as you type.</p>
+        <div class="fgroup"><label class="f" for="fName">Feature name</label><input type="text" id="fName"></div>
+        <div class="fgroup"><label class="f" for="fEntry">Line shown in “What’s new”</label><input type="text" id="fEntry"></div>
+        <label class="f">Steps</label>
+        <div id="steps"></div>
+        <button class="add" id="addStep" type="button">+ Add step</button>
+        <div class="fgroup" style="margin-top:16px"><label class="f" for="fFacts">End card: what did not change (one per line)</label><textarea id="fFacts"></textarea></div>
+        <div class="actions"><button class="btnp" id="copy" type="button">Copy as JSON for developers</button><span id="copied" class="sub" style="margin:0;align-self:center"></span></div>
+        <pre id="json" hidden></pre>
+        <details><summary>Screens and elements you can point at</summary>
+          <table id="avail"></table>
+        </details>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- icons ---------- */
+const P={
+ back:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',down:'<path d="m6 9 6 6 6-6"/>',
+ bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+ mega:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+ flask:'<path d="M10 2v7.5a2 2 0 0 1-.2.9L4.7 20.6a1 1 0 0 0 .9 1.4h12.8a1 1 0 0 0 .9-1.4L14.2 10.4a2 2 0 0 1-.2-.9V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>',
+ lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ pointer:'<path d="M22 14a8 8 0 0 1-8 8"/><path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2"/><path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1"/><path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10"/><path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>',
+ x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',check:'<path d="M20 6 9 17l-5-5"/>',arrow:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+ home:'<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+ wallet:'<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+ grid:'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+ user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+ phone:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',
+ tag:'<path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r=".6" fill="currentColor"/>',
+ pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',ban:'<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>',
+ key:'<path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
+ sim:'<path d="M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><rect x="9" y="12" width="6" height="6" rx="1"/>',
+ wifi:'<path d="M12 20h.01"/><path d="M2 8.8a15 15 0 0 1 20 0"/><path d="M5 12.9a10 10 0 0 1 14 0"/><path d="M8.5 16.4a5 5 0 0 1 7 0"/>',
+ smartphone:'<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/>',
+ plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',plus2:'<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>',
+ replay:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+ pkg:'<path d="m7.5 4.3 9 5.2"/><path d="M21 8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4a2 2 0 0 0 1-1.7z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>'
+};
+const ic=(n,s=20)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+const it=n=>`<span class="itile">${ic(n,18)}</span>`;
+
+/* ---------- app screens (stand-ins for the real ones) ----------
+   Any element with data-t="name" can be spotlit by a step. */
+const SCREEN_NAMES={home:'Home',numbers:'Numbers',detail:'Number detail',sim:'SIM settings',esim:'eSIM replacement',map:'Service centers'};
+const TARGETS={
+ home:{numbers:'My numbers tile',topup:'Top up tile',tariffs:'Tariffs tile',map:'Service centers tile',usage:'Usage card'},
+ numbers:{num1:'First number',num2:'Second number',add:'Add number'},
+ detail:{packages:'Packages & tariff',topup:'Top up',sim:'SIM settings',history:'Usage history'},
+ sim:{esim:'Replace with eSIM',order:'Order a new SIM',puk:'PUK codes'},
+ esim:{confirm:'Confirm button'},
+ map:{nearest:'“Nearest” filter',list:'First service center'}
+};
+const hdrSimple=(t,s)=>`<div class="hdr"><span class="back">${ic('back',20)}</span><div><h2>${t}</h2>${s?`<div class="sub">${s}</div>`:''}</div></div>`;
+const tabbar=()=>`<nav class="tabbar"><div class="tb on">${ic('home',22)}Home</div><div class="tb">${ic('wallet',22)}Payments</div><div class="tb">${ic('grid',22)}Services</div><div class="tb">${ic('user',22)}Profile</div></nav>`;
+const NUM='050 000 00 00';
+const SCREENS={
+ home:()=>`<div class="app"><div class="hdr tall"><div class="toprow"><div class="acct">Demo account ${ic('down',16)}</div>${ic('bell',22)}</div>
+  <div class="bal"><div class="lbl">Balance</div><div class="amt">24.60 <small>AZN</small></div></div></div>
+  <div class="sheet"><h3 class="sec">Quick actions</h3>
+   <div class="grid2">
+    <div class="tile" data-t="numbers" data-r="18">${it('phone')}<b>My numbers</b><span>2 lines</span></div>
+    <div class="tile" data-t="topup" data-r="18">${it('wallet')}<b>Top up</b><span>Cards, cash</span></div>
+    <div class="tile" data-t="tariffs" data-r="18">${it('tag')}<b>Tariffs</b><span>Plans &amp; packs</span></div>
+    <div class="tile" data-t="map" data-r="18">${it('pin')}<b>Service centers</b><span>Find the nearest</span></div>
+   </div>
+   <h3 class="sec">This month</h3>
+   <div class="pcard usage" data-t="usage" data-r="18">
+    <div class="u"><div class="ul"><span>Internet</span><b>12.4 / 30 GB</b></div><div class="bar"><i style="width:41%"></i></div></div>
+    <div class="u"><div class="ul"><span>Minutes</span><b>210 / 500</b></div><div class="bar"><i style="width:42%"></i></div></div>
+    <div class="u"><div class="ul"><span>SMS</span><b>14 / 100</b></div><div class="bar"><i style="width:14%"></i></div></div>
+   </div>${tabbar()}</div></div>`,
+ numbers:()=>`<div class="app">${hdrSimple('Numbers')}<div class="sheet">
+   <div class="numcard" data-t="num1" data-r="20"><div class="t"><div><div class="num">${NUM}</div><div class="meta">Unlimited 30 · Demo number</div></div>${ic('right',20)}</div>
+    <div class="chips"><span class="chip">${ic('sim',12)} Physical SIM</span><span class="chip ok">Active</span></div></div>
+   <div class="numcard" data-t="num2" data-r="20"><div class="t"><div><div class="num">055 000 00 01</div><div class="meta">Basic 10</div></div>${ic('right',20)}</div>
+    <div class="chips"><span class="chip lav">${ic('smartphone',12)} eSIM</span><span class="chip ok">Active</span></div></div>
+   <div class="addn" data-t="add" data-r="18">${ic('plus',16)} Add number</div></div></div>`,
+ detail:()=>`<div class="app">${hdrSimple(NUM,'Unlimited 30 · Active')}<div class="sheet">
+   <div class="pcard sum"><div><div class="l">Balance</div><div class="v">24.60 AZN</div></div><div><div class="l">Renews</div><div class="v">Nov 3</div></div></div>
+   <div class="rows">
+    <div class="row" data-t="packages" data-r="14">${it('pkg')}<span class="grow">Packages &amp; tariff</span>${ic('right',18)}</div>
+    <div class="row" data-t="topup" data-r="14">${it('wallet')}<span class="grow">Top up</span>${ic('right',18)}</div>
+    <div class="row" data-t="sim" data-r="14">${it('sim')}<span class="grow">SIM settings</span>${ic('right',18)}</div>
+    <div class="row" data-t="history" data-r="14">${it('clock')}<span class="grow">Usage history</span>${ic('right',18)}</div>
+    <div class="row">${it('ban')}<span class="grow">Block number</span>${ic('right',18)}</div>
+   </div></div></div>`,
+ sim:()=>`<div class="app">${hdrSimple('SIM settings',NUM)}<div class="sheet">
+   <div class="pcard simcard">${it('sim')}<div class="grow"><b>Physical SIM</b><div class="meta">ICCID 8994 01•• •••• 0000</div></div><span class="chip ok">Active</span></div>
+   <div class="rows">
+    <div class="row" data-t="esim" data-r="14">${it('smartphone')}<span class="grow">Replace with eSIM<small>Use this phone as your SIM</small></span><span class="badge">New</span></div>
+    <div class="row" data-t="order" data-r="14">${it('plus2')}<span class="grow">Order a new SIM card</span>${ic('right',18)}</div>
+    <div class="row">${it('ban')}<span class="grow">Report lost or stolen SIM</span>${ic('right',18)}</div>
+    <div class="row" data-t="puk" data-r="14">${it('key')}<span class="grow">PUK codes</span>${ic('right',18)}</div>
+   </div></div></div>`,
+ esim:()=>`<div class="app">${hdrSimple('Replace with eSIM',NUM)}<div class="sheet">
+   <p style="font-size:14px;line-height:1.45;color:#4A4760">Move this number from your physical SIM to an eSIM on this phone.</p>
+   <div class="checks"><div><span class="ci">${ic('check',13)}</span>This phone supports eSIM</div><div><span class="ci">${ic('wifi',13)}</span>Connected to Wi-Fi</div><div><span class="ci">${ic('phone',13)}</span>Number ${NUM}</div></div>
+   <div class="warn">Your physical SIM stops working once the eSIM is active.</div>
+   <div class="cta"><button class="btn primary demo wide" tabindex="-1" data-t="confirm" data-r="26" type="button"><span class="tagd">DEMO</span>${ic('flask',18)} Confirm (demo)</button><div class="hint">Takes about 2 minutes</div></div></div></div>`,
+ map:()=>`<div class="app">${hdrSimple('Service centers')}<div class="sheet">
+   <div class="map"><svg viewBox="0 0 300 190" preserveAspectRatio="none" aria-hidden="true"><path d="M0 120 L300 70" stroke="#fff" stroke-width="10"/><path d="M110 0 L150 190" stroke="#fff" stroke-width="10"/><path d="M0 40 L300 60" stroke="#F4F5FB" stroke-width="5"/><rect x="170" y="100" width="90" height="60" rx="10" fill="#D6EAD9"/></svg>
+     <span class="pin" style="left:34%;top:48%">${ic('pin',30)}</span><span class="pin" style="left:62%;top:36%">${ic('pin',30)}</span><span class="pin" style="left:78%;top:78%">${ic('pin',30)}</span></div>
+   <div class="chips"><span class="chip lav" data-t="nearest" data-r="14">${ic('pin',12)} Nearest</span><span class="chip">Open now</span><span class="chip">Sales</span></div>
+   <div class="rows">
+    <div class="row" data-t="list" data-r="14">${it('pin')}<span class="grow">Center A<small>0.4 km · Open until 20:00</small></span>${ic('right',18)}</div>
+    <div class="row">${it('pin')}<span class="grow">Center B<small>1.2 km · Open until 19:00</small></span>${ic('right',18)}</div>
+   </div></div></div>`
+};
+
+/* ---------- the walkthrough features (this is the template's data) ---------- */
+let FEATURES=[
+ {name:'Replace SIM with eSIM',entry:'Replace your SIM with an eSIM directly from the app;',
+  steps:[
+   {screen:'home',target:'numbers',title:'Open “My numbers”',body:'Every line on your account lives here. Start with this tile.'},
+   {screen:'numbers',target:'num1',title:'Pick a line',body:'Choose the number whose physical SIM you want to swap for an eSIM.'},
+   {screen:'detail',target:'sim',title:'Open SIM settings',body:'Everything about this number’s SIM card lives in this row.'},
+   {screen:'sim',target:'esim',title:'Choose “Replace with eSIM”',body:'Swap the physical card for a digital one, with no shop visit.'},
+   {screen:'esim',target:'confirm',title:'Confirm the replacement',body:'In the real flow this button replaces your SIM. In the demo it does nothing, so go ahead and try it.'}],
+  facts:['No eSIM was ordered','No charge was made','Your SIM and number work as before']},
+ {name:'Service center map',entry:'Find a sales and service center on the map;',
+  steps:[
+   {screen:'home',target:'map',title:'Open Service centers',body:'Sales and service centers are one tap from Home.'},
+   {screen:'map',target:'nearest',title:'Tap “Nearest”',body:'Sort the map by what is closest to where you are.'},
+   {screen:'map',target:'list',title:'Pick a center',body:'See opening hours and get directions.'}],
+  facts:['No account data was used','Nothing was saved or sent']}
+];
+const state={f:0,step:-1,toast:false};
+const cur=()=>FEATURES[state.f];
+const live=$('#live');
+let busy=false;
+
+/* ---------- walkthrough layers (generic: driven only by the feature data) ---------- */
+const exitBtn='<button class="exit" data-act="exit" type="button" aria-label="Exit demo walkthrough">Exit '+ic('x',13)+'</button>';
+const banner=()=>`<div class="banner" role="status"><span>${ic('flask',18)}</span><div class="bt"><span class="b1">Demo walkthrough</span><span class="b2">Nothing will be submitted</span></div>${exitBtn}</div>`;
+function tip(f,i){
+  const s=f.steps[i], dots=f.steps.map((_,k)=>`<i class="${k===i?'on':k<i?'done':''}"></i>`).join('');
+  return `<div class="tip" aria-live="polite"><div class="step"><span>Step ${i+1} of ${f.steps.length}</span><span class="sdots" aria-hidden="true">${dots}</span></div>
+   <h3>${esc(s.title)}</h3><p>${esc(s.body)}</p>
+   <div class="hint">${ic('pointer',15)}<span>Tap the highlighted area</span>${i>0?'<button class="lnk" data-act="back" type="button">Back</button>':''}</div></div>`;
+}
+function entry(f){return `<div class="scrim"></div><div class="wn"><div class="wn-top"><span class="mega">${ic('mega',26)}</span><button class="xbtn" data-act="close" aria-label="Close" type="button">${ic('x',22)}</button></div>
+ <h2>What’s new</h2><div class="ver">App version: 1.04.00</div><h4>New services</h4>
+ <ul><li>${esc(f.entry)}<button class="pill" data-act="show" type="button">Show me ${ic('arrow',14)}</button></li></ul>
+ <button class="btn soft wide" data-act="close" type="button">Close</button></div>`}
+function endSheet(f){return `<div class="scrim"></div><div class="endsheet"><div class="end-icon">${ic('flask',26)}</div><h3 class="end-title">Demo complete.<br>Nothing was changed.</h3>
+ <ul class="facts">${f.facts.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+ <div class="end-actions"><button class="btn primary" data-act="home" type="button">Back to Home</button><button class="btn soft" data-act="replay" type="button">${ic('replay',16)} Replay</button></div></div>`}
+
+function phoneHTML(){
+  const f=cur(), st=state.step, n=f.steps.length;
+  const inTour=st>=0&&st<=n;
+  const scr=st>=0&&st<n?f.steps[st].screen:st===n?f.steps[n-1].screen:'home';
+  let over='';
+  if(st===-1) over=entry(f);
+  else if(st===n) over=endSheet(f);
+  else if(st>=0&&st<n) over=`<div class="tour"><div class="blocker" data-act="stray"></div><div class="spot"></div><button class="hit" data-act="hit" aria-label="Tap the highlighted area" type="button"></button>${tip(f,st)}</div>`;
+  const toast=st>n&&state.toast?`<div class="toast" role="status">${ic('lock',16)}<span>Demo closed. Nothing was changed.</span></div>`:'';
+  return `<div class="phone"><div class="device"><div class="sb"><span>9:41</span><span class="d"><i></i><i></i><i></i><i></i></span></div>${inTour?banner():''}${SCREENS[scr]()}${over}${toast}</div></div>`;
+}
+const relRect=(el,root)=>{let x=0,y=0,n=el;while(n&&n!==root){x+=n.offsetLeft;y+=n.offsetTop;n=n.offsetParent}return{x,y,w:el.offsetWidth,h:el.offsetHeight}};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function layout(){
+  const dev=live.querySelector('.device'), tour=live.querySelector('.tour'); if(!tour) return;
+  const s=cur().steps[state.step], t=dev.querySelector(`[data-t="${s.target}"]`);
+  if(!t){ $('#cap').textContent='This step points at an element that is not on that screen.'; tour.querySelector('.spot').style.display='none'; return }
+  const r=relRect(t,dev), W=dev.clientWidth, H=dev.clientHeight, p=4+(+t.dataset.r>=20?2:0), rad=+t.dataset.r||14;
+  Object.assign(tour.querySelector('.spot').style,{left:(r.x-p)+'px',top:(r.y-p)+'px',width:(r.w+2*p)+'px',height:(r.h+2*p)+'px',borderRadius:rad+'px'});
+  Object.assign(tour.querySelector('.hit').style,{left:r.x+'px',top:r.y+'px',width:r.w+'px',height:r.h+'px',borderRadius:Math.max(rad-4,6)+'px'});
+  const card=tour.querySelector('.tip'), tw=card.offsetWidth, th=card.offsetHeight, gap=16;
+  const below=(H-(r.y+r.h+p))>=th+gap+10, left=clamp(r.x+r.w/2-tw/2,12,W-tw-12);
+  card.style.left=left+'px'; card.style.top=(below?r.y+r.h+p+gap:r.y-p-gap-th)+'px';
+  card.style.setProperty('--ax',clamp(r.x+r.w/2-left,24,tw-24)+'px'); card.classList.add(below?'below':'above');
+}
+function renderLive(){ live.innerHTML=phoneHTML(); layout(); renderCap(); markRows() }
+function renderCap(){
+  const n=cur().steps.length, st=state.step, c=$('#cap');
+  c.textContent= st===-1?'Tap “Show me” to start' : st>=0&&st<n?'Tap the highlighted area — it’s the real tap' : st===n?'Tap “Back to Home” or “Replay”' : 'Tour closed. Nothing was changed.';
+}
+function go(step,toast){state.step=step;state.toast=!!toast;renderLive()}
+function nudge(){[live.querySelector('.tip'),live.querySelector('.spot')].forEach(e=>{if(!e)return;e.classList.remove('nudge');void e.offsetWidth;e.classList.add('nudge')})}
+live.addEventListener('click',e=>{
+  const a=e.target.closest('[data-act]'); if(!a)return;
+  switch(a.dataset.act){
+    case 'show':case 'replay':go(0);break;
+    case 'close':go(cur().steps.length+1,false);break;
+    case 'hit':go(state.step+1);break;
+    case 'back':go(state.step-1);break;
+    case 'exit':case 'home':go(cur().steps.length+1,true);break;
+    case 'stray':nudge();break;
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.step>=0&&state.step<=cur().steps.length&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))go(cur().steps.length+1,true)});
+$('#restart').addEventListener('click',()=>go(-1));
+
+/* ---------- the editor ---------- */
+function renderTabs(){
+  $('#tabs').innerHTML=FEATURES.map((f,i)=>`<button type="button" data-f="${i}" aria-pressed="${i===state.f}">${esc(f.name||'Untitled')}</button>`).join('')+'<button type="button" class="new" data-new="1">+ New feature</button>';
+}
+const opts=(obj,sel)=>Object.entries(obj).map(([k,v])=>`<option value="${k}"${k===sel?' selected':''}>${esc(v)}</option>`).join('');
+function renderForm(){
+  const f=cur();
+  $('#fName').value=f.name; $('#fEntry').value=f.entry; $('#fFacts').value=f.facts.join('\n');
+  $('#steps').innerHTML=f.steps.map((s,i)=>`<div class="steprow" data-i="${i}"><div class="top"><span class="n">${i+1}</span>
+    <select data-k="screen" aria-label="Screen for step ${i+1}">${opts(SCREEN_NAMES,s.screen)}</select>
+    <select data-k="target" aria-label="Element for step ${i+1}">${opts(TARGETS[s.screen],s.target)}</select>
+    <button class="rm" data-rm="${i}" type="button" aria-label="Remove step ${i+1}"${f.steps.length<2?' disabled':''}>✕</button></div>
+    <input type="text" data-k="title" value="${esc(s.title)}" aria-label="Title for step ${i+1}" placeholder="Title">
+    <textarea data-k="body" aria-label="Text for step ${i+1}" placeholder="One sentence">${esc(s.body)}</textarea></div>`).join('');
+  renderTabs(); markRows();
+}
+function markRows(){document.querySelectorAll('.steprow').forEach(r=>r.classList.toggle('on',+r.dataset.i===state.step))}
+$('#tabs').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b)return;
+  if(b.dataset.new){FEATURES.push({name:'My new feature',entry:'Try the new feature;',steps:[{screen:'home',target:'numbers',title:'Start here',body:'Tell the user what to tap and why.'}],facts:['Nothing was changed']});state.f=FEATURES.length-1}
+  else state.f=+b.dataset.f;
+  renderForm(); go(-1);
+});
+$('#fName').addEventListener('input',e=>{cur().name=e.target.value;renderTabs()});
+$('#fEntry').addEventListener('input',e=>{cur().entry=e.target.value;go(-1)});
+$('#fFacts').addEventListener('input',e=>{cur().facts=e.target.value.split('\n').filter(x=>x.trim());go(cur().steps.length)});
+$('#steps').addEventListener('input',e=>{
+  const row=e.target.closest('.steprow'); if(!row)return; const i=+row.dataset.i, k=e.target.dataset.k;
+  cur().steps[i][k]=e.target.value;
+  if(k==='screen'){const first=Object.keys(TARGETS[e.target.value])[0];cur().steps[i].target=first;renderForm()}
+  go(i);
+});
+$('#steps').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;cur().steps.splice(+b.dataset.rm,1);renderForm();go(Math.max(0,Math.min(+b.dataset.rm,cur().steps.length-1)))});
+$('#addStep').addEventListener('click',()=>{const s=cur().steps,l=s[s.length-1];s.push({screen:l.screen,target:Object.keys(TARGETS[l.screen]).find(k=>k!==l.target)||l.target,title:'New step',body:'Explain what to tap.'});renderForm();go(s.length-1)});
+$('#copy').addEventListener('click',()=>{
+  const j=JSON.stringify(cur(),null,2), pre=$('#json'); pre.textContent=j; pre.hidden=false;
+  (navigator.clipboard?navigator.clipboard.writeText(j):Promise.reject()).then(()=>{$('#copied').textContent='Copied'},()=>{$('#copied').textContent='Select and copy below'});
+});
+$('#avail').innerHTML=Object.keys(SCREEN_NAMES).map(k=>`<tr><td>${SCREEN_NAMES[k]}</td><td>${Object.values(TARGETS[k]).join(' · ')}</td></tr>`).join('');
+
+renderForm(); renderLive();
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(renderLive);
+window.__go=go; window.__state=state;
+})();
+</script>
+</body>
+</html>
