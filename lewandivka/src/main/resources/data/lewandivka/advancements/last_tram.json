@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:ticket_composter"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.last_tram.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.last_tram.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:garage13"
+}

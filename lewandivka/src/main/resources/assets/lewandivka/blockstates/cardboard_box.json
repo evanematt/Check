@@ -1,0 +1,40 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "small": "false",
+        "opened": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/cardboard_box"
+      }
+    },
+    {
+      "when": {
+        "small": "false",
+        "opened": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/cardboard_box_opened"
+      }
+    },
+    {
+      "when": {
+        "small": "true",
+        "opened": "false"
+      },
+      "apply": {
+        "model": "lewandivka:block/cardboard_box_small"
+      }
+    },
+    {
+      "when": {
+        "small": "true",
+        "opened": "true"
+      },
+      "apply": {
+        "model": "lewandivka:block/cardboard_box_small_opened"
+      }
+    }
+  ]
+}

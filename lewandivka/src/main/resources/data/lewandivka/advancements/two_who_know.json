@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:cat_fish"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.two_who_know.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.two_who_know.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:dash"
+}

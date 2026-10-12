@@ -1,0 +1,17 @@
+{
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "unlock"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "lewandivka:abandoned_kiosk"
+    ]
+  }
+}

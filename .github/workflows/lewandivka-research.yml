@@ -1,0 +1,31 @@
+name: Lewandivka research
+
+# Looks at Modrinth projects for the author of the mod (the development machine cannot reach Modrinth): the projects listed in
+# lewandivka/tools/ci/research/request.txt (one slug per line) are described in research.txt of the pre-release ci-latest.
+on:
+  push:
+    paths:
+      - 'lewandivka/tools/ci/research/request.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Describe the projects
+        run: |
+          mkdir -p out
+          python3 lewandivka/tools/ci/modinfo.py lewandivka/tools/ci/research/request.txt out > out/research.txt 2>&1 || true
+          head -c 3000 out/research.txt
+      - name: Publish the description to the pre-release ci-latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view ci-latest >/dev/null 2>&1 || gh release create ci-latest --prerelease --title "CI logs (latest run)" --notes "Automatic logs of the most recent CI run of the Lewandivka mod." --target "$GITHUB_SHA"
+          echo "run=${{ github.run_number }} sha=${{ github.sha }}" > out/info-research.txt
+          for i in 1 2 3 4; do gh release upload ci-latest out/research.txt out/info-research.txt --clobber && break; sleep 6; done

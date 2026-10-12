@@ -1,0 +1,56 @@
+{
+ "format_version": "1.12.0",
+ "minecraft:geometry": [
+  {
+   "description": {
+    "identifier": "geometry.lewandivka.projectile",
+    "texture_width": 32,
+    "texture_height": 32,
+    "visible_bounds_width": 1.0,
+    "visible_bounds_height": 1.0,
+    "visible_bounds_offset": [
+     0,
+     0.2,
+     0
+    ]
+   },
+   "bones": [
+    {
+     "name": "root",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "spin",
+     "pivot": [
+      0,
+      0,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -1.0,
+        -1.0,
+        -1.0
+       ],
+       "size": [
+        2,
+        2,
+        2
+       ],
+       "uv": [
+        0,
+        0
+       ]
+      }
+     ],
+     "parent": "root"
+    }
+   ]
+  }
+ ]
+}

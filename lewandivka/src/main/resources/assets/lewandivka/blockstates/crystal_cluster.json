@@ -1,0 +1,376 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "color": "0",
+        "facing": "up"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_cyan"
+      }
+    },
+    {
+      "when": {
+        "color": "0",
+        "facing": "down"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_cyan",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "color": "0",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_cyan",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "color": "0",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_cyan",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "color": "0",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_cyan",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "color": "0",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_cyan",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "color": "1",
+        "facing": "up"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_green"
+      }
+    },
+    {
+      "when": {
+        "color": "1",
+        "facing": "down"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_green",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "color": "1",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_green",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "color": "1",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_green",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "color": "1",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_green",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "color": "1",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_green",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "color": "2",
+        "facing": "up"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_orange"
+      }
+    },
+    {
+      "when": {
+        "color": "2",
+        "facing": "down"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_orange",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "color": "2",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_orange",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "color": "2",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_orange",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "color": "2",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_orange",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "color": "2",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_orange",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "color": "3",
+        "facing": "up"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_pink"
+      }
+    },
+    {
+      "when": {
+        "color": "3",
+        "facing": "down"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_pink",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "color": "3",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_pink",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "color": "3",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_pink",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "color": "3",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_pink",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "color": "3",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_pink",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "color": "4",
+        "facing": "up"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_violet"
+      }
+    },
+    {
+      "when": {
+        "color": "4",
+        "facing": "down"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_violet",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "color": "4",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_violet",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "color": "4",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_violet",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "color": "4",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_violet",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "color": "4",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_violet",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "color": "5",
+        "facing": "up"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_yellow"
+      }
+    },
+    {
+      "when": {
+        "color": "5",
+        "facing": "down"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_yellow",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "color": "5",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_yellow",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "color": "5",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_yellow",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "color": "5",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_yellow",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "color": "5",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/crystal_cluster_yellow",
+        "x": 90,
+        "y": 270
+      }
+    }
+  ]
+}

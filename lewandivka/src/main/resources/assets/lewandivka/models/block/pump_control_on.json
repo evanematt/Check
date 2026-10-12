@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "lewandivka:block/pump_control_on_front",
+    "side": "lewandivka:block/pump_control_side",
+    "top": "lewandivka:block/pump_control_top"
+  }
+}

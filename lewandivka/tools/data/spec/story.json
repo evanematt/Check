@@ -1,0 +1,1881 @@
+{
+  "steps": {
+    "explore_district": {
+      "id": 0,
+      "stage": "prologue",
+      "counterMax": 4,
+      "titleUk": "Десь я не туди вийшов",
+      "titleEn": "I Got Off Somewhere Wrong",
+      "objectiveUk": "Огляньте район: двори, гаражі, магазин (%s/%s)",
+      "objectiveEn": "Look around the district: courtyards, garages, the shop (%s/%s)",
+      "hintUk": "Підійдіть до майданчика, лавки, смітників. Район сам покаже.",
+      "hintEn": "Walk to the playground, the benches, the bins. The district will show you."
+    },
+    "collect_tokens": {
+      "id": 1,
+      "stage": "first_night",
+      "counterMax": 4,
+      "titleUk": "Ніч на кінцевій",
+      "titleEn": "Night at the Terminus",
+      "objectiveUk": "Здобудьте жетони району (%s/%s)",
+      "objectiveEn": "Collect district tokens (%s/%s)",
+      "hintUk": "Гопники носять жетони в кишенях. Не всі зараз вороги.",
+      "hintEn": "Gopniks carry tokens in their pockets. Not all of them are hostile yet."
+    },
+    "craft_kiosk": {
+      "id": 2,
+      "stage": "district_reputation",
+      "counterMax": 0,
+      "titleUk": "Закинутий кіоск",
+      "titleEn": "The Abandoned Kiosk",
+      "objectiveUk": "Скрафтьте «Закинутий кіоск»: 6 дощок, 2 залізні зливки, табличка",
+      "objectiveEn": "Craft the Abandoned Kiosk: 6 planks, 2 iron ingots, 1 sign",
+      "hintUk": "Дошки, залізо й табличку шукайте в сміттєвих баках і схованках двору.",
+      "hintEn": "Look for planks, iron and a sign in the bins and caches of the yards."
+    },
+    "place_kiosk": {
+      "id": 3,
+      "stage": "district_reputation",
+      "counterMax": 0,
+      "titleUk": "Закинутий кіоск",
+      "titleEn": "The Abandoned Kiosk",
+      "objectiveUk": "Поставте кіоск на фундамент біля магазину",
+      "objectiveEn": "Place the kiosk on the foundation near the shop",
+      "hintUk": "Фундамент розмальований, його видно від тролейбусного кільця.",
+      "hintEn": "The foundation is painted; it can be seen from the turning loop."
+    },
+    "talk_shlahbaum": {
+      "id": 4,
+      "stage": "district_reputation",
+      "counterMax": 0,
+      "titleUk": "Закинутий кіоск",
+      "titleEn": "The Abandoned Kiosk",
+      "objectiveUk": "Поговоріть із Паном Шлагбаумом",
+      "objectiveEn": "Talk to Mr. Shlahbaum",
+      "hintUk": "Він стоїть біля кіоска. Мовчки. Це нормально.",
+      "hintEn": "He stands by the kiosk. Silently. That is normal."
+    },
+    "debtor_note": {
+      "id": 5,
+      "stage": "debtor",
+      "counterMax": 0,
+      "titleUk": "Боржник",
+      "titleEn": "The Debtor",
+      "objectiveUk": "Прочитайте записку «Боржник»",
+      "objectiveEn": "Read the note \"The Debtor\"",
+      "hintUk": "Записка в інвентарі. Клацніть нею.",
+      "hintEn": "The note is in your inventory. Use it."
+    },
+    "debtor_clues": {
+      "id": 6,
+      "stage": "debtor",
+      "counterMax": 5,
+      "titleUk": "Боржник",
+      "titleEn": "The Debtor",
+      "objectiveUk": "Знайдіть сліди Боржника (%s/%s)",
+      "objectiveEn": "Find the Debtor's traces (%s/%s)",
+      "hintUk": "Пакет від чаю — біля магазину. Лавка — північний двір. Майданчик — південний двір. Смітники — південний схід. Дах гаражів — південний захід, цегляні сходи в алеї.",
+      "hintEn": "Tea package: by the old shop. Bench: north courtyard. Playground: south courtyard. Bins: south-east. Garage roof: far south-west, brick stairs in the alley."
+    },
+    "debtor_chase": {
+      "id": 7,
+      "stage": "debtor",
+      "counterMax": 0,
+      "titleUk": "Боржник",
+      "titleEn": "The Debtor",
+      "objectiveUk": "Наздожени Боржника",
+      "objectiveEn": "Catch the Debtor",
+      "hintUk": "Він швидкий, але знає лише свої двори. Відріжте йому шлях.",
+      "hintEn": "He is fast, but only knows his own yards. Cut off his routes."
+    },
+    "debtor_resolve": {
+      "id": 8,
+      "stage": "debtor",
+      "counterMax": 0,
+      "titleUk": "Боржник",
+      "titleEn": "The Debtor",
+      "objectiveUk": "Вирішіть справу з Боржником",
+      "objectiveEn": "Settle things with the Debtor",
+      "hintUk": "Заплатити, поручитися або принести сємок. Бити не обов'язково.",
+      "hintEn": "Pay, vouch for him or bring seeds. No fighting required."
+    },
+    "kettle_test": {
+      "id": 9,
+      "stage": "debtor",
+      "counterMax": 0,
+      "titleUk": "Боржник",
+      "titleEn": "The Debtor",
+      "objectiveUk": "Випробуйте чайник із водою",
+      "objectiveEn": "Try the kettle with water in it",
+      "hintUk": "Наповніть чайник водою і поставте на землю.",
+      "hintEn": "Fill the kettle with water and set it on the ground."
+    },
+    "garage_find": {
+      "id": 10,
+      "stage": "garage_13",
+      "counterMax": 0,
+      "titleUk": "Гараж №13",
+      "titleEn": "Garage No. 13",
+      "objectiveUk": "Знайдіть гаражний кооператив",
+      "objectiveEn": "Find the garage cooperative",
+      "hintUk": "На заході району, де закінчується асфальт.",
+      "hintEn": "In the west of the district, where the asphalt ends."
+    },
+    "garage_panels": {
+      "id": 11,
+      "stage": "garage_13",
+      "counterMax": 3,
+      "titleUk": "Гараж №13",
+      "titleEn": "Garage No. 13",
+      "objectiveUk": "Увімкніть три електричні точки (%s/%s)",
+      "objectiveEn": "Restore the three power points (%s/%s)",
+      "hintUk": "Автомати, перемикачі, важелі. Номери гаражів брешуть.",
+      "hintEn": "Breakers, switches, levers. The garage numbers lie."
+    },
+    "garage_package": {
+      "id": 12,
+      "stage": "garage_13",
+      "counterMax": 0,
+      "titleUk": "Гараж №13",
+      "titleEn": "Garage No. 13",
+      "objectiveUk": "Заберіть посилку з гаража №13",
+      "objectiveEn": "Take the package from Garage No. 13",
+      "hintUk": "Між дванадцятим і чотирнадцятим тепер є двері.",
+      "hintEn": "Between twelve and fourteen there is now a door."
+    },
+    "garage_escape": {
+      "id": 13,
+      "stage": "garage_13",
+      "counterMax": 0,
+      "titleUk": "Гараж №13",
+      "titleEn": "Garage No. 13",
+      "objectiveUk": "Винесіть посилку: головні ворота зачинилися",
+      "objectiveEn": "Carry the package out: the main gate has closed",
+      "hintUk": "Підземні тунелі ведуть на люк за гаражами. Посилка бурчить.",
+      "hintEn": "The tunnels lead to a manhole behind the garages. The package growls."
+    },
+    "garage_deliver": {
+      "id": 14,
+      "stage": "garage_13",
+      "counterMax": 0,
+      "titleUk": "Гараж №13",
+      "titleEn": "Garage No. 13",
+      "objectiveUk": "Віднесіть посилку Панові Шлагбауму",
+      "objectiveEn": "Bring the package to Mr. Shlahbaum",
+      "hintUk": "Не відкривайте. Не трусіть.",
+      "hintEn": "Do not open it. Do not shake it."
+    },
+    "tram_wait": {
+      "id": 15,
+      "stage": "last_tram",
+      "counterMax": 0,
+      "titleUk": "Останній трамвай",
+      "titleEn": "The Last Tram",
+      "objectiveUk": "Зачекайте на трамвайній зупинці",
+      "objectiveEn": "Wait at the tram stop",
+      "hintUk": "Коли стемніє, почується дзвінок.",
+      "hintEn": "When it gets dark you will hear a bell."
+    },
+    "tram_fight": {
+      "id": 16,
+      "stage": "last_tram",
+      "counterMax": 3,
+      "titleUk": "Останній трамвай",
+      "titleEn": "The Last Tram",
+      "objectiveUk": "Відбийте безквиткових (хвиля %s/%s)",
+      "objectiveEn": "Fend off the fare dodgers (wave %s/%s)",
+      "hintUk": "Три хвилі. Старі компостери навколо трамвая щось та й роблять.",
+      "hintEn": "Three waves. The old validators around the tram do something."
+    },
+    "tram_report": {
+      "id": 17,
+      "stage": "last_tram",
+      "counterMax": 0,
+      "titleUk": "Останній трамвай",
+      "titleEn": "The Last Tram",
+      "objectiveUk": "Поверніться до Пана Шлагбаума",
+      "objectiveEn": "Return to Mr. Shlahbaum",
+      "hintUk": "Компостер у вас. Він знатиме, що з ним робити.",
+      "hintEn": "You have the composter. He will know what to do with it."
+    },
+    "chroma_take": {
+      "id": 18,
+      "stage": "chroma_ready",
+      "counterMax": 0,
+      "titleUk": "Таблетка «Хрома»",
+      "titleEn": "The Chroma Tablet",
+      "objectiveUk": "Проковтніть «Хрому» разом: п'ять хвилин на всіх",
+      "objectiveEn": "Swallow Chroma together: five minutes for everyone",
+      "hintUk": "Таймер піде, коли перший проковтне. Не розходьтесь.",
+      "hintEn": "The timer starts when the first of you swallows. Stay together."
+    },
+    "transition": {
+      "id": 19,
+      "stage": "chroma_transition",
+      "counterMax": 0,
+      "titleUk": "По той бік району",
+      "titleEn": "The Other Side of the District",
+      "objectiveUk": "Тримайтеся",
+      "objectiveEn": "Hold on",
+      "hintUk": "",
+      "hintEn": ""
+    },
+    "base_wake": {
+      "id": 20,
+      "stage": "chromandivka_base",
+      "counterMax": 0,
+      "titleUk": "Прокинутись у чужому",
+      "titleEn": "Waking Up Somewhere Else",
+      "objectiveUk": "Огляньте будинок і прокиньтесь",
+      "objectiveEn": "Look around the house and wake up",
+      "hintUk": "Три ліжка, коробки, порожні місця для котів.",
+      "hintEn": "Three beds, boxes, empty places for cats."
+    },
+    "base_pedestals": {
+      "id": 21,
+      "stage": "chromandivka_base",
+      "counterMax": 4,
+      "titleUk": "Прокинутись у чужому",
+      "titleEn": "Waking Up Somewhere Else",
+      "objectiveUk": "Покладіть на постаменти чайник, посилку, компостер і жетон (%s/%s)",
+      "objectiveEn": "Put the kettle, package, composter and token on the pedestals (%s/%s)",
+      "hintUk": "Чотири постаменти вздовж стіни. Предмети нікуди не втечуть.",
+      "hintEn": "Four pedestals along the wall. The items will not run away."
+    },
+    "rg_travel": {
+      "id": 22,
+      "stage": "rainbow_garage",
+      "counterMax": 0,
+      "titleUk": "Кооператив «Веселковий гараж»",
+      "titleEn": "Rainbow Garage Cooperative",
+      "objectiveUk": "Дійдіть до «Веселкового гаража» за компасом",
+      "objectiveEn": "Reach the Rainbow Garage with the compass",
+      "hintUk": "Компас показує потрібне, а не північ. Дивіться на будівлі вдалині.",
+      "hintEn": "The compass shows what you need, not north. Look at the buildings in the distance."
+    },
+    "rg_wings": {
+      "id": 23,
+      "stage": "rainbow_garage",
+      "counterMax": 3,
+      "titleUk": "Кооператив «Веселковий гараж»",
+      "titleEn": "Rainbow Garage Cooperative",
+      "objectiveUk": "Пройдіть три крила гаража й візьміть батареї (%s/%s)",
+      "objectiveEn": "Clear the three wings and take the batteries (%s/%s)",
+      "hintUk": "Фарбувальня, підйомна зала, промисловий прес.",
+      "hintEn": "Paint workshop, lift hall, industrial press."
+    },
+    "rg_boss": {
+      "id": 24,
+      "stage": "rainbow_garage",
+      "counterMax": 0,
+      "titleUk": "Кооператив «Веселковий гараж»",
+      "titleEn": "Rainbow Garage Cooperative",
+      "objectiveUk": "Переможіть Гаражного Короля",
+      "objectiveEn": "Defeat the Garage King",
+      "hintUk": "Три батареї відкривають арену.",
+      "hintEn": "Three batteries open the arena."
+    },
+    "sh_dash": {
+      "id": 25,
+      "stage": "shelter",
+      "counterMax": 0,
+      "titleUk": "Двоє, які знають дорогу",
+      "titleEn": "Two Who Know the Way",
+      "objectiveUk": "Потрапте до Укриття втрачених імен: потрібен ривок",
+      "objectiveEn": "Reach the Shelter of Lost Names: you need a dash",
+      "hintUk": "Клавіша ривка — V. Двері швидше за вас не бувають.",
+      "hintEn": "Dash with V. The doors are never faster than you."
+    },
+    "sh_levers": {
+      "id": 26,
+      "stage": "shelter",
+      "counterMax": 3,
+      "titleUk": "Двоє, які знають дорогу",
+      "titleEn": "Two Who Know the Way",
+      "objectiveUk": "Потягніть три важелі разом (%s/%s)",
+      "objectiveEn": "Pull the three levers together (%s/%s)",
+      "hintUk": "Вікно синхронізації залежить від кількості гравців.",
+      "hintEn": "The sync window depends on how many players there are."
+    },
+    "sh_chinazik": {
+      "id": 27,
+      "stage": "shelter",
+      "counterMax": 4,
+      "titleUk": "Двоє, які знають дорогу",
+      "titleEn": "Two Who Know the Way",
+      "objectiveUk": "Виведіть чорного кота на килимок: кладіть їжу (%s/%s)",
+      "objectiveEn": "Lead the black cat onto the rug: place food (%s/%s)",
+      "hintUk": "Не підходьте прямо. Він це не любить.",
+      "hintEn": "Do not walk straight at him. He does not like it."
+    },
+    "sh_metadonna": {
+      "id": 28,
+      "stage": "shelter",
+      "counterMax": 0,
+      "titleUk": "Двоє, які знають дорогу",
+      "titleEn": "Two Who Know the Way",
+      "objectiveUk": "Знайдіть сіру кішку в коробках складу",
+      "objectiveEn": "Find the grey cat among the warehouse boxes",
+      "hintUk": "Слухайте муркотіння. Потрібна коробка трохи менша за інші.",
+      "hintEn": "Listen for the purring. The right box is a little smaller than the rest."
+    },
+    "sh_boss": {
+      "id": 29,
+      "stage": "shelter",
+      "counterMax": 0,
+      "titleUk": "Двоє, які знають дорогу",
+      "titleEn": "Two Who Know the Way",
+      "objectiveUk": "Переможіть Колекціонера Нашийників",
+      "objectiveEn": "Defeat the Collar Collector",
+      "hintUk": "Коти знають, який нашийник справжній.",
+      "hintEn": "The cats know which collar is real."
+    },
+    "aq_find": {
+      "id": 30,
+      "stage": "aquapark",
+      "counterMax": 0,
+      "titleUk": "Сухе озеро",
+      "titleEn": "Dry Lake",
+      "objectiveUk": "Знайдіть вхід в аквапарк: коти покажуть",
+      "objectiveEn": "Find the aquapark entrance: the cats will show you",
+      "hintUk": "Кіт сидить і дивиться на стіну — отже, це не стіна.",
+      "hintEn": "A cat sitting and staring at a wall means it is not a wall."
+    },
+    "aq_pumps": {
+      "id": 31,
+      "stage": "aquapark",
+      "counterMax": 3,
+      "titleUk": "Сухе озеро",
+      "titleEn": "Dry Lake",
+      "objectiveUk": "Запустіть три насоси (%s/%s)",
+      "objectiveEn": "Start the three pumps (%s/%s)",
+      "hintUk": "Після кожного насоса частина басейнів наповнюється помаранчевим.",
+      "hintEn": "After each pump, part of the pools fills with orange liquid."
+    },
+    "aq_boss": {
+      "id": 32,
+      "stage": "aquapark",
+      "counterMax": 0,
+      "titleUk": "Сухе озеро",
+      "titleEn": "Dry Lake",
+      "objectiveUk": "Переможіть Пані Вирву",
+      "objectiveEn": "Defeat Lady Vortex",
+      "hintUk": "Кожна чверть арени має колір і знак. Зважайте на обидва.",
+      "hintEn": "Each quarter of the arena has a colour and a symbol. Heed both."
+    },
+    "sky_ascent": {
+      "id": 33,
+      "stage": "sky_depot",
+      "counterMax": 0,
+      "titleUk": "Трамвайне депо над небом",
+      "titleEn": "The Depot Above the Sky",
+      "objectiveUk": "Піднімайтеся пружинами до небесної зупинки",
+      "objectiveEn": "Bounce up to the sky tram stop",
+      "hintUk": "Пружинна плита, острів, кришталевий виступ, тунель.",
+      "hintEn": "Spring pad, island, crystal ledge, bounce tunnel."
+    },
+    "sky_ride": {
+      "id": 34,
+      "stage": "sky_depot",
+      "counterMax": 0,
+      "titleUk": "Трамвайне депо над небом",
+      "titleEn": "The Depot Above the Sky",
+      "objectiveUk": "Сядьте в небесний трамвай",
+      "objectiveEn": "Board the sky tram",
+      "hintUk": "Дві-три хвилини панорами. Тримайтеся.",
+      "hintEn": "Two or three minutes of panorama. Hold on."
+    },
+    "sky_switches": {
+      "id": 35,
+      "stage": "sky_depot",
+      "counterMax": 0,
+      "titleUk": "Трамвайне депо над небом",
+      "titleEn": "The Depot Above the Sky",
+      "objectiveUk": "Налаштуйте стрілки, щоб вагон дійшов до каси",
+      "objectiveEn": "Set the switches so the car reaches the ticket office",
+      "hintUk": "У диспетчерській висять схеми. Помилка не смертельна.",
+      "hintEn": "The dispatcher room has diagrams. A mistake is not fatal."
+    },
+    "sky_tickets": {
+      "id": 36,
+      "stage": "sky_depot",
+      "counterMax": 3,
+      "titleUk": "Трамвайне депо над небом",
+      "titleEn": "The Depot Above the Sky",
+      "objectiveUk": "Отримайте квитки з різними знаками (%s/%s)",
+      "objectiveEn": "Obtain tickets with different symbols (%s/%s)",
+      "hintUk": "Хрестик, кружечок, трикутник, квадрат. Компостер знову знадобиться.",
+      "hintEn": "Cross, circle, triangle, square. The composter will be needed again."
+    },
+    "sky_boss": {
+      "id": 37,
+      "stage": "sky_depot",
+      "counterMax": 0,
+      "titleUk": "Трамвайне депо над небом",
+      "titleEn": "The Depot Above the Sky",
+      "objectiveUk": "Переможіть Кондуктора",
+      "objectiveEn": "Defeat the Conductor",
+      "hintUk": "Дивіться під ноги: дзвінок, лампи, звук, рух колії.",
+      "hintEn": "Watch your feet: bell, lamps, sound, moving tracks."
+    },
+    "tower_ring": {
+      "id": 38,
+      "stage": "tower",
+      "counterMax": 0,
+      "titleUk": "Голова району",
+      "titleEn": "Head of the District",
+      "objectiveUk": "Подивіться вгору: кільце ціле",
+      "objectiveEn": "Look up: the ring is whole",
+      "hintUk": "Недовго.",
+      "hintEn": "Not for long."
+    },
+    "tower_approach": {
+      "id": 39,
+      "stage": "tower",
+      "counterMax": 0,
+      "titleUk": "Голова району",
+      "titleEn": "Head of the District",
+      "objectiveUk": "Пройдіть підхід до Вежі: ривок, прохід, пружини, планер",
+      "objectiveEn": "Cross the approach to the Tower: dash, passage, springs, glider",
+      "hintUk": "Потрібні всі три здібності та уважність котів.",
+      "hintEn": "All three abilities and the cats' attention are required."
+    },
+    "tower_climb": {
+      "id": 40,
+      "stage": "tower",
+      "counterMax": 5,
+      "titleUk": "Голова району",
+      "titleEn": "Head of the District",
+      "objectiveUk": "Підніміться Вежею (поверх %s/%s)",
+      "objectiveEn": "Climb the Tower (floor %s/%s)",
+      "hintUk": "Архів, Кабінет 404, Відділ колірних порушень, Службова шахта, Обвалений поверх.",
+      "hintEn": "Archive, Office 404, Department of Color Violations, Service Shaft, Collapsed Floor."
+    },
+    "final_fight": {
+      "id": 41,
+      "stage": "final_boss",
+      "counterMax": 0,
+      "titleUk": "Безбарвний Голова",
+      "titleEn": "The Colorless Head",
+      "objectiveUk": "Переможіть Безбарвного Голову",
+      "objectiveEn": "Defeat the Colorless Head",
+      "hintUk": "Тільки той, хто тримає заряд, завдає шкоди. Передавайте його клавішею Q.",
+      "hintEn": "Only the holder of the charge deals damage. Pass it with Q."
+    },
+    "epi_return": {
+      "id": 42,
+      "stage": "epilogue",
+      "counterMax": 0,
+      "titleUk": "Район знову кольоровий",
+      "titleEn": "The District Is Colorful Again",
+      "objectiveUk": "Огляньте оновлену Хромандівку",
+      "objectiveEn": "Look around the restored Chromandivka",
+      "hintUk": "Дещо змінилося.",
+      "hintEn": "Some things have changed."
+    },
+    "epi_portal": {
+      "id": 43,
+      "stage": "epilogue",
+      "counterMax": 0,
+      "titleUk": "Район знову кольоровий",
+      "titleEn": "The District Is Colorful Again",
+      "objectiveUk": "Поверніться порталом до Левандівки",
+      "objectiveEn": "Return through the portal to Lewandivka",
+      "hintUk": "Портал у будинку, там, де були постаменти.",
+      "hintEn": "The portal is in the house, where the pedestals were."
+    },
+    "epi_morning": {
+      "id": 44,
+      "stage": "epilogue",
+      "counterMax": 0,
+      "titleUk": "Район знову кольоровий",
+      "titleEn": "The District Is Colorful Again",
+      "objectiveUk": "Зустріньте ранок біля кіоска",
+      "objectiveEn": "Meet the morning at the kiosk",
+      "hintUk": "Пан Шлагбаум на місці.",
+      "hintEn": "Mr. Shlahbaum is in his place."
+    },
+    "post_free": {
+      "id": 45,
+      "stage": "postgame",
+      "counterMax": 0,
+      "titleUk": "Район відкритий",
+      "titleEn": "The District Is Open",
+      "objectiveUk": "Вільна гра: дванадцять котів, сємки, трамвай, гараж №0",
+      "objectiveEn": "Free play: twelve cats, the seeds, the tram, Garage No. 0",
+      "hintUk": "Блокнот підкаже, що ще лишилося.",
+      "hintEn": "The notebook will tell you what is left."
+    }
+  },
+  "stages": {
+    "prologue": {
+      "uk": "Пролог",
+      "en": "Prologue"
+    },
+    "first_night": {
+      "uk": "Перша ніч",
+      "en": "First Night"
+    },
+    "district_reputation": {
+      "uk": "Репутація",
+      "en": "Reputation"
+    },
+    "debtor": {
+      "uk": "Боржник",
+      "en": "The Debtor"
+    },
+    "garage_13": {
+      "uk": "Гараж №13",
+      "en": "Garage No. 13"
+    },
+    "last_tram": {
+      "uk": "Останній трамвай",
+      "en": "The Last Tram"
+    },
+    "chroma_ready": {
+      "uk": "Хрома",
+      "en": "Chroma"
+    },
+    "chroma_transition": {
+      "uk": "Перехід",
+      "en": "The Crossing"
+    },
+    "chromandivka_base": {
+      "uk": "Хромандівка",
+      "en": "Chromandivka"
+    },
+    "rainbow_garage": {
+      "uk": "Веселковий гараж",
+      "en": "Rainbow Garage"
+    },
+    "shelter": {
+      "uk": "Укриття втрачених імен",
+      "en": "Shelter of Lost Names"
+    },
+    "aquapark": {
+      "uk": "Сухе озеро",
+      "en": "Dry Lake"
+    },
+    "sky_depot": {
+      "uk": "Депо над небом",
+      "en": "Depot Above the Sky"
+    },
+    "tower": {
+      "uk": "Вежа Голови району",
+      "en": "Head of District Tower"
+    },
+    "final_boss": {
+      "uk": "Безбарвний Голова",
+      "en": "The Colorless Head"
+    },
+    "epilogue": {
+      "uk": "Ранок",
+      "en": "Morning"
+    },
+    "postgame": {
+      "uk": "Після всього",
+      "en": "After Everything"
+    }
+  },
+  "text": {
+    "speaker.lewandivka.shlahbaum": {
+      "uk": "Пан Шлагбаум",
+      "en": "Mr. Shlahbaum"
+    },
+    "speaker.lewandivka.gopnik": {
+      "uk": "Гопник",
+      "en": "Gopnik"
+    },
+    "speaker.lewandivka.senior": {
+      "uk": "Старший по двору",
+      "en": "Senior Yard Gopnik"
+    },
+    "speaker.lewandivka.debtor": {
+      "uk": "Боржник",
+      "en": "The Debtor"
+    },
+    "speaker.lewandivka.leader": {
+      "uk": "Ватажок безквиткових",
+      "en": "Fare Dodger Leader"
+    },
+    "speaker.lewandivka.unknown": {
+      "uk": "???",
+      "en": "???"
+    },
+    "speaker.lewandivka.chinazik": {
+      "uk": "Чіназік",
+      "en": "Chinazik"
+    },
+    "speaker.lewandivka.metadonna": {
+      "uk": "Метадонна",
+      "en": "Metadonna"
+    },
+    "speaker.lewandivka.king": {
+      "uk": "Гаражний Король",
+      "en": "Garage King"
+    },
+    "speaker.lewandivka.collector": {
+      "uk": "Колекціонер Нашийників",
+      "en": "Collar Collector"
+    },
+    "speaker.lewandivka.vortex": {
+      "uk": "Пані Вирва",
+      "en": "Lady Vortex"
+    },
+    "speaker.lewandivka.conductor": {
+      "uk": "Кондуктор",
+      "en": "The Conductor"
+    },
+    "speaker.lewandivka.head": {
+      "uk": "Безбарвний Голова",
+      "en": "The Colorless Head"
+    },
+    "speaker.lewandivka.machine": {
+      "uk": "Автомат",
+      "en": "The Machine"
+    },
+    "speaker.lewandivka.notebook": {
+      "uk": "Блокнот",
+      "en": "Notebook"
+    },
+    "speaker.lewandivka.": {
+      "uk": "",
+      "en": ""
+    },
+    "dialogue.lewandivka.shlahbaum_kiosk.1": {
+      "uk": "О. Кіоск.",
+      "en": "Oh. A kiosk."
+    },
+    "dialogue.lewandivka.shlahbaum_kiosk.2": {
+      "uk": "Давно тут не стояв.",
+      "en": "Haven't stood here in a while."
+    },
+    "dialogue.lewandivka.shlahbaum_kiosk.3": {
+      "uk": "Є одна справа. Дрібна.",
+      "en": "There is a matter. A small one."
+    },
+    "dialogue.lewandivka.shlahbaum_kiosk.4": {
+      "uk": "Тримайте. Там усе написано.",
+      "en": "Take this. It is all written there."
+    },
+    "dialogue.lewandivka.shlahbaum_idle_1.1": {
+      "uk": "Шлагбаум піднято.",
+      "en": "The barrier is up."
+    },
+    "dialogue.lewandivka.shlahbaum_idle_2.1": {
+      "uk": "Нічого не відбувається. Це добре.",
+      "en": "Nothing is happening. That is good."
+    },
+    "dialogue.lewandivka.shlahbaum_idle_3.1": {
+      "uk": "Район — не місце. Район — звичка.",
+      "en": "A district is not a place. It is a habit."
+    },
+    "dialogue.lewandivka.shlahbaum_idle_4.1": {
+      "uk": "Не стійте під стрілою.",
+      "en": "Do not stand under the boom."
+    },
+    "dialogue.lewandivka.seeds_demand.1": {
+      "uk": "Ей. Сємки є?",
+      "en": "Hey. Got any seeds?"
+    },
+    "dialogue.lewandivka.seeds_demand.choice.give": {
+      "uk": "Дати сємки",
+      "en": "Give seeds"
+    },
+    "dialogue.lewandivka.seeds_demand.choice.leave": {
+      "uk": "Піти геть",
+      "en": "Walk away"
+    },
+    "dialogue.lewandivka.seeds_demand.choice.fight": {
+      "uk": "Відмовити кулаком",
+      "en": "Refuse with a fist"
+    },
+    "dialogue.lewandivka.seeds_given.1": {
+      "uk": "О. Нормальний.",
+      "en": "Oh. Decent."
+    },
+    "dialogue.lewandivka.seeds_given.2": {
+      "uk": "Ходи спокійно.",
+      "en": "Walk easy."
+    },
+    "dialogue.lewandivka.seeds_left.1": {
+      "uk": "Ну і йди.",
+      "en": "Then go."
+    },
+    "dialogue.lewandivka.seeds_none.1": {
+      "uk": "Нема? Ну-ну.",
+      "en": "None? Well, well."
+    },
+    "dialogue.lewandivka.debtor_found.1": {
+      "uk": "Не бий! Я все поясню!",
+      "en": "Do not hit me! I can explain!"
+    },
+    "dialogue.lewandivka.debtor_found.2": {
+      "uk": "Я винен трамваю. Три смарагди.",
+      "en": "I owe the tram. Three emeralds."
+    },
+    "dialogue.lewandivka.debtor_found.3": {
+      "uk": "Або... може, домовимось?",
+      "en": "Or... maybe we can agree on something?"
+    },
+    "dialogue.lewandivka.debtor_found.choice.pay": {
+      "uk": "Заплатити 3 смарагди",
+      "en": "Pay 3 emeralds"
+    },
+    "dialogue.lewandivka.debtor_found.choice.vouch": {
+      "uk": "Поручитися жетонами району",
+      "en": "Vouch with district tokens"
+    },
+    "dialogue.lewandivka.debtor_found.choice.seeds": {
+      "uk": "Принести йому сємок",
+      "en": "Bring him seeds"
+    },
+    "dialogue.lewandivka.debtor_resolved_pay.1": {
+      "uk": "Дякую. Рахунок закрито.",
+      "en": "Thanks. The bill is settled."
+    },
+    "dialogue.lewandivka.debtor_resolved_pay.2": {
+      "uk": "Візьміть. Воно все одно кипить.",
+      "en": "Take it. It boils anyway."
+    },
+    "dialogue.lewandivka.debtor_resolved_vouch.1": {
+      "uk": "Ви свої. Я запам'ятаю.",
+      "en": "You are local. I will remember."
+    },
+    "dialogue.lewandivka.debtor_resolved_vouch.2": {
+      "uk": "Візьміть. Воно все одно кипить.",
+      "en": "Take it. It boils anyway."
+    },
+    "dialogue.lewandivka.debtor_resolved_seeds.1": {
+      "uk": "Сємки! Ох, вдячний.",
+      "en": "Seeds! Oh, I am grateful."
+    },
+    "dialogue.lewandivka.debtor_resolved_seeds.2": {
+      "uk": "Візьміть. Воно все одно кипить.",
+      "en": "Take it. It boils anyway."
+    },
+    "dialogue.lewandivka.debtor_taunt_1.1": {
+      "uk": "Не наздоженете!",
+      "en": "You will not catch me!"
+    },
+    "dialogue.lewandivka.debtor_taunt_2.1": {
+      "uk": "Тільки не до гаражів!",
+      "en": "Anything but the garages!"
+    },
+    "dialogue.lewandivka.debtor_taunt_3.1": {
+      "uk": "Я зараз упаду...",
+      "en": "I am about to fall..."
+    },
+    "dialogue.lewandivka.shlahbaum_kettle.1": {
+      "uk": "Ти це бачив?",
+      "en": "Did you see that?"
+    },
+    "dialogue.lewandivka.shlahbaum_kettle.2": {
+      "uk": "Я теж ні.",
+      "en": "Neither did I."
+    },
+    "dialogue.lewandivka.shlahbaum_kettle.3": {
+      "uk": "Гараж. Тринадцятий. Його нема.",
+      "en": "A garage. The thirteenth. It does not exist."
+    },
+    "dialogue.lewandivka.shlahbaum_kettle.4": {
+      "uk": "Тому й шукайте.",
+      "en": "So go and look for it."
+    },
+    "dialogue.lewandivka.shlahbaum_package.1": {
+      "uk": "Давайте.",
+      "en": "Hand it over."
+    },
+    "dialogue.lewandivka.shlahbaum_package.2": {
+      "uk": "Хм.",
+      "en": "Hm."
+    },
+    "dialogue.lewandivka.shlahbaum_package.3": {
+      "uk": "Показувати не буду.",
+      "en": "I will not show you."
+    },
+    "dialogue.lewandivka.shlahbaum_package.4": {
+      "uk": "Сьогодні буде останній трамвай.",
+      "en": "Tonight is the last tram."
+    },
+    "dialogue.lewandivka.shlahbaum_package.5": {
+      "uk": "Не запізнюйтесь.",
+      "en": "Do not be late."
+    },
+    "dialogue.lewandivka.tram_start.1": {
+      "uk": "Десь далеко дзвонить трамвай.",
+      "en": "Somewhere far away a tram bell rings."
+    },
+    "dialogue.lewandivka.tram_start.2": {
+      "uk": "Рейки були зламані.",
+      "en": "The rails were broken."
+    },
+    "dialogue.lewandivka.tram_start.3": {
+      "uk": "Квитки!",
+      "en": "Tickets!"
+    },
+    "dialogue.lewandivka.tram_shield.1": {
+      "uk": "У мене проїзний. Довічний.",
+      "en": "I have a pass. A lifetime one."
+    },
+    "dialogue.lewandivka.shlahbaum_composter.1": {
+      "uk": "Компостер.",
+      "en": "A composter."
+    },
+    "dialogue.lewandivka.shlahbaum_composter.2": {
+      "uk": "Пробиває квитки. І не тільки.",
+      "en": "Punches tickets. And not only those."
+    },
+    "dialogue.lewandivka.shlahbaum_composter.3": {
+      "uk": "Бережіть.",
+      "en": "Keep it safe."
+    },
+    "dialogue.lewandivka.shlahbaum_chroma.1": {
+      "uk": "Тепер можна.",
+      "en": "Now it is allowed."
+    },
+    "dialogue.lewandivka.shlahbaum_chroma.2": {
+      "uk": "Це «Хрома».",
+      "en": "This is Chroma."
+    },
+    "dialogue.lewandivka.shlahbaum_chroma.3": {
+      "uk": "Район колись був більший.",
+      "en": "The district used to be bigger."
+    },
+    "dialogue.lewandivka.shlahbaum_chroma.4": {
+      "uk": "Ковтайте разом.",
+      "en": "Swallow together."
+    },
+    "dialogue.lewandivka.base_wake.1": {
+      "uk": "Стеля інша.",
+      "en": "The ceiling is different."
+    },
+    "dialogue.lewandivka.base_wake.2": {
+      "uk": "Пахне чаєм і чимось рожевим.",
+      "en": "It smells of tea and something pink."
+    },
+    "dialogue.lewandivka.base_wake.3": {
+      "uk": "Два порожні місця біля стіни.",
+      "en": "Two empty places by the wall."
+    },
+    "dialogue.lewandivka.chinazik_first.1": {
+      "uk": "Чорний кіт дивиться на вас.",
+      "en": "A black cat stares at you."
+    },
+    "dialogue.lewandivka.chinazik_first.2": {
+      "uk": "Потім іде в інший бік.",
+      "en": "Then he walks the other way."
+    },
+    "dialogue.lewandivka.chinazik_named.1": {
+      "uk": "Його звати Чіназік.",
+      "en": "His name is Chinazik."
+    },
+    "dialogue.lewandivka.metadonna_first.1": {
+      "uk": "У коробці щось муркоче.",
+      "en": "Something purrs in the box."
+    },
+    "dialogue.lewandivka.metadonna_named.1": {
+      "uk": "Її звати Метадонна.",
+      "en": "Her name is Metadonna."
+    },
+    "dialogue.lewandivka.cats_doors.1": {
+      "uk": "Обоє дивляться на двері.",
+      "en": "Both of them look at the doors."
+    },
+    "dialogue.lewandivka.garage_king_intro.1": {
+      "uk": "Гараж зайнято.",
+      "en": "The garage is occupied."
+    },
+    "dialogue.lewandivka.garage_king_intro.2": {
+      "uk": "Чекайте своєї черги.",
+      "en": "Wait your turn."
+    },
+    "dialogue.lewandivka.collector_intro.1": {
+      "uk": "Усі коти — мої.",
+      "en": "All cats are mine."
+    },
+    "dialogue.lewandivka.collector_intro.2": {
+      "uk": "Нашийники пам'ятають імена.",
+      "en": "Collars remember names."
+    },
+    "dialogue.lewandivka.vortex_intro.1": {
+      "uk": "Басейн працює.",
+      "en": "The pool is open."
+    },
+    "dialogue.lewandivka.vortex_intro.2": {
+      "uk": "Без шапочки — у воду.",
+      "en": "No cap, into the water."
+    },
+    "dialogue.lewandivka.conductor_intro.1": {
+      "uk": "Квитки, будь ласка.",
+      "en": "Tickets, please."
+    },
+    "dialogue.lewandivka.conductor_intro.2": {
+      "uk": "Без квитка — по шпалах.",
+      "en": "No ticket, walk the sleepers."
+    },
+    "dialogue.lewandivka.conductor_call.1": {
+      "uk": "КВИТОК!",
+      "en": "TICKET!"
+    },
+    "dialogue.lewandivka.head_message.1": {
+      "uk": "Достатньо.",
+      "en": "Enough."
+    },
+    "dialogue.lewandivka.head_message.2": {
+      "uk": "Кольори відключено.",
+      "en": "The colours are disconnected."
+    },
+    "dialogue.lewandivka.head_message.3": {
+      "uk": "Прошу до мене.",
+      "en": "Please come to me."
+    },
+    "dialogue.lewandivka.head_lore.1": {
+      "uk": "Я прибирав хаос.",
+      "en": "I was removing chaos."
+    },
+    "dialogue.lewandivka.head_lore.2": {
+      "uk": "Прибрав колір.",
+      "en": "I removed the colour."
+    },
+    "dialogue.lewandivka.head_lore.3": {
+      "uk": "Прибрав імена.",
+      "en": "I removed the names."
+    },
+    "dialogue.lewandivka.head_lore.4": {
+      "uk": "Закрив шляхи.",
+      "en": "I closed the paths."
+    },
+    "dialogue.lewandivka.head_lore.5": {
+      "uk": "Розділив райони.",
+      "en": "I separated the districts."
+    },
+    "dialogue.lewandivka.head_lore.6": {
+      "uk": "Коти пам'ятали старі маршрути.",
+      "en": "The cats remembered the old routes."
+    },
+    "dialogue.lewandivka.head_final.1": {
+      "uk": "Ось так краще.",
+      "en": "That is better."
+    },
+    "dialogue.lewandivka.head_end.1": {
+      "uk": "Сіро...",
+      "en": "Grey..."
+    },
+    "dialogue.lewandivka.head_end.2": {
+      "uk": "Тихо...",
+      "en": "Quiet..."
+    },
+    "dialogue.lewandivka.tower_machine.1": {
+      "uk": "ВІЗЬМІТЬ ТАЛОН",
+      "en": "TAKE A TICKET"
+    },
+    "dialogue.lewandivka.tower_machine.2": {
+      "uk": "Ваш номер: №%s. Зараз обслуговується №003.",
+      "en": "Your number: #%s. Now serving #003."
+    },
+    "dialogue.lewandivka.tower_urgent.1": {
+      "uk": "ТЕРМІНОВІ ПИТАННЯ — вхід збоку.",
+      "en": "URGENT MATTERS — side entrance."
+    },
+    "speaker.lewandivka.citizen_babushka": {
+      "uk": "Бабуся",
+      "en": "Old Woman"
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_1.1": {
+      "uk": "Ти чий будеш?",
+      "en": "Whose are you?"
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_1.2": {
+      "uk": "Нічий? Ну, тоді наш.",
+      "en": "Nobody's? Then you are ours."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_2.1": {
+      "uk": "Хліб на ринку ще теплий.",
+      "en": "The bread at the market is still warm."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_2.2": {
+      "uk": "Іди, поки не розібрали.",
+      "en": "Go, before they sell out."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_3.1": {
+      "uk": "Колись тут трамвай ходив.",
+      "en": "A tram used to run here."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_3.2": {
+      "uk": "Гарний був. Червоний.",
+      "en": "A nice one. Red."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_4.1": {
+      "uk": "Ввечері до гаражів не ходи.",
+      "en": "Do not go to the garages in the evening."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_4.2": {
+      "uk": "Там хлопці сємки лузають.",
+      "en": "The boys crack seeds there."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_4.3": {
+      "uk": "І питають.",
+      "en": "And ask."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_5.1": {
+      "uk": "Котів годуєш? Молодець.",
+      "en": "Feeding the cats? Good for you."
+    },
+    "dialogue.lewandivka.talk_citizen_babushka_5.2": {
+      "uk": "Вони тут усе пам'ятають.",
+      "en": "They remember everything here."
+    },
+    "speaker.lewandivka.citizen_grandpa": {
+      "uk": "Дідусь",
+      "en": "Old Man"
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_1.1": {
+      "uk": "Шлагбаум піднято. День вдався.",
+      "en": "The barrier is up. A good day."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_2.1": {
+      "uk": "Район той самий.",
+      "en": "Same district."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_2.2": {
+      "uk": "Це ми змінилися.",
+      "en": "It is we who changed."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_3.1": {
+      "uk": "Хочеш пораду?",
+      "en": "Want some advice?"
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_3.2": {
+      "uk": "Не клади цвях на рейки.",
+      "en": "Do not put a nail on the rails."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_3.3": {
+      "uk": "Трамвай образиться.",
+      "en": "The tram will be offended."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_4.1": {
+      "uk": "Шахи? Ні. Доміно.",
+      "en": "Chess? No. Dominoes."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_4.2": {
+      "uk": "Шахи — для тих, хто не вірить у долю.",
+      "en": "Chess is for those who do not believe in fate."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_5.1": {
+      "uk": "Погода вже не та.",
+      "en": "The weather is not what it was."
+    },
+    "dialogue.lewandivka.talk_citizen_grandpa_5.2": {
+      "uk": "Але й не гірша.",
+      "en": "But not worse, either."
+    },
+    "speaker.lewandivka.citizen_worker": {
+      "uk": "Робітник",
+      "en": "Worker"
+    },
+    "dialogue.lewandivka.talk_citizen_worker_1.1": {
+      "uk": "Перекур.",
+      "en": "Smoke break."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_1.2": {
+      "uk": "Не дивись так. Я кинув. Давно.",
+      "en": "Do not look like that. I quit. Long ago."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_2.1": {
+      "uk": "На підстанціях моргає світло.",
+      "en": "The lights flicker at the substations."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_2.2": {
+      "uk": "Хтось у гаражах краде струм.",
+      "en": "Someone in the garages is stealing current."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_3.1": {
+      "uk": "Потрібен інструмент?",
+      "en": "Need tools?"
+    },
+    "dialogue.lewandivka.talk_citizen_worker_3.2": {
+      "uk": "Йди до майстра на ринок.",
+      "en": "Go to the handyman at the market."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_4.1": {
+      "uk": "Тринадцятий гараж? Такого немає.",
+      "en": "The thirteenth garage? There is no such thing."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_4.2": {
+      "uk": "Є дванадцятий і чотирнадцятий.",
+      "en": "There is a twelfth and a fourteenth."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_4.3": {
+      "uk": "Між ними — стіна.",
+      "en": "Between them is a wall."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_5.1": {
+      "uk": "Норма — вісім годин.",
+      "en": "The norm is eight hours."
+    },
+    "dialogue.lewandivka.talk_citizen_worker_5.2": {
+      "uk": "А відчуття — вічність.",
+      "en": "The feeling is eternity."
+    },
+    "speaker.lewandivka.citizen_student": {
+      "uk": "Студентка",
+      "en": "Student"
+    },
+    "dialogue.lewandivka.talk_citizen_student_1.1": {
+      "uk": "У мене сесія. Не заважайте.",
+      "en": "I have exams. Do not disturb."
+    },
+    "dialogue.lewandivka.talk_citizen_student_1.2": {
+      "uk": "Хоча... заважайте.",
+      "en": "Although... do disturb."
+    },
+    "dialogue.lewandivka.talk_citizen_student_2.1": {
+      "uk": "Вам не здається, що район — це квест?",
+      "en": "Does the district not feel like a quest to you?"
+    },
+    "dialogue.lewandivka.talk_citizen_student_2.2": {
+      "uk": "Мені теж.",
+      "en": "To me too."
+    },
+    "dialogue.lewandivka.talk_citizen_student_3.1": {
+      "uk": "Кафе немає. Ринок є.",
+      "en": "No cafes. But there is a market."
+    },
+    "dialogue.lewandivka.talk_citizen_student_3.2": {
+      "uk": "Беру пиріг і йду вчитись.",
+      "en": "I take a pie and go study."
+    },
+    "dialogue.lewandivka.talk_citizen_student_4.1": {
+      "uk": "Зв'язок тут ловить лише на даху.",
+      "en": "The signal only works on the roof here."
+    },
+    "dialogue.lewandivka.talk_citizen_student_4.2": {
+      "uk": "Тому всі сидять на даху.",
+      "en": "So everybody sits on the roof."
+    },
+    "dialogue.lewandivka.talk_citizen_student_5.1": {
+      "uk": "Бачила кота біля пісочниці.",
+      "en": "I saw a cat near the sandbox."
+    },
+    "dialogue.lewandivka.talk_citizen_student_5.2": {
+      "uk": "Чорного. Дивився осудливо.",
+      "en": "A black one. He looked judgmental."
+    },
+    "speaker.lewandivka.citizen_kid": {
+      "uk": "Дитина",
+      "en": "Kid"
+    },
+    "dialogue.lewandivka.talk_citizen_kid_1.1": {
+      "uk": "Ви ловитимете боржника?",
+      "en": "Will you catch the debtor?"
+    },
+    "dialogue.lewandivka.talk_citizen_kid_1.2": {
+      "uk": "Він швидкий!",
+      "en": "He is fast!"
+    },
+    "dialogue.lewandivka.talk_citizen_kid_2.1": {
+      "uk": "А в мене є жетон!",
+      "en": "I have a token!"
+    },
+    "dialogue.lewandivka.talk_citizen_kid_2.2": {
+      "uk": "Ні, не покажу.",
+      "en": "No, I will not show you."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_3.1": {
+      "uk": "Пісочниця — моя територія.",
+      "en": "The sandbox is my territory."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_3.2": {
+      "uk": "Вхід — одна цукерка.",
+      "en": "The entrance is one candy."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_4.1": {
+      "uk": "Уночі по рейках їздив трамвай.",
+      "en": "A tram rode the rails at night."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_4.2": {
+      "uk": "Дорослі кажуть — наснилось.",
+      "en": "The adults say I dreamed it."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_5.1": {
+      "uk": "Мама казала не говорити з незнайомими.",
+      "en": "Mom said not to talk to strangers."
+    },
+    "dialogue.lewandivka.talk_citizen_kid_5.2": {
+      "uk": "Але ж ви майже свої.",
+      "en": "But you are almost one of us."
+    },
+    "speaker.lewandivka.citizen_teacher": {
+      "uk": "Вчителька",
+      "en": "Teacher"
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_1.1": {
+      "uk": "Школа сьогодні зачинена.",
+      "en": "The school is closed today."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_1.2": {
+      "uk": "Завтра теж. І післязавтра.",
+      "en": "Tomorrow too. And the day after."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_2.1": {
+      "uk": "Діти! Не бігати коридором!",
+      "en": "Children! No running in the corridor!"
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_2.2": {
+      "uk": "Ой, це я не вам.",
+      "en": "Oh, that was not for you."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_3.1": {
+      "uk": "Хочете вчитись? Усі парти вільні.",
+      "en": "Want to study? All the desks are free."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_4.1": {
+      "uk": "Домашнє завдання: знайти дванадцять котів.",
+      "en": "Homework: find twelve cats."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_4.2": {
+      "uk": "Ні, я серйозно.",
+      "en": "No, I am serious."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_5.1": {
+      "uk": "Я викладала біологію.",
+      "en": "I used to teach biology."
+    },
+    "dialogue.lewandivka.talk_citizen_teacher_5.2": {
+      "uk": "Тепер викладаю виживання.",
+      "en": "Now I teach survival."
+    },
+    "speaker.lewandivka.citizen_yard_keeper": {
+      "uk": "Двірник",
+      "en": "Yard Keeper"
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_1.1": {
+      "uk": "Мету. Мету. Мету.",
+      "en": "Sweeping. Sweeping. Sweeping."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_1.2": {
+      "uk": "Листя не закінчується.",
+      "en": "The leaves never end."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_2.1": {
+      "uk": "Це моя територія. Ну, наша.",
+      "en": "This is my territory. Well, ours."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_2.2": {
+      "uk": "Не смітіть.",
+      "en": "No littering."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_3.1": {
+      "uk": "У смітниках іноді є корисне.",
+      "en": "Sometimes there is something useful in the bins."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_3.2": {
+      "uk": "Але я нічого не казав.",
+      "en": "But I said nothing."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_4.1": {
+      "uk": "Ліхтарі горять. Район живий.",
+      "en": "The lamps are burning. The district lives."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_5.1": {
+      "uk": "Сємки — біля лавки.",
+      "en": "Seeds by the bench."
+    },
+    "dialogue.lewandivka.talk_citizen_yard_keeper_5.2": {
+      "uk": "Лушпиння — в урну.",
+      "en": "Husks into the bin."
+    },
+    "speaker.lewandivka.citizen_neighbour": {
+      "uk": "Сусід",
+      "en": "Neighbour"
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_1.1": {
+      "uk": "О, нові сусіди.",
+      "en": "Oh, new neighbours."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_1.2": {
+      "uk": "Сіль є? Ні? Я й не питав.",
+      "en": "Got salt? No? I did not ask."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_2.1": {
+      "uk": "Я тут з дев'яносто першого.",
+      "en": "I have been here since ninety-one."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_2.2": {
+      "uk": "Лампочку на сходах досі не вкрутили.",
+      "en": "The bulb on the stairs is still not replaced."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_3.1": {
+      "uk": "Мій телевізор показує один канал.",
+      "en": "My TV shows one channel."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_3.2": {
+      "uk": "Зате хороший.",
+      "en": "A good one, though."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_4.1": {
+      "uk": "Чуєте дзвінок? Це не мій телефон.",
+      "en": "Hear that ringing? It is not my phone."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_4.2": {
+      "uk": "Це трамвай.",
+      "en": "That is the tram."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_5.1": {
+      "uk": "Чаю хочете? Чаю немає.",
+      "en": "Tea? There is none."
+    },
+    "dialogue.lewandivka.talk_citizen_neighbour_5.2": {
+      "uk": "Але запрошення чинне.",
+      "en": "But the invitation stands."
+    },
+    "speaker.lewandivka.vendor_baker": {
+      "uk": "Пекарка",
+      "en": "Baker"
+    },
+    "dialogue.lewandivka.greet_vendor_baker_1.1": {
+      "uk": "Свіженьке! Ще тепле.",
+      "en": "Fresh! Still warm."
+    },
+    "dialogue.lewandivka.greet_vendor_baker_2.1": {
+      "uk": "Хліб — основа району.",
+      "en": "Bread is the foundation of the district."
+    },
+    "dialogue.lewandivka.greet_vendor_baker_3.1": {
+      "uk": "Беріть пиріг. Вдруге не запропоную.",
+      "en": "Take a pie. I will not offer twice."
+    },
+    "speaker.lewandivka.vendor_greengrocer": {
+      "uk": "Овочівниця",
+      "en": "Greengrocer"
+    },
+    "dialogue.lewandivka.greet_vendor_greengrocer_1.1": {
+      "uk": "Картопля своя. Не ваша.",
+      "en": "The potatoes are mine. Not yours."
+    },
+    "dialogue.lewandivka.greet_vendor_greengrocer_2.1": {
+      "uk": "Яблука кислі. Зате чесні.",
+      "en": "The apples are sour. But honest."
+    },
+    "dialogue.lewandivka.greet_vendor_greengrocer_3.1": {
+      "uk": "Торгуємося? Ні? Тоді беріть.",
+      "en": "Haggle? No? Then take them."
+    },
+    "speaker.lewandivka.vendor_butcher": {
+      "uk": "М'ясник",
+      "en": "Butcher"
+    },
+    "dialogue.lewandivka.greet_vendor_butcher_1.1": {
+      "uk": "М'ясо не кусається.",
+      "en": "The meat does not bite."
+    },
+    "dialogue.lewandivka.greet_vendor_butcher_2.1": {
+      "uk": "Свинина вчорашня. Це комплімент.",
+      "en": "The pork is from yesterday. That is a compliment."
+    },
+    "dialogue.lewandivka.greet_vendor_butcher_3.1": {
+      "uk": "Без черги, прошу.",
+      "en": "No queue, please."
+    },
+    "speaker.lewandivka.vendor_handyman": {
+      "uk": "Майстер",
+      "en": "Handyman"
+    },
+    "dialogue.lewandivka.greet_vendor_handyman_1.1": {
+      "uk": "Інструмент — як друг. Поводься добре.",
+      "en": "A tool is like a friend. Treat it well."
+    },
+    "dialogue.lewandivka.greet_vendor_handyman_2.1": {
+      "uk": "Цвяхи є. Терпіння — ні.",
+      "en": "I have nails. Patience, no."
+    },
+    "dialogue.lewandivka.greet_vendor_handyman_3.1": {
+      "uk": "Лопата, сокира, кирка. Усе справжнє.",
+      "en": "Shovel, axe, pickaxe. All genuine."
+    },
+    "speaker.lewandivka.vendor_flea": {
+      "uk": "Барахольник",
+      "en": "Flea Trader"
+    },
+    "dialogue.lewandivka.greet_vendor_flea_1.1": {
+      "uk": "Усе вживане. Нове — тільки пил.",
+      "en": "All used. Only the dust is new."
+    },
+    "dialogue.lewandivka.greet_vendor_flea_2.1": {
+      "uk": "Жетони? Ні. Жетони бере лише трамвай.",
+      "en": "Tokens? No. Only the tram takes tokens."
+    },
+    "dialogue.lewandivka.greet_vendor_flea_3.1": {
+      "uk": "Ліжко, повідець, компас. Вибирайте.",
+      "en": "Bed, lead, compass. Choose."
+    },
+    "speaker.lewandivka.vendor_fishmonger": {
+      "uk": "Рибалка",
+      "en": "Fishmonger"
+    },
+    "dialogue.lewandivka.greet_vendor_fishmonger_1.1": {
+      "uk": "Риба свіжа. Я її сам не бачив.",
+      "en": "The fish is fresh. I have not seen it myself."
+    },
+    "dialogue.lewandivka.greet_vendor_fishmonger_2.1": {
+      "uk": "Клює? Не клює? Беріть готову.",
+      "en": "Biting? Not biting? Take it cooked."
+    },
+    "dialogue.lewandivka.greet_vendor_fishmonger_3.1": {
+      "uk": "Річка велика. Терпіння ще більше.",
+      "en": "The river is big. The patience is bigger."
+    },
+    "speaker.lewandivka.vendor_gardener": {
+      "uk": "Садівник",
+      "en": "Gardener"
+    },
+    "dialogue.lewandivka.greet_vendor_gardener_1.1": {
+      "uk": "Насіння — це майбутнє. Дешеве.",
+      "en": "Seeds are the future. A cheap one."
+    },
+    "dialogue.lewandivka.greet_vendor_gardener_2.1": {
+      "uk": "Посадиш — виросте. Іноді.",
+      "en": "Plant it and it grows. Sometimes."
+    },
+    "dialogue.lewandivka.greet_vendor_gardener_3.1": {
+      "uk": "Кістяне борошно — для нетерплячих.",
+      "en": "Bone meal is for the impatient."
+    },
+    "dialogue.lewandivka.epilogue_morning.1": {
+      "uk": "Ну?",
+      "en": "Well?"
+    },
+    "dialogue.lewandivka.epilogue_morning.2": {
+      "uk": "Були?",
+      "en": "Been there?"
+    },
+    "dialogue.lewandivka.epilogue_morning.3": {
+      "uk": "Я ж казав.",
+      "en": "Told you."
+    },
+    "dialogue.lewandivka.epilogue_cats.1": {
+      "uk": "А ці звідки?",
+      "en": "And where are these from?"
+    },
+    "dialogue.lewandivka.epilogue_cats.2": {
+      "uk": "А.",
+      "en": "Ah."
+    },
+    "dialogue.lewandivka.epilogue_cats.3": {
+      "uk": "Ці місцеві.",
+      "en": "These are local."
+    },
+    "dialogue.lewandivka.post_cats12.1": {
+      "uk": "По району ще дванадцять котів.",
+      "en": "Twelve more cats are around the district."
+    },
+    "dialogue.lewandivka.post_cats12.2": {
+      "uk": "Усі з іменами.",
+      "en": "All of them have names."
+    },
+    "dialogue.lewandivka.post_seeds.1": {
+      "uk": "Сємки зникають. Щоночі.",
+      "en": "The seeds vanish. Every night."
+    },
+    "dialogue.lewandivka.post_seeds.2": {
+      "uk": "Гляньте, хто їх бере.",
+      "en": "See who takes them."
+    },
+    "dialogue.lewandivka.post_tram.1": {
+      "uk": "Є ще один трамвай.",
+      "en": "There is one more tram."
+    },
+    "dialogue.lewandivka.post_tram.2": {
+      "uk": "Не той.",
+      "en": "The wrong one."
+    },
+    "dialogue.lewandivka.post_garage0.1": {
+      "uk": "Гараж нуль.",
+      "en": "Garage zero."
+    },
+    "dialogue.lewandivka.post_garage0.2": {
+      "uk": "Його не було навіть у записках.",
+      "en": "It was not even in the notes."
+    },
+    "dialogue.lewandivka.post_package.1": {
+      "uk": "Хочете знати, що було в посилці?",
+      "en": "Do you want to know what was in the package?"
+    },
+    "dialogue.lewandivka.post_package.choice.yes": {
+      "uk": "Так",
+      "en": "Yes"
+    },
+    "dialogue.lewandivka.post_package.choice.no": {
+      "uk": "Ні",
+      "en": "No"
+    },
+    "dialogue.lewandivka.post_package_reveal.1": {
+      "uk": "Шкарпетка.",
+      "en": "A sock."
+    },
+    "dialogue.lewandivka.post_package_reveal.2": {
+      "uk": "Одна.",
+      "en": "Just one."
+    },
+    "dialogue.lewandivka.post_package_reveal.3": {
+      "uk": "Краще б не питав.",
+      "en": "Better not to have asked."
+    }
+  },
+  "scripts": [
+    "shlahbaum_kiosk",
+    "shlahbaum_idle_1",
+    "shlahbaum_idle_2",
+    "shlahbaum_idle_3",
+    "shlahbaum_idle_4",
+    "seeds_demand",
+    "seeds_given",
+    "seeds_left",
+    "seeds_none",
+    "debtor_found",
+    "debtor_resolved_pay",
+    "debtor_resolved_vouch",
+    "debtor_resolved_seeds",
+    "debtor_taunt_1",
+    "debtor_taunt_2",
+    "debtor_taunt_3",
+    "shlahbaum_kettle",
+    "shlahbaum_package",
+    "tram_start",
+    "tram_shield",
+    "shlahbaum_composter",
+    "shlahbaum_chroma",
+    "base_wake",
+    "chinazik_first",
+    "chinazik_named",
+    "metadonna_first",
+    "metadonna_named",
+    "cats_doors",
+    "garage_king_intro",
+    "collector_intro",
+    "vortex_intro",
+    "conductor_intro",
+    "conductor_call",
+    "head_message",
+    "head_lore",
+    "head_final",
+    "head_end",
+    "tower_machine",
+    "tower_urgent",
+    "talk_citizen_babushka_1",
+    "talk_citizen_babushka_2",
+    "talk_citizen_babushka_3",
+    "talk_citizen_babushka_4",
+    "talk_citizen_babushka_5",
+    "talk_citizen_grandpa_1",
+    "talk_citizen_grandpa_2",
+    "talk_citizen_grandpa_3",
+    "talk_citizen_grandpa_4",
+    "talk_citizen_grandpa_5",
+    "talk_citizen_worker_1",
+    "talk_citizen_worker_2",
+    "talk_citizen_worker_3",
+    "talk_citizen_worker_4",
+    "talk_citizen_worker_5",
+    "talk_citizen_student_1",
+    "talk_citizen_student_2",
+    "talk_citizen_student_3",
+    "talk_citizen_student_4",
+    "talk_citizen_student_5",
+    "talk_citizen_kid_1",
+    "talk_citizen_kid_2",
+    "talk_citizen_kid_3",
+    "talk_citizen_kid_4",
+    "talk_citizen_kid_5",
+    "talk_citizen_teacher_1",
+    "talk_citizen_teacher_2",
+    "talk_citizen_teacher_3",
+    "talk_citizen_teacher_4",
+    "talk_citizen_teacher_5",
+    "talk_citizen_yard_keeper_1",
+    "talk_citizen_yard_keeper_2",
+    "talk_citizen_yard_keeper_3",
+    "talk_citizen_yard_keeper_4",
+    "talk_citizen_yard_keeper_5",
+    "talk_citizen_neighbour_1",
+    "talk_citizen_neighbour_2",
+    "talk_citizen_neighbour_3",
+    "talk_citizen_neighbour_4",
+    "talk_citizen_neighbour_5",
+    "greet_vendor_baker_1",
+    "greet_vendor_baker_2",
+    "greet_vendor_baker_3",
+    "greet_vendor_greengrocer_1",
+    "greet_vendor_greengrocer_2",
+    "greet_vendor_greengrocer_3",
+    "greet_vendor_butcher_1",
+    "greet_vendor_butcher_2",
+    "greet_vendor_butcher_3",
+    "greet_vendor_handyman_1",
+    "greet_vendor_handyman_2",
+    "greet_vendor_handyman_3",
+    "greet_vendor_flea_1",
+    "greet_vendor_flea_2",
+    "greet_vendor_flea_3",
+    "greet_vendor_fishmonger_1",
+    "greet_vendor_fishmonger_2",
+    "greet_vendor_fishmonger_3",
+    "greet_vendor_gardener_1",
+    "greet_vendor_gardener_2",
+    "greet_vendor_gardener_3",
+    "epilogue_morning",
+    "epilogue_cats",
+    "post_cats12",
+    "post_seeds",
+    "post_tram",
+    "post_garage0",
+    "post_package",
+    "post_package_reveal"
+  ],
+  "notes": {
+    "0": {
+      "uk": "Трамвай до кінцевої не ходить із 1994-го. Але зупинка працює.",
+      "en": "No tram has run to the terminus since 1994. The stop still works."
+    },
+    "1": {
+      "uk": "Оголошення: пакет від чаю на лавці — не мій. Не чіпати.",
+      "en": "Notice: the tea package on the bench is not mine. Do not touch."
+    },
+    "2": {
+      "uk": "Збудовано 1961 року. Було, є, буде.",
+      "en": "Built 1961. Was, is, will be."
+    },
+    "3": {
+      "uk": "МАГАЗИН",
+      "en": "SHOP"
+    },
+    "4": {
+      "uk": "Працює без перерви. Перерва — з 0:00 до 24:00.",
+      "en": "Open non-stop. Closed from 0:00 to 24:00."
+    },
+    "5": {
+      "uk": "ГАРАЖНИЙ КООПЕРАТИВ. Стороннім вхід заборонено. Своїм — не рекомендовано.",
+      "en": "GARAGE COOPERATIVE. No entry for strangers. Not recommended for locals either."
+    },
+    "6": {
+      "uk": "13-го гаража не існує.",
+      "en": "Garage No. 13 does not exist."
+    },
+    "7": {
+      "uk": "Між дванадцятим і чотирнадцятим — цегла. Завжди була.",
+      "en": "Between twelve and fourteen there are bricks. There always were."
+    },
+    "8": {
+      "uk": "Стрілка вказує на тринадцятий. Не вірте стрілці.",
+      "en": "The arrow points to thirteen. Do not trust the arrow."
+    },
+    "9": {
+      "uk": "Світло вмикають три щитки. Усі три — не там, де шукають.",
+      "en": "Three panels turn the light on. All three are not where one looks."
+    },
+    "10": {
+      "uk": "Автомати в дев'ятому. Третій вмикають першим.",
+      "en": "The breakers are in nine. The third one goes first."
+    },
+    "11": {
+      "uk": "Перший іде після третього й перед четвертим.",
+      "en": "The first goes after the third and before the fourth."
+    },
+    "12": {
+      "uk": "Четвертий — передостанній. Так записано.",
+      "en": "The fourth is second to last. It is written down."
+    },
+    "13": {
+      "uk": "Другий — завжди останній. Не питайте, чому.",
+      "en": "The second is always last. Do not ask why."
+    },
+    "14": {
+      "uk": "Коробка у третьому й коробка у двадцять другому. Тиснути разом.",
+      "en": "The box in three and the box in twenty-two. Press them together."
+    },
+    "15": {
+      "uk": "Не виходить утрьох? Вийде вдвох. Вийде й одному, повільно.",
+      "en": "Can't manage with three? Two can. One can too, slowly."
+    },
+    "16": {
+      "uk": "Як на плакаті: вгору, вниз, вгору.",
+      "en": "As on the poster: up, down, up."
+    },
+    "17": {
+      "uk": "Важіль відчиняє тунель. Ненадовго.",
+      "en": "The lever opens the tunnel. Not for long."
+    },
+    "20": {
+      "uk": "Тут мав би сидіти Чіназік.",
+      "en": "Chinazik should be sitting here."
+    },
+    "21": {
+      "uk": "Тут мала б спати Метадонна.",
+      "en": "Metadonna should be sleeping here."
+    },
+    "30": {
+      "uk": "ФАРБУВАЛЬНЯ. Змішуйте так, як вас вчили в дитинстві.",
+      "en": "PAINT WORKSHOP. Mix the way you were taught as a child."
+    },
+    "31": {
+      "uk": "Червоний і жовтий — помаранчевий. Жовтий і синій — зелений. Синій і червоний — фіолетовий.",
+      "en": "Red and yellow make orange. Yellow and blue make green. Blue and red make purple."
+    },
+    "32": {
+      "uk": "ПІДЙОМНА ЗАЛА. Платформи піднімаються по черзі. Стійте на них.",
+      "en": "LIFT HALL. The platforms rise in turn. Stand on them."
+    },
+    "40": {
+      "uk": "УКРИТТЯ. Імена тут не потрібні.",
+      "en": "SHELTER. Names are not needed here."
+    },
+    "41": {
+      "uk": "Три важелі. Тягнути разом.",
+      "en": "Three levers. Pull together."
+    },
+    "42": {
+      "uk": "Кіт іде туди, куди не просять.",
+      "en": "The cat goes where nobody asks."
+    },
+    "43": {
+      "uk": "Коробка, у якій тихо, — не та.",
+      "en": "A box that is quiet is not the one."
+    },
+    "44": {
+      "uk": "Муркотіння гучнішає біля правильної.",
+      "en": "The purring grows louder near the right one."
+    },
+    "45": {
+      "uk": "Подряпини на картоні — це підпис.",
+      "en": "Scratches on cardboard are a signature."
+    },
+    "46": {
+      "uk": "Менша коробка — найважливіша.",
+      "en": "The smaller box is the important one."
+    },
+    "50": {
+      "uk": "СУХЕ ОЗЕРО. Басейни тимчасово не працюють.",
+      "en": "DRY LAKE. The pools are temporarily closed."
+    },
+    "51": {
+      "uk": "Без шапочки не входити.",
+      "en": "No cap, no entry."
+    },
+    "52": {
+      "uk": "Насосна: три пускачі. Починайте з крайнього.",
+      "en": "Pump room: three starters. Begin with the outermost."
+    },
+    "53": {
+      "uk": "Червоний — хрестик. Синій — кружечок. Жовтий — трикутник. Зелений — квадрат.",
+      "en": "Red is a cross. Blue is a circle. Yellow is a triangle. Green is a square."
+    },
+    "54": {
+      "uk": "Вода помаранчева. Так має бути.",
+      "en": "The water is orange. It is supposed to be."
+    },
+    "60": {
+      "uk": "Пружина підкидає вгору й трохи вперед. Стежте за взуттям.",
+      "en": "The spring throws you up and a little forward. Mind your shoes."
+    },
+    "61": {
+      "uk": "Небесна зупинка. Трамвай ходить за розкладом, якого ніхто не бачив.",
+      "en": "Sky stop. The tram runs on a timetable nobody has seen."
+    },
+    "62": {
+      "uk": "ДИСПЕТЧЕРСЬКА. Стрілки — на себе.",
+      "en": "DISPATCHER. Switches towards you."
+    },
+    "63": {
+      "uk": "Перша й третя стрілки — «Б».",
+      "en": "The first and the third switch are \"B\"."
+    },
+    "64": {
+      "uk": "Друга й четверта — «А». Хто сплутав — котиться назад. Це нормально.",
+      "en": "The second and the fourth are \"A\". Whoever mixed them up rolls back. That is normal."
+    },
+    "65": {
+      "uk": "Квитки: хрестик, кружечок, трикутник, квадрат. Компостер — обов'язково.",
+      "en": "Tickets: cross, circle, triangle, square. The composter is mandatory."
+    },
+    "70": {
+      "uk": "ПІДХІД ДО ВЕЖІ. Ривок — не вихід, а метод.",
+      "en": "TOWER APPROACH. The dash is not an exit but a method."
+    },
+    "71": {
+      "uk": "ДВЕРІ №1. Відчиняються тільки на швидкості.",
+      "en": "DOOR 1. Opens only at speed."
+    },
+    "72": {
+      "uk": "ДВЕРІ №2. Відчиняються тільки на швидкості.",
+      "en": "DOOR 2. Opens only at speed."
+    },
+    "73": {
+      "uk": "ДВЕРІ №3. Відчиняються тільки на швидкості. Останні.",
+      "en": "DOOR 3. Opens only at speed. The last one."
+    },
+    "74": {
+      "uk": "Це не стіна. Так вирішили.",
+      "en": "This is not a wall. It was decided so."
+    },
+    "75": {
+      "uk": "Планер: натисніть стрибок у повітрі.",
+      "en": "Glider: press jump in the air."
+    },
+    "80": {
+      "uk": "Ласкаво просимо до Голови району. Орієнтовний час очікування: невизначений.",
+      "en": "Welcome to the Head of District. Estimated waiting time: undefined."
+    },
+    "81": {
+      "uk": "ТЕРМІНОВІ ПИТАННЯ — вхід збоку.",
+      "en": "URGENT MATTERS — side entrance."
+    },
+    "82": {
+      "uk": "Терміновим питанням черга не потрібна. Це не жарт.",
+      "en": "Urgent matters need no queue. This is not a joke."
+    },
+    "83": {
+      "uk": "АРХІВ. Три читальні важелі. Підніміть усі, поки пам'ятаєте.",
+      "en": "ARCHIVE. Three reading levers. Raise them all while you remember."
+    },
+    "84": {
+      "uk": "Кабінет 404 не знайдено.",
+      "en": "Office 404 not found."
+    },
+    "85": {
+      "uk": "Кабінет, якого немає, має єдиний важіль.",
+      "en": "The office that does not exist has a single lever."
+    },
+    "86": {
+      "uk": "ВІДДІЛ КОЛІРНИХ ПОРУШЕНЬ. Змішування без дозволу заборонено.",
+      "en": "DEPARTMENT OF COLOR VIOLATIONS. Mixing without a permit is forbidden."
+    },
+    "87": {
+      "uk": "Службова шахта. Без пружин не стрибати.",
+      "en": "Service shaft. Do not jump without springs."
+    },
+    "88": {
+      "uk": "Поверх обвалився. Ремонт заплановано на минулий вівторок.",
+      "en": "The floor has collapsed. Repairs were scheduled for last Tuesday."
+    },
+    "89": {
+      "uk": "ГАРАЖ №0. Тут стояли ті, кому не вистачило номера.",
+      "en": "GARAGE No. 0. Those who did not get a number parked here."
+    },
+    "90": {
+      "uk": "Вихід — драбина. Він завжди був — просто ніхто не питав.",
+      "en": "The exit is the ladder. It was always there; nobody asked."
+    }
+  },
+  "abilities": [
+    "dash",
+    "spring_insoles",
+    "glider"
+  ],
+  "reputations": [
+    "stranger",
+    "acquaintance",
+    "local",
+    "district"
+  ]
+}

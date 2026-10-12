@@ -1,0 +1,6 @@
+{
+  "parent": "lewandivka:block/decal_base",
+  "textures": {
+    "tex": "lewandivka:block/clue_prop_4"
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "state": "0",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/tram_switch_a",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "state": "0",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/tram_switch_a",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "state": "0",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/tram_switch_a",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "state": "0",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/tram_switch_a",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "state": "1",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/tram_switch_b",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "state": "1",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/tram_switch_b",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "state": "1",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/tram_switch_b",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "state": "1",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/tram_switch_b",
+        "y": 270
+      }
+    }
+  ]
+}

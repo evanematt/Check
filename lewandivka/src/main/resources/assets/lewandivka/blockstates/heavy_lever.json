@@ -1,0 +1,84 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "powered": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/heavy_lever",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "powered": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/heavy_lever",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "powered": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/heavy_lever",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "powered": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/heavy_lever",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "powered": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/heavy_lever_powered",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "powered": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/heavy_lever_powered",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "powered": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/heavy_lever_powered",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "powered": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/heavy_lever_powered",
+        "y": 270
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "lewandivka",
+  "version": "${version}",
+  "name": "Левандівка: по той бік району",
+  "description": "Кооперативна пригода для 1–3 гравців: райончик, що втратив кольори, дивні коти, гопники, які просять сємки, і дорога до Вежі Голови Району.",
+  "authors": [
+    "Lewandivka team"
+  ],
+  "contact": {
+    "homepage": "https://github.com/evanematt/Check",
+    "sources": "https://github.com/evanematt/Check"
+  },
+  "license": "MIT",
+  "icon": "assets/lewandivka/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.lewandivka.LewandivkaMod"
+    ],
+    "client": [
+      "com.lewandivka.client.LewandivkaClient"
+    ],
+    "modmenu": [
+      "com.lewandivka.client.ModMenuIntegration"
+    ],
+    "fabric-gametest": [
+      "com.lewandivka.gametest.LewandivkaGameTests"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*",
+    "geckolib": ">=4.7.0"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}
