@@ -72,6 +72,7 @@
 </div>
 
 <div id="bar">
+  <button data-act="cloth">Chrome cloth</button>
   <button data-act="next">Next effect</button>
   <button data-act="cinema">Cinema</button>
   <button data-act="lips">Shh</button>
@@ -82,7 +83,7 @@
   <button data-act="hud">Graph</button>
 </div>
 
-<div id="help"><b>Both hands up</b> / <b>C</b> cinema · <b>Finger to lips</b> / <b>L</b> · <b>Hands on head</b> / <b>K</b> · <b>Snap</b> / <b>S</b> vanish ·<b>B</b> grab background · <b>Space</b> next effect · <b>A</b> auto · <b>H</b> graph · <b>F</b> fullscreen</div>
+<div id="help"><b>Both hands up</b> / <b>C</b> cinema · <b>Finger to lips</b> / <b>L</b> · <b>Hands on head</b> / <b>K</b> · <b>Snap</b> / <b>S</b> vanish ·<b>B</b> grab background · <b>Space</b> next effect · <b>A</b> auto · <b>H</b> graph · <b>M</b> chrome cloth · <b>F</b> fullscreen</div>
 
 <script type="module">
 // ================= Shaders =================
@@ -365,7 +366,48 @@ function sh(t,s){ const o=gl.createShader(t); gl.shaderSource(o,s); gl.compileSh
 function program(vs,fs){ const p=gl.createProgram(); gl.attachShader(p,sh(gl.VERTEX_SHADER,vs)); gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(p);
   if(!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
   const u={}; const n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS); for(let i=0;i<n;i++){ const nm=gl.getActiveUniform(p,i).name; u[nm]=gl.getUniformLocation(p,nm); } return {p,u}; }
-const MAIN = program(VS,FS), PART = program(PVS,PFS), PLATE = program(VS,BFS), FILL = program(VS,FFS), INP = program(VS,IFS);
+// --- chrome cloth: a hanging sheet of liquid metal that mirrors and bends the camera feed
+const CVS = `#version 300 es
+precision highp float;
+layout(location=0) in vec3 aP; layout(location=1) in vec3 aN; layout(location=2) in vec2 aUV;
+uniform vec2 uRes;
+out vec3 vN; out vec2 vP; out vec2 vUV;
+void main(){ vN=aN; vP=aP.xy; vUV=aUV;
+  gl_Position=vec4(aP.x/uRes.x*2.-1., 1.-aP.y/uRes.y*2., clamp(-aP.z/uRes.y,-1.,1.)*.5, 1.); }`;
+const CFS = `#version 300 es
+precision highp float;
+uniform sampler2D uVid; uniform float uT, uHasVid;
+in vec3 vN; in vec2 vP; in vec2 vUV; out vec4 o;
+${COMMON}
+vec3 env(vec2 px){
+  if(uHasVid>.5) return texture(uVid, vidUV(clamp(px,vec2(0.),uRes))).rgb;
+  float y=px.y/uRes.y, x=px.x/uRes.x;                         // demo: a soft green room
+  vec3 c=mix(vec3(.62,.74,.48), vec3(.86,.9,.74), smoothstep(.0,1.,y));
+  c=mix(c, vec3(.3,.36,.25), smoothstep(.02,.0,abs(fract(x*3.)-.5)-.47));
+  return c*(.85+.3*fbm(px/uRes.y*4.));
+}
+vec3 thermal(float L){
+  vec3 c=mix(vec3(.05,.0,.3), vec3(.1,.35,1.), smoothstep(0.,.3,L));
+  c=mix(c, vec3(1.,.15,.35), smoothstep(.3,.55,L));
+  c=mix(c, vec3(1.,.8,.15), smoothstep(.55,.8,L));
+  return mix(c, vec3(1.), smoothstep(.85,1.,L));
+}
+void main(){
+  vec3 N=normalize(vN); if(N.z<0.) N=-N;
+  vec3 R=reflect(vec3(0.,0.,-1.), N);
+  vec3 see = env(vP + N.xy*uRes.y*.10);                     // refracted, like bent glass
+  vec3 ref = env(vP + R.xy*uRes.y*.42);                     // mirrored room
+  float fres = pow(1.-N.z, 2.);
+  vec3 col = mix(see*vec3(.9,.95,.8), ref, .5+.45*fres);
+  col = pow(col, vec3(1.35))*1.45*vec3(1.06,1.,.84);        // contrasty, warm chrome
+  vec3 L1=normalize(vec3(-.35,-.6,.72)), L2=normalize(vec3(.55,.15,.82));
+  col += pow(max(dot(R,L1),0.),60.)*1.1 + pow(max(dot(R,L2),0.),14.)*.25;
+  col *= .45+.55*smoothstep(.0,.55,N.z);                    // dark creases
+  float th = smoothstep(.56,.72, fbm(vUV*vec2(3.,2.4)+vec2(uT*.06,-uT*.04)));
+  col = mix(col, thermal(dot(see,vec3(.3,.59,.11))*1.1+.1*N.x), th*.8);   // oily thermal patches
+  o = vec4(col, 1.);
+}`;
+const MAIN = program(VS,FS), PART = program(PVS,PFS), PLATE = program(VS,BFS), FILL = program(VS,FFS), INP = program(VS,IFS), CLOTH = program(CVS,CFS);
 
 const quadVao = gl.createVertexArray(); gl.bindVertexArray(quadVao);
 const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
@@ -388,10 +430,11 @@ function bindTex(unit,t){ gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.
 
 const hud = document.getElementById('hud'); const hx = hud.getContext('2d');
 let W=0,H=0,DPR=1;
+let clothOn=false, cloth=null, lastLms=[], clothHands=[];
 const TOUCH = matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window;
 if(TOUCH) document.body.classList.add('touch');
 function resize(){ DPR=Math.min(devicePixelRatio||1, TOUCH?1:2);   /* phones: render at CSS pixels to keep the shaders fast */ W=Math.floor(innerWidth*DPR); H=Math.floor(innerHeight*DPR);
-  cv.width=W; cv.height=H; hud.width=W; hud.height=H; }
+  cv.width=W; cv.height=H; hud.width=W; hud.height=H; if(clothOn) clothInit(); }
 addEventListener('resize',resize); addEventListener('orientationchange',()=>setTimeout(resize,250)); resize();
 
 const toastEl=document.getElementById('toast'); let toastT=0;
@@ -423,6 +466,7 @@ addEventListener('keydown',e=>{
   else if(e.key==='c'||e.key==='C'){ keyOverlay = keyOverlay==='cinema'?null:'cinema'; updateOverlay(); }
   else if(e.key==='k'||e.key==='K'){ keyOverlay = keyOverlay==='head'?null:'head'; updateOverlay(); }
   else if(e.key==='l'||e.key==='L'){ keyOverlay = keyOverlay==='lips'?null:'lips'; updateOverlay(); }
+  else if(e.key==='m'||e.key==='M') toggleCloth();
   else if(e.key==='b'||e.key==='B'){ grabPlate=true; toast('Background captured'); }
   else if(e.key==='['){ micThr=Math.max(.03,micThr*.8); toast('Snap sensitivity: higher'); }
   else if(e.key===']'){ micThr=Math.min(.8,micThr*1.25); toast('Snap sensitivity: lower'); }
@@ -433,10 +477,11 @@ addEventListener('keydown',e=>{
 // ---- touch toolbar (phones): the same actions as the keyboard shortcuts
 const bar=document.getElementById('bar');
 function syncBar(){ bar.querySelectorAll('button').forEach(b=>{ const a=b.dataset.act;
-  b.classList.toggle('on', (a==='auto'&&auto)||(a==='hud'&&showHud)||(['cinema','lips','head'].includes(a)&&keyOverlay===a)); }); }
+  b.classList.toggle('on', (a==='auto'&&auto)||(a==='hud'&&showHud)||(a==='cloth'&&clothOn)||(['cinema','lips','head'].includes(a)&&keyOverlay===a)); }); }
 bar.addEventListener('pointerdown',e=>e.stopPropagation());
 bar.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const a=b.dataset.act;
   if(a==='next') next();
+  else if(a==='cloth') toggleCloth();
   else if(a==='auto') auto=!auto;
   else if(a==='hud') showHud=!showHud;
   else if(a==='snap') snap('key');
@@ -448,11 +493,12 @@ async function wake(){ try{ await navigator.wakeLock?.request('screen'); }catch(
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && hasVid) wake(); });
 
 let drag=-1, demoManual=false;
-cv.addEventListener('pointerdown',e=>{ if(!demo){ next(); return; } const x=e.clientX*DPR,y=e.clientY*DPR;
+cv.addEventListener('pointerdown',e=>{ if(clothOn){ clothGrab('ptr',e.clientX*DPR,e.clientY*DPR,55*DPR); return; } if(!demo){ next(); return; } const x=e.clientX*DPR,y=e.clientY*DPR;
   let best=-1,bd=60*DPR; target.forEach((c,i)=>{const d=Math.hypot(c.x-x,c.y-y); if(d<bd){bd=d;best=i;}});
   drag=best; if(best<0) next(); demoManual = demoManual || best>=0; });
-addEventListener('pointermove',e=>{ if(drag>=0){ target[drag].x=e.clientX*DPR; target[drag].y=e.clientY*DPR; } });
-addEventListener('pointerup',()=>drag=-1);
+addEventListener('pointermove',e=>{ const pg=cloth&&cloth.grabs.get('ptr'); if(pg){ pg.x=e.clientX*DPR; pg.y=e.clientY*DPR; } if(drag>=0){ target[drag].x=e.clientX*DPR; target[drag].y=e.clientY*DPR; } });
+addEventListener('pointerup',()=>{ drag=-1; if(cloth) cloth.grabs.delete('ptr'); });
+addEventListener('pointercancel',()=>{ if(cloth) cloth.grabs.delete('ptr'); });
 
 function coverK(){ const ca=W/H; const va = hasVid&&video.videoWidth ? video.videoWidth/video.videoHeight : ca;
   return ca>va ? [1, va/ca] : [ca/va, 1]; }
@@ -541,7 +587,7 @@ function useTestMask(){ // debug: fake person blob, ?testmask
 }
 document.getElementById('go').onclick=startCam;
 document.getElementById('demo').onclick=()=>{ demo=true; document.getElementById('start').style.display='none'; document.body.classList.add('running');
-  document.getElementById('help').innerHTML='<b>Drag</b> corners · <b>Click</b>/<b>Space</b> next effect · <b>A</b> auto · <b>H</b> graph';
+  document.getElementById('help').innerHTML='<b>M</b> chrome cloth (drag to grab) · <b>Drag</b> corners · <b>Click</b>/<b>Space</b> next effect · <b>A</b> auto · <b>H</b> graph';
   bar.querySelectorAll('[data-act=snap],[data-act=bg]').forEach(b=>b.hidden=true); };
 if(TOUCH) document.querySelector('.card p:nth-of-type(3)').innerHTML =
   '<b>Tip:</b> prop the phone up so both hands are free, then step out of frame for a second so it learns what\'s behind you (or tap <b>Grab background</b> with nobody in view). The buttons along the bottom trigger every effect by hand.';
@@ -618,7 +664,7 @@ function track(now){
   const ar = video.videoWidth/video.videoHeight;
   const r = landmarker.detectForVideo(video, now);
   const lms = r.landmarks||[];
-  handsSeen = lms.length;
+  handsSeen = lms.length; lastLms = lms;
 
   // snap gesture: thumb tip (4) pressed to middle tip (12), then flicked apart
   let minRatio=9;
@@ -639,6 +685,8 @@ function track(now){
   if(hd) gate('cinema',false,now);
   updateOverlay();
   if(hd || cin || lip || overlayName){ alphaT=0; return segmentFrame(now); }   // no portal while a meme pose is up
+
+  if(clothOn){ alphaT=0; clothTrackHands(lms); return segmentFrame(now); }   // hands play with the cloth instead
 
   // portal
   const hands = lms.map(lm=>({idx:lmToScreen(lm[8]), th:lmToScreen(lm[4]), cx:lmToScreen(lm[9]).x}));
@@ -717,6 +765,126 @@ function updatePlate(){
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);
 }
 
+// ================= Chrome cloth =================
+const BONES=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function clothInit(){
+  const port=H>W, NX=port?24:32;
+  const pinDist=W*(port?.84:.56), sp=pinDist*1.2/(NX-1);
+  const NY=Math.max(12, Math.min(34, Math.floor(H*(port?.72:.8)/sp)+1));
+  const ax=(W-pinDist)/2, ay=H*(port?.1:.06), n=NX*NY;
+  const P=new Float32Array(n*3), Wm=new Float32Array(n).fill(1);
+  for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){ const k=(j*NX+i)*3;
+    P[k]=ax+i/(NX-1)*pinDist; P[k+1]=ay+j*sp*.98; P[k+2]=Math.sin(i*.9+j*.4)*sp*.4; }
+  const pin=new Uint8Array(n); pin[0]=1; pin[NX-1]=1;          // hung from the two top corners, so it sags
+  const A=[],B=[],L=[];
+  const add=(a,b,l)=>{A.push(a);B.push(b);L.push(l);};
+  for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){ const k=j*NX+i;
+    if(i<NX-1) add(k,k+1,sp); if(j<NY-1) add(k,k+NX,sp);
+    if(i<NX-1&&j<NY-1){ add(k,k+NX+1,sp*Math.SQRT2); add(k+1,k+NX,sp*Math.SQRT2); }
+    if(i<NX-2) add(k,k+2,sp*2*.97); if(j<NY-2) add(k,k+2*NX,sp*2*.97); }   // light bending stiffness
+  const idx=new Uint16Array((NX-1)*(NY-1)*6); let q=0;
+  for(let j=0;j<NY-1;j++) for(let i=0;i<NX-1;i++){ const k=j*NX+i; idx.set([k,k+1,k+NX, k+1,k+NX+1,k+NX],q); q+=6; }
+  const old=cloth;
+  const vao=old?old.vao:gl.createVertexArray(), vbo=old?old.vbo:gl.createBuffer(), ibo=old?old.ibo:gl.createBuffer();
+  const verts=new Float32Array(n*8);
+  gl.bindVertexArray(vao);
+  gl.bindBuffer(gl.ARRAY_BUFFER,vbo); gl.bufferData(gl.ARRAY_BUFFER,verts.byteLength,gl.DYNAMIC_DRAW);
+  for(const [loc,size,off] of [[0,3,0],[1,3,12],[2,2,24]]){ gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,size,gl.FLOAT,false,32,off); }
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ibo); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,idx,gl.STATIC_DRAW);
+  gl.bindVertexArray(null);
+  cloth={NX,NY,n,sp,P,Q:P.slice(),Wm,pin,A:Int32Array.from(A),B:Int32Array.from(B),L:Float32Array.from(L),
+    vao,vbo,ibo,verts,nIdx:idx.length,grabs:new Map()};
+}
+function toggleCloth(){
+  clothOn=!clothOn;
+  if(clothOn){ clothInit(); alphaT=0;
+    toast(TOUCH ? 'Chrome cloth: push it with your hands, pinch it, or drag it with a finger' : 'Chrome cloth: push it with your hands, pinch to grab, or drag it with the mouse',3500); }
+  else cloth.grabs.clear();
+  syncBar();
+}
+// hold every free point within r of (x,y)
+function clothGrab(key,x,y,r){
+  const c=cloth, P=c.P, idx=[], off=[];
+  for(let k=0;k<c.n;k++){ if(c.pin[k]) continue; const dx=P[k*3]-x, dy=P[k*3+1]-y; if(dx*dx+dy*dy<r*r){ idx.push(k); off.push(dx*.55,dy*.55); } }
+  if(!idx.length){   // nothing under the finger: take the nearest point if it is close-ish
+    let best=-1,bd=(r*2.2)**2; for(let k=0;k<c.n;k++){ if(c.pin[k]) continue; const dx=P[k*3]-x, dy=P[k*3+1]-y, d=dx*dx+dy*dy; if(d<bd){bd=d;best=k;} }
+    if(best<0) return false; idx.push(best); off.push(0,0); }
+  c.grabs.set(key,{idx,off,x,y}); return true;
+}
+function clothTrackHands(lms){
+  const c=cloth; if(!c) return;
+  clothHands = lms.map(lm=>{ const pts=lm.map(lmToScreen); return {pts, size:Math.hypot(pts[0].x-pts[9].x,pts[0].y-pts[9].y)||1}; });
+  clothHands.forEach((h,i)=>{
+    const key='h'+i, a=h.pts[4], b=h.pts[8], ratio=Math.hypot(a.x-b.x,a.y-b.y)/h.size;
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2, g=c.grabs.get(key);
+    if(g){ if(ratio>.55) c.grabs.delete(key); else { g.x=mx; g.y=my; } }
+    else if(ratio<.3) clothGrab(key,mx,my,h.size*.42);
+  });
+  for(const k of [...c.grabs.keys()]) if(k[0]==='h' && +k.slice(1)>=clothHands.length) c.grabs.delete(k);
+}
+function clothStep(dt,t){
+  const c=cloth, {P,Q,Wm,pin,A,B,L,NX}=c, n=c.n, g=1500*H/720, sub=2, h=dt/sub;
+  for(let s=0;s<sub;s++){
+    for(let k=0;k<n;k++) Wm[k]=pin[k]?0:1;
+    for(const gr of c.grabs.values()) for(const k of gr.idx) Wm[k]=0;
+    for(let k=0;k<n;k++){ if(!Wm[k]) continue; const i=k*3, row=(k/NX)|0;
+      const wind=Math.sin(t*.9+row*.35+(k%NX)*.2)*25*H/720;
+      for(let a=0;a<3;a++){ const v=(P[i+a]-Q[i+a])*.986; Q[i+a]=P[i+a]; P[i+a]+=v; }
+      P[i]+=wind*h*h; P[i+1]+=g*h*h; }
+    for(const gr of c.grabs.values()) gr.idx.forEach((k,m)=>{ const i=k*3;
+      P[i]+=(gr.x+gr.off[m*2]-P[i])*.6; P[i+1]+=(gr.y+gr.off[m*2+1]-P[i+1])*.6; P[i+2]*=.9;
+      Q[i]=P[i]; Q[i+1]=P[i+1]; Q[i+2]=P[i+2]; });
+    for(let it=0;it<10;it++){
+      for(let e=0;e<A.length;e++){ const a=A[e], b=B[e], wa=Wm[a], wb=Wm[b], ws=wa+wb; if(!ws) continue;
+        const ia=a*3, ib=b*3, dx=P[ib]-P[ia], dy=P[ib+1]-P[ia+1], dz=P[ib+2]-P[ia+2];
+        const d=Math.sqrt(dx*dx+dy*dy+dz*dz); if(d<1e-6) continue;
+        const f=(d-L[e])/(d*ws);
+        P[ia]+=dx*f*wa; P[ia+1]+=dy*f*wa; P[ia+2]+=dz*f*wa;
+        P[ib]-=dx*f*wb; P[ib+1]-=dy*f*wb; P[ib+2]-=dz*f*wb; }
+      if(it%3===2) clothCollide();
+    }
+  }
+}
+// fingers and palms are capsules that shove the sheet aside and dent it backwards
+function clothCollide(){
+  const c=cloth, P=c.P, Wm=c.Wm;
+  for(const hd of clothHands){ const r=hd.size*.16, pts=hd.pts;
+    let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; for(const p of pts){ x0=Math.min(x0,p.x); y0=Math.min(y0,p.y); x1=Math.max(x1,p.x); y1=Math.max(y1,p.y); }
+    x0-=r; y0-=r; x1+=r; y1+=r;
+    for(let k=0;k<c.n;k++){ if(!Wm[k]) continue; const i=k*3, px=P[i], py=P[i+1]; if(px<x0||px>x1||py<y0||py>y1) continue;
+      let best=1e9,nx=0,ny=0;
+      for(const [u,v] of BONES){ const a=pts[u], b=pts[v], bx=b.x-a.x, by=b.y-a.y;
+        const tt=Math.max(0,Math.min(1,((px-a.x)*bx+(py-a.y)*by)/(bx*bx+by*by||1)));
+        const qx=px-(a.x+bx*tt), qy=py-(a.y+by*tt), d=Math.hypot(qx,qy);
+        if(d<best){ best=d; nx=qx; ny=qy; } }
+      if(best<r){ const s=(r-best)/(best||1); P[i]+=nx*s; P[i+1]+=ny*s; P[i+2]-=(r-best)*.6; }
+    }
+  }
+}
+function clothDraw(t){
+  const c=cloth, {P,verts,NX,NY}=c;
+  for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){ const k=j*NX+i, o=k*8;
+    const l=(j*NX+Math.max(i-1,0))*3, r=(j*NX+Math.min(i+1,NX-1))*3, u=(Math.max(j-1,0)*NX+i)*3, d=(Math.min(j+1,NY-1)*NX+i)*3;
+    const ax=P[r]-P[l], ay=P[r+1]-P[l+1], az=P[r+2]-P[l+2], bx=P[d]-P[u], by=P[d+1]-P[u+1], bz=P[d+2]-P[u+2];
+    let nx=ay*bz-az*by, ny=az*bx-ax*bz, nz=ax*by-ay*bx; const m=Math.hypot(nx,ny,nz)||1;
+    verts[o]=P[k*3]; verts[o+1]=P[k*3+1]; verts[o+2]=P[k*3+2];
+    verts[o+3]=nx/m; verts[o+4]=ny/m; verts[o+5]=nz/m; verts[o+6]=i/(NX-1); verts[o+7]=j/(NY-1); }
+  gl.useProgram(CLOTH.p); gl.bindVertexArray(c.vao);
+  gl.bindBuffer(gl.ARRAY_BUFFER,c.vbo); gl.bufferSubData(gl.ARRAY_BUFFER,0,verts);
+  bindTex(0,tVid); const u=CLOTH.u;
+  gl.uniform1i(u.uVid,0); gl.uniform2f(u.uRes,W,H); gl.uniform2f(u.uK,...coverK()); gl.uniform1f(u.uT,t); gl.uniform1f(u.uHasVid,hasVid?1:0);
+  gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+  gl.drawElements(gl.TRIANGLES,c.nIdx,gl.UNSIGNED_SHORT,0);
+  gl.disable(gl.DEPTH_TEST); gl.bindVertexArray(null);
+}
+function drawHands(){
+  const s=DPR; hx.save(); hx.lineWidth=3*s; hx.strokeStyle='#3dff3d'; hx.fillStyle='#ff2a2a';
+  for(const h of clothHands){ const p=h.pts;
+    hx.beginPath(); for(const [a,b] of BONES){ hx.moveTo(p[a].x,p[a].y); hx.lineTo(p[b].x,p[b].y); } hx.stroke();
+    for(const q of p){ hx.beginPath(); hx.arc(q.x,q.y,4*s,0,7); hx.fill(); } }
+  hx.restore();
+}
+
 // ================= HUD =================
 const NODES=[
   ['videodevin1',0,0],['flip1',1,0],['hand_tracking',2,0],['landmarks',3,0],
@@ -728,7 +896,7 @@ const NODES=[
 const EDGES=[[0,1],[1,2],[2,3],[3,4],[4,5],[6,7],[7,8],[8,12],[9,12],[10,12],[11,12],[12,13],[5,13],[13,14],[1,9],[1,10],[1,11],
   [15,16],[16,19],[1,17],[17,18],[18,19],[19,13],[3,16]];
 function drawHud(fps){
-  hx.clearRect(0,0,W,H); if(!showHud) return;
+  hx.clearRect(0,0,W,H); if(clothOn) drawHands(); if(!showHud) return;
   const s=DPR*Math.min(1,(W/DPR)/540), ox=18*s, oy=18*s, bw=70*s, bh=13*s, gx=84*s, gy=22*s;
   const active=new Set([...PAIRS[pi]].map(i=>NAMES[i]));
   const now=performance.now();
@@ -751,7 +919,7 @@ function drawHud(fps){
   hx.fillStyle='rgba(255,255,255,.8)';
   hx.fillText(`fps ${fps.toFixed(0)}   hands ${demo?'demo':handsSeen}   you: ${snapState}   fx ${NAMES[PAIRS[pi][0]]} | ${NAMES[PAIRS[pi][1]]}   auto ${auto?'on':'off'}`, ox, oy+7.6*gy);
   hx.restore();
-  if(demo){ hx.fillStyle='rgba(255,255,255,.9)'; for(const c of corners){ hx.beginPath(); hx.arc(c.x,c.y,5*DPR,0,7); hx.fill(); } }
+  if(demo && !clothOn){ hx.fillStyle='rgba(255,255,255,.9)'; for(const c of corners){ hx.beginPath(); hx.arc(c.x,c.y,5*DPR,0,7); hx.fill(); } }
 }
 
 // ================= Loop =================
@@ -762,7 +930,7 @@ function frame(now){
   const t=(now-t0)/1000;
   if(hasVid && video.readyState>=2){ bindTex(0,tVid); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,video); }
   if(hasVid){ track(now); listen(now); updatePlate(); }
-  if(demo){
+  if(demo && !clothOn){
     alphaT=1;
     if(!demoManual){ const cx=W/2, cy=H/2, rw=W*.22, rh=H*.16, a=Math.sin(t*.7)*.25;
       target = [[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y],i)=>{ const wx=x*rw*(1+.15*Math.sin(t*1.3+i)), wy=y*rh*(1+.2*Math.cos(t*1.1+i*2));
@@ -793,6 +961,8 @@ function frame(now){
   gl.uniform1f(u.uMix, mixT*mixT*(3-2*mixT)); gl.uniform1f(u.uHasVid,hasVid?1:0); gl.uniform1f(u.uQA, Math.max(.2,Math.min(6,qw/Math.max(qh,1))));
   gl.uniform1f(u.uHide, hide?1:0); gl.uniform1f(u.uP,P); gl.uniform1f(u.uStep,step); gl.uniform4f(u.uBBox,...bbox);
   gl.drawArrays(gl.TRIANGLES,0,3);
+
+  if(clothOn && cloth){ clothStep(dt,t); clothDraw(t); }
 
   // pixel dust
   if(hide && (snapState==='dissolving'||snapState==='returning')){
