@@ -28,52 +28,93 @@
   button{font:inherit;font-size:13px;padding:10px 16px;border-radius:6px;border:1px solid #333;background:#151517;color:var(--fg);cursor:pointer}
   button.primary{background:var(--acc);color:#0b0b0c;border-color:var(--acc);font-weight:600}
   button:hover{filter:brightness(1.1)}
-  #gear{position:fixed;top:calc(12px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));z-index:6;display:none;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border-radius:50%;background:rgba(20,20,22,.78);border-color:rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-  body.running:not(.clean) #gear{display:flex}
-  #panel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);z-index:7;background:rgba(13,13,15,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-left:1px solid #26262b;
-    transform:translateX(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-user-select:text;user-select:text;
-    padding:calc(14px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
-  #panel.open{transform:none}
-  @media (max-width:600px){ #panel{top:auto;left:0;width:100%;height:80%;border-left:0;border-top:1px solid #26262b;border-radius:16px 16px 0 0;transform:translateY(105%)} }
+  /* Control dock (Figma "Bar"): a pill that grows into the settings panel. Measurements are the component's at 2x. */
+  #dock{--m:max(24px,env(safe-area-inset-left));position:fixed;z-index:6;left:var(--m);right:max(24px,env(safe-area-inset-right));bottom:calc(24px + env(safe-area-inset-bottom));
+    height:60px;border-radius:30px;display:none;isolation:isolate;
+    transition:height .5s cubic-bezier(.2,.9,.15,1),border-radius .5s cubic-bezier(.2,.9,.15,1)}
+  body.running:not(.clean) #dock{display:block}
+  #dock.open{height:calc(100% - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border-radius:48px}
+  @media (prefers-reduced-motion:reduce){ #dock,#dock .bar,#dock .chev,#panel{transition:none} }
+  /* surface: black at 50% (bar) / 80% (panel), as in the component */
+  #dock .surf{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:rgba(0,0,0,.5);
+    box-shadow:inset 0 0 14px rgba(255,120,0,.35),inset 0 0 3px rgba(255,200,60,.5);transition:background .4s}
+  #dock.open .surf{background:rgba(0,0,0,.8)}
+  /* the hot chromatic rim the Figma lens-distortion shader produces, drawn with gradients */
+  #dock .rim,#dock .glow i{position:absolute;inset:-2px;border-radius:inherit;padding:3px;pointer-events:none;
+    background:conic-gradient(from 200deg,#ffd23a,#ff9a00 9%,#ff4a1c 18%,#ff8a00 27%,#ffc21a 36%,#ff6a00 46%,#ff2d6f 55%,#5b7cff 60%,#ffe14d 66%,#ff7b00 76%,#ff3a1a 86%,#ffb000 94%,#ffd23a);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+  #dock .glow{position:absolute;inset:-4px;border-radius:inherit;filter:blur(10px);opacity:.9;pointer-events:none;z-index:-1}
+  #dock .glow i{inset:0;padding:7px}
+  /* collapsed bar */
+  #dock .bar{position:absolute;left:0;right:0;bottom:0;height:60px;display:flex;align-items:center;gap:12px;padding:0 3.3% 0 3.3%;transition:opacity .2s}
+  #dock.open .bar{opacity:0;pointer-events:none}
+  #dock .hints{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;scrollbar-width:none;text-align:center;font-size:12px;color:#fff;
+    -webkit-mask:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent);mask:linear-gradient(90deg,transparent,#000 14px,#000 calc(100% - 14px),transparent)}
+  #dock .hints::-webkit-scrollbar{display:none}
+  #dock .hints b{font-weight:700}
+  #dock .btns2{display:flex;gap:8px;align-items:center;flex:none}
+  #dock .ib{width:40px;height:40px;padding:0;border:0;background:none;display:grid;place-items:center;border-radius:14px}
+  #dock .ib img{width:40px;height:40px;display:block}
+  #dock .plus{background:#4cff00;padding:8px}
+  #dock .plus img,#dock .chev img{width:24px;height:24px}
+  #dock .chev{position:absolute;right:max(16px,3.4%);bottom:max(16px,4%);background:#202020;padding:8px;opacity:0;pointer-events:none;transition:opacity .2s}
+  #dock.open .chev{opacity:1;pointer-events:auto;transition:opacity .25s .2s}
+  #dock .ib:focus-visible{outline:2px solid #4cff00;outline-offset:2px}
+  /* touch: quick actions instead of key hints */
+  #bar{display:flex;gap:6px;justify-content:safe center}
+  #bar button{flex:0 0 auto;padding:7px 11px;font-size:12px;border-radius:999px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);touch-action:manipulation}
+  #bar button.on{background:#4cff00;color:#0b0b0c;border-color:#4cff00;font-weight:600}
+  #bar button.snap{background:var(--pink);border-color:var(--pink);color:#fff;font-weight:600}
+  body.touch #help{display:none} body:not(.touch) #bar{display:none}
+  @media (max-width:600px){ #dock{left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom))} #dock.open{height:calc(100% - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border-radius:32px} }
+  /* expanded panel */
+  #panel{position:absolute;inset:0;border-radius:inherit;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-user-select:text;user-select:text;
+    padding:28px clamp(16px,3.4%,40px) 88px;opacity:0;visibility:hidden;transition:opacity .15s,visibility 0s linear .15s}
+  #dock.open #panel{opacity:1;visibility:visible;transition:opacity .3s .15s}
+  #panel .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px;align-items:start}
+  #panel .wide{grid-column:1/-1}
   #panel h2{font-size:15px;font-weight:600;letter-spacing:.02em}
-  #panel .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-  #panel .x{padding:6px 11px}
-  #panel .tabs{display:flex;gap:6px;margin-bottom:14px}
-  #panel .tabs button{flex:1;padding:9px}
-  #panel .tabs button.on{background:var(--acc);color:#0b0b0c;border-color:var(--acc);font-weight:600}
-  #panel section{border-top:1px solid #222227;padding:14px 0;display:grid;gap:10px}
+  #panel .top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  #panel .tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.06)}
+  #panel .tabs button{padding:8px 16px;border:0;border-radius:10px;background:none}
+  #panel .tabs button.on{background:#4cff00;color:#0b0b0c;border-color:var(--acc);font-weight:600}
+  #panel section{padding:16px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);display:grid;gap:10px;min-width:0}
+  #panel .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+  #panel .tile{display:grid;gap:4px;text-align:left;padding:14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+  #panel .tile b{font-weight:600}
+  #panel .tile span{color:var(--dim);font-size:11px}
+  #panel .tile.on{background:#4cff00;border-color:#4cff00;color:#0b0b0c}
+  #panel .tile.on span{color:#1d3d00}
   #panel h3{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;gap:8px}
   #panel h3 button{font-size:11px;letter-spacing:0;text-transform:none;padding:5px 9px;font-weight:400}
   #panel label{display:grid;grid-template-columns:7.5em 1fr 3.2em;align-items:center;gap:10px;color:#cfcfcf}
   #panel label.chk{grid-template-columns:auto 1fr;justify-items:start}
   #panel label output{text-align:right;color:var(--dim);font-variant-numeric:tabular-nums}
-  #panel input[type=range]{width:100%;accent-color:var(--acc);min-width:0}
+  #panel input[type=range]{width:100%;accent-color:#4cff00;min-width:0}
   #panel input[type=color]{width:100%;height:30px;border:1px solid #333;border-radius:6px;background:#151517;padding:2px}
   #panel input[type=text],#panel select{width:100%;min-width:0;font:inherit;font-size:13px;color:var(--fg);background:#151517;border:1px solid #333;border-radius:6px;padding:8px}
-  #panel input[type=checkbox]{accent-color:var(--acc);width:18px;height:18px}
+  #panel input[type=checkbox]{accent-color:#4cff00;width:18px;height:18px}
   #panel .note{color:var(--dim);font-size:12px;line-height:1.5}
-  #panel .row{display:grid;gap:8px;padding:12px;border:1px solid #232328;border-radius:10px;background:#111114}
+  #panel .row{display:grid;gap:8px;padding:12px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(0,0,0,.35)}
   #panel .rowhead{display:flex;align-items:center;gap:10px}
   #panel .rowhead input[type=text]{flex:1}
   #panel .rowhead b{flex:1;font-weight:600}
   #panel .dot{width:10px;height:10px;border-radius:50%;background:#333;flex:none;transition:background .15s}
-  #panel .dot.hit{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+  #panel .dot.hit{background:#4cff00;box-shadow:0 0 8px #4cff00}
   #panel .meter{position:relative;height:6px;border-radius:3px;background:#222}
   #panel .meter i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--pink);width:0}
-  #panel .meter.hit i{background:var(--acc)}
+  #panel .meter.hit i{background:#4cff00}
   #panel .meter::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:#888}
   #panel .acts{display:flex;flex-wrap:wrap;gap:6px}
   #panel .acts button{padding:7px 10px;font-size:12px}
   #panel .thumb{width:100%;max-height:90px;object-fit:contain;border-radius:6px;background:#000}
   #panel .big{width:100%;padding:12px}
-  #panel :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  #panel :focus-visible{outline:2px solid #4cff00;outline-offset:2px}
   #countdown{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;font-size:min(30vw,180px);font-weight:700;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.7);pointer-events:none}
   #countdown[hidden]{display:none}
   #countdown.small{font-size:min(9vw,48px)}
   #installHint{margin-top:14px;font-size:12px}
   #msg{margin-top:14px;color:#ff7a7a;min-height:1.4em}
-  #help{position:fixed;right:14px;bottom:12px;color:rgba(255,255,255,.55);text-align:right;z-index:3;pointer-events:none;text-shadow:0 1px 2px #000}
-  #help b{color:#fff;font-weight:600}
   #cinema{position:fixed;inset:0;z-index:4;background:#000;opacity:0;visibility:hidden;transition:opacity .18s ease,visibility 0s linear .18s;overflow:hidden;pointer-events:none}
   #cinema.on{opacity:1;visibility:visible;transition:opacity .12s ease}
   #cinema .bg{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(28px) brightness(.45);transform:scale(1.05)}
@@ -86,16 +127,8 @@
   html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
   #vid{position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none}
   #start{overflow:auto;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
-  #bar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:none;gap:6px;padding:8px max(10px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));
-    overflow-x:auto;scrollbar-width:none;background:linear-gradient(transparent,rgba(0,0,0,.55) 40%);justify-content:safe center}
-  #bar::-webkit-scrollbar{display:none}
-  #bar button{flex:0 0 auto;padding:10px 12px;font-size:13px;border-radius:999px;background:rgba(20,20,22,.78);border-color:rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);touch-action:manipulation}
-  #bar button.on{background:var(--acc);color:#0b0b0c;border-color:var(--acc);font-weight:600}
-  #bar button.snap{background:var(--pink);border-color:var(--pink);color:#fff;font-weight:600}
-  body.touch #help{display:none}
-  body.clean #help, body.clean #bar, body.clean #toast, body.clean #panel{display:none!important}
+  body.clean #dock, body.clean #toast{display:none!important}
   body.clean{cursor:none}
-  body.touch.running #bar{display:flex}
   #toast{position:fixed;left:50%;top:calc(18px + env(safe-area-inset-top));max-width:calc(100% - 32px);text-align:center;transform:translateX(-50%);padding:8px 14px;border-radius:6px;background:rgba(0,0,0,.65);color:#fff;font-size:13px;z-index:4;opacity:0;transition:opacity .3s;pointer-events:none}
 </style>
 </head>
@@ -104,8 +137,6 @@
 <canvas id="gl"></canvas>
 <canvas id="hud"></canvas>
 <div id="toast"></div>
-<button id="gear" aria-label="Settings" title="Settings (G)"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
-<aside id="panel" aria-hidden="true" aria-label="Settings"></aside>
 <div id="countdown" hidden></div>
 <div id="cinema"><img class="bg" alt=""><img class="fg" alt="Absolute Cinema"><div class="vig"></div><div class="flash"></div></div>
 
@@ -125,19 +156,32 @@
   </div>
 </div>
 
-<div id="bar">
-  <button data-act="cloth">Chrome cloth</button>
-  <button data-act="next">Next effect</button>
-  <button data-act="cinema">Cinema</button>
-  <button data-act="lips">Shh</button>
-  <button data-act="head">Hands on head</button>
-  <button data-act="snap" class="snap">Snap</button>
-  <button data-act="bg">Grab background</button>
-  <button data-act="auto">Auto</button>
-  <button data-act="hud">Graph</button>
+<div id="dock">
+  <div class="glow" aria-hidden="true"><i></i></div>
+  <div class="surf"></div>
+  <div class="rim" aria-hidden="true"></div>
+  <div class="bar">
+    <div class="hints">
+      <span id="help"><b>Space</b> next effect · <b>A</b> auto · <b>H</b> graph · <b>M</b> chrome cloth · <b>G</b> settings · <b>U</b> clean output for calls · <b>F</b> fullscreen · <b>C</b> cinema · <b>L</b> shh · <b>K</b> hands on head · <b>S</b> vanish · <b>B</b> grab background</span>
+      <div id="bar">
+        <button data-act="cloth">Chrome cloth</button>
+        <button data-act="next">Next effect</button>
+        <button data-act="cinema">Cinema</button>
+        <button data-act="lips">Shh</button>
+        <button data-act="head">Hands on head</button>
+        <button data-act="snap" class="snap">Snap</button>
+        <button data-act="bg">Grab background</button>
+        <button data-act="auto">Auto</button>
+      </div>
+    </div>
+    <div class="btns2">
+      <button class="ib" id="dockGear" aria-label="Open settings" aria-expanded="false" title="Settings (G)"><img src="icon-settings.svg" alt=""></button>
+      <button class="ib plus" id="dockPlus" aria-label="Record a new gesture" title="Record a new gesture"><img src="icon-plus.svg" alt=""></button>
+    </div>
+  </div>
+  <section id="panel" aria-label="Settings" aria-hidden="true"></section>
+  <button class="ib chev" id="dockClose" aria-label="Close settings" title="Close (Esc)"><img src="icon-chevron-up.svg" alt=""></button>
 </div>
-
-<div id="help"><b>Both hands up</b> / <b>C</b> cinema · <b>Finger to lips</b> / <b>L</b> · <b>Hands on head</b> / <b>K</b> · <b>Snap</b> / <b>S</b> vanish ·<b>B</b> grab background · <b>Space</b> next effect · <b>A</b> auto · <b>H</b> graph · <b>M</b> chrome cloth · <b>G</b> settings · <b>U</b> clean output for calls · <b>F</b> fullscreen</div>
 
 <script type="module">
 // ================= Shaders =================
@@ -526,7 +570,7 @@ function next(){ oldPair=curPair(); pairOverride=null; pi=(pi+1)%PAIRS.length; m
 addEventListener('keydown',e=>{
   if(e.target.closest && e.target.closest('input,select,textarea')) return;   // typing in settings
   if(e.key==='Escape'){ closePanel(); return; }
-  if(e.key==='g'||e.key==='G'){ panel.classList.contains('open')?closePanel():openPanel(); return; }
+  if(e.key==='g'||e.key==='G'){ dock.classList.contains('open')?closePanel():openPanel(); return; }
   if(e.code==='Space'){ e.preventDefault(); next(); }
   else if(e.key==='a'||e.key==='A') auto=!auto;
   else if(e.key==='h'||e.key==='H') showHud=!showHud;
@@ -545,21 +589,28 @@ addEventListener('keydown',e=>{
 
 // ---- touch toolbar (phones): the same actions as the keyboard shortcuts
 const bar=document.getElementById('bar');
-function syncBar(){ bar.querySelectorAll('button').forEach(b=>{ const a=b.dataset.act;
-  b.classList.toggle('on', (a==='auto'&&auto)||(a==='hud'&&showHud)||(a==='cloth'&&clothOn)||(['cinema','lips','head'].includes(a)&&keyOverlay===a)); }); }
+function syncBar(){ document.querySelectorAll('#bar button, #panel [data-act]').forEach(b=>{ const a=b.dataset.act;
+  b.classList.toggle('on', (a==='auto'&&auto)||(a==='hud'&&showHud)||(a==='cloth'&&clothOn)||(a==='clean'&&document.body.classList.contains('clean'))||(['cinema','lips','head'].includes(a)&&keyOverlay===a)); }); }
 bar.addEventListener('pointerdown',e=>e.stopPropagation());
 // clean output for video calls: only the picture and effects, no buttons, hints or graph (U, or ?clean in the address)
-function setClean(on){ document.body.classList.toggle('clean',on); if(on) showHud=false; }
+function setClean(on){ document.body.classList.toggle('clean',on); if(on){ showHud=false; if(typeof closePanel==='function') closePanel(); } }
+// phones have no U key: a long press brings the controls back
+let lpT=0;
+addEventListener('pointerdown',()=>{ if(!document.body.classList.contains('clean')) return; clearTimeout(lpT); lpT=setTimeout(()=>{ setClean(false); toast('Controls are back'); },700); });
+addEventListener('pointerup',()=>clearTimeout(lpT)); addEventListener('pointercancel',()=>clearTimeout(lpT));
 if(params.has('clean')) setClean(true);
-bar.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const a=b.dataset.act;
+function runAct(a){
   if(a==='next') next();
   else if(a==='cloth') toggleCloth();
   else if(a==='auto') auto=!auto;
   else if(a==='hud') showHud=!showHud;
   else if(a==='snap') snap('key');
   else if(a==='bg'){ grabPlate=true; toast('Background captured'); }
+  else if(a==='clean') setClean(true);
+  else if(a==='full'){ const el=document.documentElement; if(el.requestFullscreen){ (document.fullscreenElement?document.exitFullscreen():el.requestFullscreen()).catch(()=>{}); } else toast('Fullscreen is not available here. Add the app to your home screen instead',3500); }
   else { keyOverlay = keyOverlay===a?null:a; updateOverlay(); }
-  syncBar(); });
+  syncBar(); }
+bar.addEventListener('click',e=>{ const b=e.target.closest('button[data-act]'); if(b) runAct(b.dataset.act); });
 // keep the screen awake while the camera runs
 async function wake(){ try{ await navigator.wakeLock?.request('screen'); }catch(_){} }
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && hasVid) wake(); });
@@ -1104,11 +1155,13 @@ function pickImage(ownerId){
 }
 
 // ---- the panel
-const panel=document.getElementById('panel'); let panelTab='effects';
-function openPanel(tab){ if(tab) panelTab=tab; renderPanel(); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
-function closePanel(){ panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
-document.getElementById('gear').onclick=()=>panel.classList.contains('open')?closePanel():openPanel();
-panel.addEventListener('pointerdown',e=>e.stopPropagation());
+const panel=document.getElementById('panel'), dock=document.getElementById('dock'); let panelTab='actions';
+function openPanel(tab){ if(tab) panelTab=tab; renderPanel(); dock.classList.add('open'); panel.setAttribute('aria-hidden','false'); document.getElementById('dockGear').setAttribute('aria-expanded','true'); }
+function closePanel(){ dock.classList.remove('open'); panel.setAttribute('aria-hidden','true'); document.getElementById('dockGear').setAttribute('aria-expanded','false'); }
+document.getElementById('dockGear').onclick=()=>openPanel();
+document.getElementById('dockClose').onclick=closePanel;
+document.getElementById('dockPlus').onclick=()=>{ if(landmarker) recordGesture(); else { openPanel('gestures'); toast(hasVid?'Hand tracking is still loading…':'Start the camera first to record a gesture',3000); } };
+dock.addEventListener('pointerdown',e=>e.stopPropagation());
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fxGet=k=>{ const [a,b]=k.split('.'); return S.fx[a][b]; };
 function rng(k,label,min,max,step){ const v=fxGet(k); return `<label><span>${label}</span><input type="range" id="fx-${k}" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${v}"><output>${+(+v).toFixed(2)}</output></label>`; }
@@ -1119,9 +1172,15 @@ function actSel(id,val,owner){ return `<select id="act-${id}" data-g="${id}" dat
   + (val==='overlay:custom' ? (owner.image ? `<img class="thumb" alt="Your picture" src="${owner.image}"><div class="acts"><button data-do="image" data-g="${id}">Change picture</button></div>` : `<div class="acts"><button data-do="image" data-g="${id}">Choose a picture</button></div>`) : ''); }
 function renderPanel(){
   const pr=curPair();
-  let h=`<div class="top"><h2>Settings</h2><button class="x" data-do="close" aria-label="Close settings">✕</button></div>
-  <div class="tabs" role="tablist"><button role="tab" data-tab="effects" class="${panelTab==='effects'?'on':''}">Effects</button><button role="tab" data-tab="gestures" class="${panelTab==='gestures'?'on':''}">Gestures</button></div>`;
-  if(panelTab==='effects'){
+  const tab=(k,n)=>`<button role="tab" data-tab="${k}" aria-selected="${panelTab===k}" class="${panelTab===k?'on':''}">${n}</button>`;
+  let h=`<div class="top"><h2>Hand Portal</h2><div class="tabs" role="tablist">${tab('actions','Actions')}${tab('effects','Effects')}${tab('gestures','Gestures')}</div></div><div class="grid">`;
+  if(panelTab==='actions'){
+    const T=(a,label,sub)=>`<button class="tile" data-act="${a}"><b>${label}</b><span>${sub}</span></button>`;
+    h+=`<section class="wide"><h3>Effects</h3><div class="tiles">${T('cloth','Chrome cloth','M · push it, pinch to grab')}${T('next','Next portal effect','Space · or pinch the “L”')}${T('auto','Auto-switch effects','A')}${T('snap','Vanish / come back','S · or snap your fingers')}${T('bg','Grab background','B · step out of frame first')}</div></section>
+    <section class="wide"><h3>Pictures</h3><div class="tiles">${T('cinema','Absolute Cinema','C · both palms up')}${T('lips','Shh','L · finger to lips')}${T('head','Hands on head','K · both hands on head')}</div></section>
+    <section class="wide"><h3>Screen</h3><div class="tiles">${T('hud','Node graph','H')}${T('clean','Clean output for calls',TOUCH?'Long-press the screen to bring controls back':'U brings the controls back')}${T('full','Fullscreen','F')}</div></section>`;
+  } else 
+if(panelTab==='effects'){
     h+=`<section><h3>Portal</h3>
       <label><span>Left half</span>${fxSel('pairL',pr[0])}<span></span></label>
       <label><span>Right half</span>${fxSel('pairR',pr[1])}<span></span></label>
@@ -1143,7 +1202,7 @@ function renderPanel(){
       h+=`<div class="row"><div class="rowhead"><span class="dot" data-live="b-${k}"></span><b>${BUILTIN_NAMES[k]}</b>
         <label class="chk"><input type="checkbox" id="on-b-${k}" data-g="b-${k}" data-f="on" ${b.on?'checked':''}><span>On</span></label></div>
         ${actSel('b-'+k,b.action,b)}</div>`; }
-    h+=`</section><section><h3>Your gestures</h3>
+    h+=`</section><section class="wide"><h3>Your gestures</h3>
       <p class="note">Hold a pose in front of the camera and pick what it does. The bar shows how close your hands are right now: past the middle line, it fires.</p>`;
     if(!S.custom.length) h+=`<p class="note">No gestures yet. Tap the button below, then hold your pose during the countdown.</p>`;
     for(const c of S.custom){
@@ -1159,10 +1218,12 @@ function renderPanel(){
     h+=`<button class="big primary" data-do="record">Record a new gesture</button>
       <p class="note">${hasVid?'':'Start the camera first: recording needs to see your hands.'}</p></section>`;
   }
-  const st=panel.scrollTop; panel.innerHTML=h; panel.scrollTop=st;
+  h+='</div>';
+  const st=panel.scrollTop; panel.innerHTML=h; panel.scrollTop=st; syncBar();
 }
 let confirmDel=null;
 panel.addEventListener('click',e=>{
+  const ac=e.target.closest('[data-act]'); if(ac){ runAct(ac.dataset.act); return; }
   const t=e.target.closest('[data-tab],[data-do]'); if(!t) return;
   if(t.dataset.tab){ panelTab=t.dataset.tab; renderPanel(); panel.scrollTop=0; return; }
   const d=t.dataset.do, id=t.dataset.g;
@@ -1194,7 +1255,7 @@ panel.addEventListener('input',e=>{
 // live feedback while the gestures tab is open
 let meterT=0;
 function updateMeters(now){
-  if(!panel.classList.contains('open') || panelTab!=='gestures' || now-meterT<90) return; meterT=now;
+  if(!dock.classList.contains('open') || panelTab!=='gestures' || now-meterT<90) return; meterT=now;
   for(const el of panel.querySelectorAll('[data-meter]')){ const c=S.custom.find(c=>c.id===el.dataset.meter), r=RT.get(el.dataset.meter); if(!c||!r) continue;
     el.firstChild.style.width=(Math.max(0,Math.min(1,1-r.dist/(c.thr*2)))*100)+'%'; el.classList.toggle('hit',!!r.on); }
   for(const el of panel.querySelectorAll('[data-live]')){ const id=el.dataset.live; let on=false;

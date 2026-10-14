@@ -1,7 +1,7 @@
 // Hand Portal offline support: the app itself is network-first (so updates arrive),
 // the tracking library and models are cache-first (big, versioned, rarely change).
-const APP = 'hand-portal-app-v2', LIB = 'hand-portal-lib-v1';
-const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const APP = 'hand-portal-app-v3', LIB = 'hand-portal-lib-v1';
+const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-settings.svg', './icon-plus.svg', './icon-chevron-up.svg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(APP).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', e => {
