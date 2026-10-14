@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hand Portal">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Hand Portal</title>
 <style>
   :root{--fg:#e8e8e8;--dim:#8a8a8a;--acc:#b6ff3b;--pink:#ff2d8f;--bg:#0b0b0c}
@@ -24,6 +28,7 @@
   button{font:inherit;font-size:13px;padding:10px 16px;border-radius:6px;border:1px solid #333;background:#151517;color:var(--fg);cursor:pointer}
   button.primary{background:var(--acc);color:#0b0b0c;border-color:var(--acc);font-weight:600}
   button:hover{filter:brightness(1.1)}
+  #installHint{margin-top:14px;font-size:12px}
   #msg{margin-top:14px;color:#ff7a7a;min-height:1.4em}
   #help{position:fixed;right:14px;bottom:12px;color:rgba(255,255,255,.55);text-align:right;z-index:3;pointer-events:none;text-shadow:0 1px 2px #000}
   #help b{color:#fff;font-weight:600}
@@ -68,7 +73,9 @@
     <div class="btns">
       <button class="primary" id="go">Start camera</button>
       <button id="demo">Demo without camera</button>
+      <button id="install" hidden>Install app</button>
     </div>
+    <p id="installHint" hidden></p>
     <div id="msg"></div>
   </div>
 </div>
@@ -439,6 +446,19 @@ function resize(){ DPR=Math.min(devicePixelRatio||1, TOUCH?1:2);   /* phones: re
   cv.width=W; cv.height=H; hud.width=W; hud.height=H; if(clothOn) clothInit(); }
 addEventListener('resize',resize); addEventListener('orientationchange',()=>setTimeout(resize,250)); resize();
 
+// ---- installable app: offline cache + an Install button where the browser supports it
+if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+{
+  const standalone = matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || navigator.standalone;
+  const btn=document.getElementById('install'), hint=document.getElementById('installHint');
+  let deferred=null;
+  addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferred=e; btn.hidden=false; hint.hidden=true; });
+  btn.onclick=async()=>{ if(!deferred) return; deferred.prompt(); const r=await deferred.userChoice; deferred=null; btn.hidden=true;
+    if(r.outcome==='accepted') toast('Installed. Open Hand Portal from your home screen or app list'); };
+  addEventListener('appinstalled',()=>{ btn.hidden=true; hint.hidden=true; });
+  const iOS=/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  if(!standalone && iOS){ hint.hidden=false; hint.innerHTML='<b>Install as an app:</b> tap the Share button in Safari, then <b>Add to Home Screen</b>.'; }
+}
 const toastEl=document.getElementById('toast'); let toastT=0;
 function toast(s,ms=2200){ toastEl.textContent=s; toastEl.style.opacity=1; clearTimeout(toastT); toastT=setTimeout(()=>toastEl.style.opacity=0,ms); }
 
