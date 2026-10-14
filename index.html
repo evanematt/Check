@@ -28,6 +28,48 @@
   button{font:inherit;font-size:13px;padding:10px 16px;border-radius:6px;border:1px solid #333;background:#151517;color:var(--fg);cursor:pointer}
   button.primary{background:var(--acc);color:#0b0b0c;border-color:var(--acc);font-weight:600}
   button:hover{filter:brightness(1.1)}
+  #gear{position:fixed;top:calc(12px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-right));z-index:6;display:none;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border-radius:50%;background:rgba(20,20,22,.78);border-color:rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  body.running:not(.clean) #gear{display:flex}
+  #panel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);z-index:7;background:rgba(13,13,15,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-left:1px solid #26262b;
+    transform:translateX(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-user-select:text;user-select:text;
+    padding:calc(14px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+  #panel.open{transform:none}
+  @media (max-width:600px){ #panel{top:auto;left:0;width:100%;height:80%;border-left:0;border-top:1px solid #26262b;border-radius:16px 16px 0 0;transform:translateY(105%)} }
+  #panel h2{font-size:15px;font-weight:600;letter-spacing:.02em}
+  #panel .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  #panel .x{padding:6px 11px}
+  #panel .tabs{display:flex;gap:6px;margin-bottom:14px}
+  #panel .tabs button{flex:1;padding:9px}
+  #panel .tabs button.on{background:var(--acc);color:#0b0b0c;border-color:var(--acc);font-weight:600}
+  #panel section{border-top:1px solid #222227;padding:14px 0;display:grid;gap:10px}
+  #panel h3{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  #panel h3 button{font-size:11px;letter-spacing:0;text-transform:none;padding:5px 9px;font-weight:400}
+  #panel label{display:grid;grid-template-columns:7.5em 1fr 3.2em;align-items:center;gap:10px;color:#cfcfcf}
+  #panel label.chk{grid-template-columns:auto 1fr;justify-items:start}
+  #panel label output{text-align:right;color:var(--dim);font-variant-numeric:tabular-nums}
+  #panel input[type=range]{width:100%;accent-color:var(--acc);min-width:0}
+  #panel input[type=color]{width:100%;height:30px;border:1px solid #333;border-radius:6px;background:#151517;padding:2px}
+  #panel input[type=text],#panel select{width:100%;min-width:0;font:inherit;font-size:13px;color:var(--fg);background:#151517;border:1px solid #333;border-radius:6px;padding:8px}
+  #panel input[type=checkbox]{accent-color:var(--acc);width:18px;height:18px}
+  #panel .note{color:var(--dim);font-size:12px;line-height:1.5}
+  #panel .row{display:grid;gap:8px;padding:12px;border:1px solid #232328;border-radius:10px;background:#111114}
+  #panel .rowhead{display:flex;align-items:center;gap:10px}
+  #panel .rowhead input[type=text]{flex:1}
+  #panel .rowhead b{flex:1;font-weight:600}
+  #panel .dot{width:10px;height:10px;border-radius:50%;background:#333;flex:none;transition:background .15s}
+  #panel .dot.hit{background:var(--acc);box-shadow:0 0 8px var(--acc)}
+  #panel .meter{position:relative;height:6px;border-radius:3px;background:#222}
+  #panel .meter i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--pink);width:0}
+  #panel .meter.hit i{background:var(--acc)}
+  #panel .meter::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:#888}
+  #panel .acts{display:flex;flex-wrap:wrap;gap:6px}
+  #panel .acts button{padding:7px 10px;font-size:12px}
+  #panel .thumb{width:100%;max-height:90px;object-fit:contain;border-radius:6px;background:#000}
+  #panel .big{width:100%;padding:12px}
+  #panel :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  #countdown{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;font-size:min(30vw,180px);font-weight:700;color:#fff;text-shadow:0 4px 30px rgba(0,0,0,.7);pointer-events:none}
+  #countdown[hidden]{display:none}
+  #countdown.small{font-size:min(9vw,48px)}
   #installHint{margin-top:14px;font-size:12px}
   #msg{margin-top:14px;color:#ff7a7a;min-height:1.4em}
   #help{position:fixed;right:14px;bottom:12px;color:rgba(255,255,255,.55);text-align:right;z-index:3;pointer-events:none;text-shadow:0 1px 2px #000}
@@ -51,7 +93,7 @@
   #bar button.on{background:var(--acc);color:#0b0b0c;border-color:var(--acc);font-weight:600}
   #bar button.snap{background:var(--pink);border-color:var(--pink);color:#fff;font-weight:600}
   body.touch #help{display:none}
-  body.clean #help, body.clean #bar, body.clean #toast{display:none!important}
+  body.clean #help, body.clean #bar, body.clean #toast, body.clean #panel{display:none!important}
   body.clean{cursor:none}
   body.touch.running #bar{display:flex}
   #toast{position:fixed;left:50%;top:calc(18px + env(safe-area-inset-top));max-width:calc(100% - 32px);text-align:center;transform:translateX(-50%);padding:8px 14px;border-radius:6px;background:rgba(0,0,0,.65);color:#fff;font-size:13px;z-index:4;opacity:0;transition:opacity .3s;pointer-events:none}
@@ -62,6 +104,9 @@
 <canvas id="gl"></canvas>
 <canvas id="hud"></canvas>
 <div id="toast"></div>
+<button id="gear" aria-label="Settings" title="Settings (G)"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.4" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+<aside id="panel" aria-hidden="true" aria-label="Settings"></aside>
+<div id="countdown" hidden></div>
 <div id="cinema"><img class="bg" alt=""><img class="fg" alt="Absolute Cinema"><div class="vig"></div><div class="flash"></div></div>
 
 <div id="start">
@@ -92,7 +137,7 @@
   <button data-act="hud">Graph</button>
 </div>
 
-<div id="help"><b>Both hands up</b> / <b>C</b> cinema · <b>Finger to lips</b> / <b>L</b> · <b>Hands on head</b> / <b>K</b> · <b>Snap</b> / <b>S</b> vanish ·<b>B</b> grab background · <b>Space</b> next effect · <b>A</b> auto · <b>H</b> graph · <b>M</b> chrome cloth · <b>U</b> clean output for calls · <b>F</b> fullscreen</div>
+<div id="help"><b>Both hands up</b> / <b>C</b> cinema · <b>Finger to lips</b> / <b>L</b> · <b>Hands on head</b> / <b>K</b> · <b>Snap</b> / <b>S</b> vanish ·<b>B</b> grab background · <b>Space</b> next effect · <b>A</b> auto · <b>H</b> graph · <b>M</b> chrome cloth · <b>G</b> settings · <b>U</b> clean output for calls · <b>F</b> fullscreen</div>
 
 <script type="module">
 // ================= Shaders =================
@@ -188,51 +233,49 @@ vec2 invBilinear(vec2 p, vec2 a, vec2 b, vec2 c, vec2 d){
 }
 float sdSeg(vec2 p, vec2 a, vec2 b){ vec2 pa=p-a, ba=b-a; float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.); return length(pa-ba*h); }
 
+uniform vec3 uLiqA, uLiqB; uniform float uLiqSpeed;
+uniform float uDotCell; uniform vec3 uDotColor;
+uniform sampler2D uAtlas; uniform float uAscCell, uAscN, uAscContrast, uAscColorize, uAscInvert; uniform vec3 uAscInk, uAscPaper;
+uniform float uThLevels, uThScan;
 vec3 fxLiquid(vec2 q){
-  vec2 x = q*vec2(uQA,1.)*2.2; float t=uT*.22;
+  vec2 x = q*vec2(uQA,1.)*2.2; float t=uT*.22*uLiqSpeed;
   vec2 w = vec2(fbm(x+vec2(0.,t)), fbm(x+vec2(5.2,1.3)-t));
   vec2 w2 = vec2(fbm(x+3.5*w+vec2(1.7,9.2)+t*.7), fbm(x+3.5*w+vec2(8.3,2.8)-t*.4));
   float n = fbm(x+3.5*w2);
-  vec3 c = mix(vec3(.45,0.,.22), vec3(1.,.08,.55), smoothstep(.25,.6,n));
-  c = mix(c, vec3(1.,.62,.86), smoothstep(.62,.85,n)*.85);
+  vec3 c = mix(uLiqA, uLiqB, smoothstep(.25,.6,n));
+  c = mix(c, mix(uLiqB,vec3(1.),.55), smoothstep(.62,.85,n)*.85);
   c *= smoothstep(.12,.3,n);
-  float r = abs(sin(n*22.)); c += pow(1.-r,10.)*vec3(.35,.15,.25);
+  float r = abs(sin(n*22.)); c += pow(1.-r,10.)*mix(uLiqB,vec3(1.),.6)*.35;
   return c;
 }
 vec3 fxDots(vec2 p){
-  float cell = max(5., uRes.y/150.);
+  float cell = max(3., uDotCell*uRes.y/720.);
   vec2 id = floor(p/cell), ctr=(id+.5)*cell;
   float L = smoothstep(.12,.7,lum(ctr));
   float d = length(p-ctr)/cell;
   float r = .5*sqrt(L)*(.85+.3*hash(id+floor(uT*6.)));
-  return vec3(.71,1.,.23)*smoothstep(r, r-.18, d)*(.55+.6*L);
+  return uDotColor*smoothstep(r, r-.18, d)*(.55+.6*L);
 }
-float glyph(int n, vec2 p){
-  p = floor(p*vec2(-4.,-4.)+2.5);
-  if(clamp(p.x,0.,4.)==p.x && clamp(p.y,0.,4.)==p.y){
-    int a = int(round(p.x)+5.*round(p.y));
-    if(((n>>a)&1)==1) return 1.;
-  }
-  return 0.;
-}
+// ASCII: each cell picks a character from the user's ramp (atlas texture), darkest first
 vec3 fxAscii(vec2 p){
-  float cell = max(7., floor(uRes.y/110.));
+  float cell = max(4., floor(uAscCell*uRes.y/720.));
   vec2 id=floor(p/cell), ctr=(id+.5)*cell;
-  float L = smoothstep(.08,.85,lum(ctr));
-  int n = 0;
-  if(L<.92) n=4096; if(L<.80) n=65600; if(L<.68) n=332772; if(L<.56) n=15255086;
-  if(L<.44) n=23385164; if(L<.32) n=15252014; if(L<.22) n=13199452; if(L<.14) n=11512810;
-  float g = glyph(n, (p-ctr)/cell*1.15);
-  float paper = mix(.04,.96,smoothstep(.04,.2,L));
-  return vec3(mix(paper, paper>.5 ? .08 : .85, g));
+  vec3 src = srcCol(ctr);
+  float L = clamp((dot(src,vec3(.299,.587,.114))-.5)*uAscContrast+.5, 0., 1.);
+  if(uAscInvert>.5) L=1.-L;
+  float gi = min(floor(L*uAscN), uAscN-1.);
+  vec2 f = (p-id*cell)/cell;
+  float g = texture(uAtlas, vec2((gi+clamp(f.x,.02,.98))/uAscN, f.y)).a;
+  vec3 ink = uAscColorize>.5 ? clamp(src*1.35,0.,1.) : uAscInk;
+  return mix(uAscPaper, ink, g);
 }
 vec3 fxThermal(vec2 p){
-  float L = floor(lum(p)*10.)/10.;
+  float L = floor(lum(p)*uThLevels)/uThLevels;
   vec3 c = mix(vec3(.02,.0,.12), vec3(.2,.05,.7), smoothstep(0.,.25,L));
   c = mix(c, vec3(.95,.1,.35), smoothstep(.25,.5,L));
   c = mix(c, vec3(1.,.75,.1), smoothstep(.5,.75,L));
   c = mix(c, vec3(1.), smoothstep(.75,1.,L));
-  return c*(.85+.15*sin(p.y*1.6+uT*20.));
+  return c*mix(1., .85+.15*sin(p.y*1.6+uT*20.), uThScan);
 }
 vec3 fx(int id, vec2 q, vec2 p){
   if(id==0) return fxLiquid(q);
@@ -385,7 +428,7 @@ void main(){ vN=aN; vP=aP.xy; vUV=aUV;
   gl_Position=vec4(aP.x/uRes.x*2.-1., 1.-aP.y/uRes.y*2., clamp(-aP.z/uRes.y,-1.,1.)*.5, 1.); }`;
 const CFS = `#version 300 es
 precision highp float;
-uniform sampler2D uVid; uniform float uT, uHasVid;
+uniform sampler2D uVid; uniform float uT, uHasVid, uPatch; uniform vec3 uTint;
 in vec3 vN; in vec2 vP; in vec2 vUV; out vec4 o;
 ${COMMON}
 vec3 env(vec2 px){
@@ -408,12 +451,12 @@ void main(){
   vec3 ref = env(vP + R.xy*uRes.y*.42);                     // mirrored room
   float fres = pow(1.-N.z, 2.);
   vec3 col = mix(see*vec3(.9,.95,.8), ref, .5+.45*fres);
-  col = pow(col, vec3(1.35))*1.45*vec3(1.06,1.,.84);        // contrasty, warm chrome
+  col = pow(col, vec3(1.35))*1.45*uTint;        // contrasty, warm chrome
   vec3 L1=normalize(vec3(-.35,-.6,.72)), L2=normalize(vec3(.55,.15,.82));
   col += pow(max(dot(R,L1),0.),60.)*1.1 + pow(max(dot(R,L2),0.),14.)*.25;
   col *= .45+.55*smoothstep(.0,.55,N.z);                    // dark creases
   float th = smoothstep(.56,.72, fbm(vUV*vec2(3.,2.4)+vec2(uT*.06,-uT*.04)));
-  col = mix(col, thermal(dot(see,vec3(.3,.59,.11))*1.1+.1*N.x), th*.8);   // oily thermal patches
+  col = mix(col, thermal(dot(see,vec3(.3,.59,.11))*1.1+.1*N.x), th*uPatch);   // oily thermal patches
   o = vec4(col, 1.);
 }`;
 const MAIN = program(VS,FS), PART = program(PVS,PFS), PLATE = program(VS,BFS), FILL = program(VS,FFS), INP = program(VS,IFS), CLOTH = program(CVS,CFS);
@@ -479,8 +522,11 @@ let maskU8=null, maskW=0, maskH=0, segReady=false, maskInvert=false, invertVotes
 let lastContact=-1e9, contactOpen=false, contactAt=0;
 let analyser=null, abuf=null, micLevel=0, micAvg=0.02, micThr=0.14;
 
-function next(){ oldPair=PAIRS[pi]; pi=(pi+1)%PAIRS.length; mixT=0; lastSwitch=performance.now(); }
+function next(){ oldPair=curPair(); pairOverride=null; pi=(pi+1)%PAIRS.length; mixT=0; lastSwitch=performance.now(); }
 addEventListener('keydown',e=>{
+  if(e.target.closest && e.target.closest('input,select,textarea')) return;   // typing in settings
+  if(e.key==='Escape'){ closePanel(); return; }
+  if(e.key==='g'||e.key==='G'){ panel.classList.contains('open')?closePanel():openPanel(); return; }
   if(e.code==='Space'){ e.preventDefault(); next(); }
   else if(e.key==='a'||e.key==='A') auto=!auto;
   else if(e.key==='h'||e.key==='H') showHud=!showHud;
@@ -630,7 +676,8 @@ let overlayName=null, keyOverlay=null;
 function showOverlay(name){
   if(name===overlayName) return; overlayName=name;
   ovEl.classList.remove('on');
-  if(name){ ovImgs.forEach(i=>i.src=OVERLAYS[name]); void ovEl.offsetWidth; ovEl.classList.add('on'); }  // reflow restarts the flash
+  const src=name&&overlaySrc(name);
+  if(src){ ovImgs.forEach(i=>i.src=src); void ovEl.offsetWidth; ovEl.classList.add('on'); }  // reflow restarts the flash
 }
 // debounced gestures: on after being held briefly, off a moment after release
 const G={cinema:{since:0,lost:0,on:false}, lips:{since:0,lost:0,on:false}, head:{since:0,lost:0,on:false}};
@@ -639,7 +686,7 @@ function gate(name,hit,now,holdMs=200,releaseMs=500){
   if(hit){ g.lost=0; if(!g.since) g.since=now; if(now-g.since>holdMs) g.on=true; }
   else { g.since=0; if(!g.lost) g.lost=now; if(now-g.lost>releaseMs) g.on=false; }
 }
-function updateOverlay(){ showOverlay(keyOverlay || (G.head.on?'head':G.cinema.on?'cinema':G.lips.on?'lips':null)); }
+function updateOverlay(){ showOverlay(keyOverlay || heldOverlay()); }
 function openRaisedPalm(lm,ar){
   const w=lm[0]; let ext=0;
   for(const [tip,pip] of [[8,6],[12,10],[16,14],[20,18]]) if(d2(lm[tip],w,ar)>d2(lm[pip],w,ar)*1.15 && lm[tip].y<lm[pip].y) ext++;
@@ -654,6 +701,7 @@ function cinemaPose(lms,ar,now){
     const high  = a[0].y < .7 && b[0].y < .7;                          // raised, not resting on the desk
     hit = apart && high && openRaisedPalm(a,ar) && openRaisedPalm(b,ar);
   }
+  hit = hit && S.builtin.cinema.on;
   gate('cinema',hit,now);
   return hit;
 }
@@ -667,6 +715,7 @@ function lipsPose(lms,ar,now){
       if(d < face.w*ar*.2){ hit=true; break; }
     }
   }
+  hit = hit && S.builtin.lips.on;
   gate('lips',hit,now,180,450);
   return hit;
 }
@@ -681,6 +730,7 @@ function headPose(lms,now){
     };
     hit = onHead(lms[0]) && onHead(lms[1]);
   }
+  hit = hit && S.builtin.head.on;
   gate('head',hit,now,250,500);
   return hit;
 }
@@ -696,7 +746,7 @@ function track(now){
   let minRatio=9;
   for(const lm of lms){ const size=d2(lm[0],lm[9],ar)||1e-3; minRatio=Math.min(minRatio, d2(lm[4],lm[12],ar)/size); }
   if(minRatio<.42){ lastContact=now; if(!contactOpen){ contactOpen=true; contactAt=now; } }
-  else if(contactOpen && minRatio>.85){ contactOpen=false; if(!analyser && now-lastContact<300) snap('gesture'); }
+  else if(contactOpen && minRatio>.85){ contactOpen=false; if(!analyser && now-lastContact<300) onSnapGesture(); }
   if(minRatio>=.42 && minRatio<=.85 && now-lastContact>600) contactOpen=false;
 
   if(faceDet){
@@ -709,6 +759,7 @@ function track(now){
   const hd=headPose(lms,now);
   const cin=!hd && cinemaPose(lms,ar,now), lip=lipsPose(lms,ar,now);
   if(hd) gate('cinema',false,now);
+  processGestures(now, lms, ar);
   updateOverlay();
   if(hd || cin || lip || overlayName){ alphaT=0; return segmentFrame(now); }   // no portal while a meme pose is up
 
@@ -752,7 +803,7 @@ function listen(now){
   let pk=0; for(let i=0;i<abuf.length;i++){ const v=Math.abs(abuf[i]); if(v>pk) pk=v; }
   micLevel = Math.max(pk, micLevel*.85);
   // a sharp transient well above the room's noise floor, shortly after thumb + middle finger touched
-  if(pk>Math.max(micThr, micAvg*5) && now-lastContact<1200) snap('sound');
+  if(pk>Math.max(micThr, micAvg*5) && now-lastContact<1200) onSnapGesture();
   micAvg = micAvg*.97 + pk*.03;
 }
 
@@ -899,6 +950,7 @@ function clothDraw(t){
   gl.bindBuffer(gl.ARRAY_BUFFER,c.vbo); gl.bufferSubData(gl.ARRAY_BUFFER,0,verts);
   bindTex(0,tVid); const u=CLOTH.u;
   gl.uniform1i(u.uVid,0); gl.uniform2f(u.uRes,W,H); gl.uniform2f(u.uK,...coverK()); gl.uniform1f(u.uT,t); gl.uniform1f(u.uHasVid,hasVid?1:0);
+  gl.uniform1f(u.uPatch,S.fx.cloth.patches); gl.uniform3fv(u.uTint,FX.tint);
   gl.clear(gl.DEPTH_BUFFER_BIT); gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
   gl.drawElements(gl.TRIANGLES,c.nIdx,gl.UNSIGNED_SHORT,0);
   gl.disable(gl.DEPTH_TEST); gl.bindVertexArray(null);
@@ -909,6 +961,245 @@ function drawHands(){
     hx.beginPath(); for(const [a,b] of BONES){ hx.moveTo(p[a].x,p[a].y); hx.lineTo(p[b].x,p[b].y); } hx.stroke();
     for(const q of p){ hx.beginPath(); hx.arc(q.x,q.y,4*s,0,7); hx.fill(); } }
   hx.restore();
+}
+
+// ================= Settings: effects and gestures =================
+const hex2rgb=h=>{ const n=parseInt(String(h).slice(1),16)||0; return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; };
+const FX_LABELS=['Liquid pink','Lime dots','ASCII','Thermal'];
+const DEFAULTS={
+  fx:{ ascii:{ramp:'@%#*+=-:. ', cell:9, contrast:1.2, ink:'#141414', paper:'#ececec', colorize:false, invert:false},
+       dots:{cell:4.8, color:'#b6ff3b'}, liquid:{a:'#730038', b:'#ff148c', speed:1},
+       thermal:{levels:10, scan:true}, cloth:{patches:.8, tint:'#fff0d6'} },
+  builtin:{ cinema:{on:true, action:'overlay:cinema', image:null}, lips:{on:true, action:'overlay:lips', image:null},
+            head:{on:true, action:'overlay:head', image:null}, snap:{on:true, action:'vanish', image:null} },
+  custom:[]
+};
+const BUILTIN_NAMES={cinema:'Both palms up', lips:'Finger to lips', head:'Hands on head', snap:'Finger snap'};
+const ACTIONS=[['none','Nothing'],['overlay:cinema','Show “Absolute Cinema”'],['overlay:lips','Show “Shh”'],['overlay:head','Show “Hands on head”'],
+  ['overlay:custom','Show my own picture'],['vanish','Vanish / come back'],['cloth','Chrome cloth on / off'],['next','Next portal effect'],
+  ['auto','Auto-switch effects on / off'],['pair:0','Portal: liquid pink'],['pair:1','Portal: lime dots'],['pair:2','Portal: ASCII'],['pair:3','Portal: thermal']];
+const STORE='handportal.settings.v1';
+function loadSettings(){
+  const d=structuredClone(DEFAULTS); let s=null;
+  try{ s=JSON.parse(localStorage.getItem(STORE)); }catch(_){}
+  if(!s) return d;
+  for(const k of Object.keys(d.fx)) Object.assign(d.fx[k], s.fx&&s.fx[k]||{});        // new options keep their defaults
+  for(const k of Object.keys(d.builtin)) Object.assign(d.builtin[k], s.builtin&&s.builtin[k]||{});
+  d.custom = Array.isArray(s.custom) ? s.custom : [];
+  return d;
+}
+let S=loadSettings(), saveT=0;
+function save(){ clearTimeout(saveT); saveT=setTimeout(()=>{ try{ localStorage.setItem(STORE, JSON.stringify(S)); }
+  catch(_){ toast('Could not save settings on this device (a picture may be too large)',3500); } },250); }
+
+// effect uniforms, parsed once per change
+let FX={};
+function applyFx(){ const f=S.fx; FX={liqA:hex2rgb(f.liquid.a), liqB:hex2rgb(f.liquid.b), dot:hex2rgb(f.dots.color),
+  ink:hex2rgb(f.ascii.ink), paper:hex2rgb(f.ascii.paper), tint:hex2rgb(f.cloth.tint).map(v=>v*1.06)}; }
+const tAtlas=mkTex(); let atlasN=1;
+function buildAtlas(){
+  const chars=[...(S.fx.ascii.ramp||'')].slice(0,40); if(!chars.length) chars.push('#');
+  const C=48, c=document.createElement('canvas'); c.width=C*chars.length; c.height=C;
+  const x=c.getContext('2d'); x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='middle';
+  x.font=`bold ${Math.round(C*.86)}px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace`;
+  chars.forEach((ch,i)=>x.fillText(ch, i*C+C/2, C*.55));
+  bindTex(6,tAtlas); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c); atlasN=chars.length;
+}
+applyFx(); buildAtlas();
+function setFxUniforms(u){ const f=S.fx;
+  bindTex(6,tAtlas); gl.uniform1i(u.uAtlas,6);
+  gl.uniform3fv(u.uLiqA,FX.liqA); gl.uniform3fv(u.uLiqB,FX.liqB); gl.uniform1f(u.uLiqSpeed,f.liquid.speed);
+  gl.uniform1f(u.uDotCell,f.dots.cell); gl.uniform3fv(u.uDotColor,FX.dot);
+  gl.uniform1f(u.uAscCell,f.ascii.cell); gl.uniform1f(u.uAscN,atlasN); gl.uniform1f(u.uAscContrast,f.ascii.contrast);
+  gl.uniform1f(u.uAscColorize,f.ascii.colorize?1:0); gl.uniform1f(u.uAscInvert,f.ascii.invert?1:0);
+  gl.uniform3fv(u.uAscInk,FX.ink); gl.uniform3fv(u.uAscPaper,FX.paper);
+  gl.uniform1f(u.uThLevels,f.thermal.levels); gl.uniform1f(u.uThScan,f.thermal.scan?1:0);
+}
+
+// portal halves picked by hand
+let pairOverride=null;
+function curPair(){ return pairOverride||PAIRS[pi]; }
+function setPair(l,r){ oldPair=curPair(); pairOverride=[l,r]; mixT=0; lastSwitch=performance.now(); }
+
+// overlays: the three built-in pictures, or a picture the user added to a gesture
+function overlayFor(action, ownerId){ if(!action || !action.startsWith('overlay:')) return null; const k=action.slice(8); return k==='custom' ? 'img:'+ownerId : k; }
+function ownerOf(id){ return id.startsWith('b-') ? S.builtin[id.slice(2)] : S.custom.find(c=>c.id===id); }
+function overlaySrc(name){ if(OVERLAYS[name]) return OVERLAYS[name]; if(name.startsWith('img:')){ const o=ownerOf(name.slice(4)); return o&&o.image; } return null; }
+function heldOverlay(){
+  for(const k of ['head','cinema','lips']){ const b=S.builtin[k]; if(b.on && G[k].on){ const o=overlayFor(b.action,'b-'+k); if(o) return o; } }
+  for(const c of S.custom){ const r=RT.get(c.id); if(c.on!==false && r && r.on){ const o=overlayFor(c.action,c.id); if(o) return o; } }
+  return null;
+}
+let lastAct=0;
+function doAction(a, ownerId){
+  if(!a || a==='none') return;
+  if(a.startsWith('overlay:')){ const o=overlayFor(a,ownerId); if(o){ keyOverlay = keyOverlay===o?null:o; updateOverlay(); syncBar(); } return; }
+  const now=performance.now(); if(now-lastAct<700) return; lastAct=now;
+  if(a==='vanish') snap('gesture');
+  else if(a==='cloth') toggleCloth();
+  else if(a==='next') next();
+  else if(a==='auto'){ auto=!auto; toast('Auto-switch '+(auto?'on':'off')); }
+  else if(a.startsWith('pair:')){ const i=+a.slice(5); setPair(i,i); toast('Portal: '+FX_LABELS[i]); }
+  syncBar();
+}
+function onSnapGesture(){ const b=S.builtin.snap; if(!b.on) return; if(b.action==='vanish') snap('gesture'); else doAction(b.action,'b-snap'); }
+
+// custom gestures: a pose is the 21 hand points relative to the wrist, scaled by palm size
+const RT=new Map(); const prevOn={cinema:false,lips:false,head:false};
+function handFeatures(lms, ar){
+  return {hands: lms.map(lm=>{ const w=lm[0], sz=Math.hypot((lm[9].x-w.x)*ar, lm[9].y-w.y)||1e-3, f=[];
+    for(const p of lm) f.push(-(p.x-w.x)*ar/sz, (p.y-w.y)/sz);
+    return {f, x:1-w.x, y:w.y}; }).sort((a,b)=>a.x-b.x)};
+}
+function featDist(tpl, cur){
+  const A=tpl.hands, B=cur.hands; if(!A.length || A.length!==B.length) return 9;
+  let d=0;
+  for(let h=0;h<A.length;h++){ let s=0; for(let i=0;i<42;i+=2) s+=Math.hypot(A[h].f[i]-B[h].f[i], A[h].f[i+1]-B[h].f[i+1]); d+=s/21;
+    if(tpl.usePos) d+=Math.hypot(A[h].x-B[h].x, A[h].y-B[h].y)*2.5; }
+  return d/A.length;
+}
+function processGestures(now, lms, ar){
+  for(const k of ['cinema','lips','head']){ const on=G[k].on; if(on && !prevOn[k] && !S.builtin[k].action.startsWith('overlay:')) doAction(S.builtin[k].action,'b-'+k); prevOn[k]=on; }
+  const cur = lms.length ? handFeatures(lms, ar) : null;
+  for(const c of S.custom){
+    let r=RT.get(c.id); if(!r){ r={on:false,since:0,lost:0,dist:9}; RT.set(c.id,r); }
+    r.dist = cur ? featDist(c, cur) : 9;
+    if(recording){ r.on=false; continue; }
+    if(c.on!==false && r.dist<c.thr){ r.lost=0; if(!r.since) r.since=now;
+      if(!r.on && now-r.since>220){ r.on=true; if(!c.action.startsWith('overlay:')) doAction(c.action,c.id); } }
+    else { r.since=0; if(!r.lost) r.lost=now; if(r.on && now-r.lost>400) r.on=false; }
+  }
+}
+let recording=false;
+async function recordGesture(existingId){
+  if(!landmarker){ toast(hasVid?'Hand tracking is still loading…':'Start the camera first to record a gesture',3000); return; }
+  closePanel(); recording=true;
+  const cd=document.getElementById('countdown'); cd.classList.remove('small');
+  for(const n of [3,2,1]){ cd.textContent=n; cd.hidden=false; await new Promise(r=>setTimeout(r,800)); }
+  cd.classList.add('small'); cd.textContent='Hold it…';
+  const frames=[], t0=performance.now();
+  await new Promise(res=>{ const tick=()=>{ if(lastLms.length) frames.push(handFeatures(lastLms, video.videoWidth/video.videoHeight));
+    if(performance.now()-t0<800) requestAnimationFrame(tick); else res(); }; tick(); });
+  cd.hidden=true; recording=false;
+  if(!frames.length){ toast('No hands seen. Try again with your hands in view',3000); openPanel('gestures'); return; }
+  const cnt={}; frames.forEach(f=>cnt[f.hands.length]=(cnt[f.hands.length]||0)+1);
+  const n=+Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0], fs=frames.filter(f=>f.hands.length===n);
+  const avg=g=>+(fs.reduce((a,f)=>a+g(f),0)/fs.length).toFixed(3);
+  const hands=[...Array(n)].map((_,h)=>({f:[...Array(42)].map((_,i)=>avg(f=>f.hands[h].f[i])), x:avg(f=>f.hands[h].x), y:avg(f=>f.hands[h].y)}));
+  const ex=existingId && S.custom.find(c=>c.id===existingId);
+  if(ex) ex.hands=hands;
+  else S.custom.push({id:'g'+Date.now().toString(36), name:'My gesture '+(S.custom.length+1), on:true, hands, usePos:false, thr:.2, action:'next', image:null});
+  save(); toast(n===1?'Saved: one-hand gesture':'Saved: two-hand gesture'); openPanel('gestures');
+}
+function pickImage(ownerId){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+  inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const url=URL.createObjectURL(f), img=new Image();
+    img.onload=()=>{ const sc=Math.min(1,1280/Math.max(img.width,img.height)), c=document.createElement('canvas');
+      c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc); c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url); const o=ownerOf(ownerId); if(!o) return;
+      o.image=c.toDataURL('image/jpeg',.82); o.action='overlay:custom'; save(); renderPanel(); };
+    img.onerror=()=>toast('That file could not be opened as a picture',3000);
+    img.src=url; };
+  inp.click();
+}
+
+// ---- the panel
+const panel=document.getElementById('panel'); let panelTab='effects';
+function openPanel(tab){ if(tab) panelTab=tab; renderPanel(); panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); }
+function closePanel(){ panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); }
+document.getElementById('gear').onclick=()=>panel.classList.contains('open')?closePanel():openPanel();
+panel.addEventListener('pointerdown',e=>e.stopPropagation());
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fxGet=k=>{ const [a,b]=k.split('.'); return S.fx[a][b]; };
+function rng(k,label,min,max,step){ const v=fxGet(k); return `<label><span>${label}</span><input type="range" id="fx-${k}" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${v}"><output>${+(+v).toFixed(2)}</output></label>`; }
+function col(k,label){ return `<label><span>${label}</span><input type="color" id="fx-${k}" data-k="${k}" value="${fxGet(k)}"><span></span></label>`; }
+function chk(k,label){ return `<label class="chk"><input type="checkbox" id="fx-${k}" data-k="${k}" ${fxGet(k)?'checked':''}><span>${label}</span></label>`; }
+function fxSel(id,val){ return `<select id="${id}">${FX_LABELS.map((n,i)=>`<option value="${i}" ${i===val?'selected':''}>${n}</option>`).join('')}</select>`; }
+function actSel(id,val,owner){ return `<select id="act-${id}" data-g="${id}" data-f="action">${ACTIONS.map(([v,n])=>`<option value="${v}" ${v===val?'selected':''}>${n}</option>`).join('')}</select>`
+  + (val==='overlay:custom' ? (owner.image ? `<img class="thumb" alt="Your picture" src="${owner.image}"><div class="acts"><button data-do="image" data-g="${id}">Change picture</button></div>` : `<div class="acts"><button data-do="image" data-g="${id}">Choose a picture</button></div>`) : ''); }
+function renderPanel(){
+  const pr=curPair();
+  let h=`<div class="top"><h2>Settings</h2><button class="x" data-do="close" aria-label="Close settings">✕</button></div>
+  <div class="tabs" role="tablist"><button role="tab" data-tab="effects" class="${panelTab==='effects'?'on':''}">Effects</button><button role="tab" data-tab="gestures" class="${panelTab==='gestures'?'on':''}">Gestures</button></div>`;
+  if(panelTab==='effects'){
+    h+=`<section><h3>Portal</h3>
+      <label><span>Left half</span>${fxSel('pairL',pr[0])}<span></span></label>
+      <label><span>Right half</span>${fxSel('pairR',pr[1])}<span></span></label>
+      <p class="note">Make an “L” with both hands to open the portal. Pinch closed and reopen to switch effects.</p></section>
+    <section><h3>ASCII <button data-do="preview:2">Show in portal</button></h3>
+      <label><span>Characters</span><input type="text" id="fx-ascii.ramp" data-k="ascii.ramp" value="${esc(S.fx.ascii.ramp)}" spellcheck="false" autocomplete="off"><span></span></label>
+      <p class="note">From darkest to lightest. Try <code>█▓▒░ </code>, <code>01</code>, or a word.</p>
+      ${rng('ascii.cell','Cell size',4,32,1)}${rng('ascii.contrast','Contrast',.4,3,.1)}
+      ${col('ascii.ink','Ink')}${col('ascii.paper','Paper')}
+      ${chk('ascii.colorize','Colour the letters from the camera')}${chk('ascii.invert','Invert brightness')}</section>
+    <section><h3>Lime dots <button data-do="preview:1">Show in portal</button></h3>${rng('dots.cell','Dot size',2,16,.2)}${col('dots.color','Colour')}</section>
+    <section><h3>Liquid <button data-do="preview:0">Show in portal</button></h3>${col('liquid.a','Deep colour')}${col('liquid.b','Bright colour')}${rng('liquid.speed','Speed',0,4,.1)}</section>
+    <section><h3>Thermal <button data-do="preview:3">Show in portal</button></h3>${rng('thermal.levels','Bands',2,32,1)}${chk('thermal.scan','Scan lines')}</section>
+    <section><h3>Chrome cloth <button data-do="cloth">${clothOn?'Turn off':'Turn on'}</button></h3>${col('cloth.tint','Metal tint')}${rng('cloth.patches','Thermal patches',0,1,.05)}</section>
+    <section><button class="big" data-do="reset">Reset effects to default</button></section>`;
+  } else {
+    h+=`<section><h3>Built-in gestures</h3>`;
+    for(const k of Object.keys(S.builtin)){ const b=S.builtin[k];
+      h+=`<div class="row"><div class="rowhead"><span class="dot" data-live="b-${k}"></span><b>${BUILTIN_NAMES[k]}</b>
+        <label class="chk"><input type="checkbox" id="on-b-${k}" data-g="b-${k}" data-f="on" ${b.on?'checked':''}><span>On</span></label></div>
+        ${actSel('b-'+k,b.action,b)}</div>`; }
+    h+=`</section><section><h3>Your gestures</h3>
+      <p class="note">Hold a pose in front of the camera and pick what it does. The bar shows how close your hands are right now: past the middle line, it fires.</p>`;
+    if(!S.custom.length) h+=`<p class="note">No gestures yet. Tap the button below, then hold your pose during the countdown.</p>`;
+    for(const c of S.custom){
+      h+=`<div class="row"><div class="rowhead"><span class="dot" data-live="${c.id}"></span>
+          <input type="text" id="name-${c.id}" data-g="${c.id}" data-f="name" value="${esc(c.name)}" aria-label="Gesture name">
+          <label class="chk"><input type="checkbox" id="on-${c.id}" data-g="${c.id}" data-f="on" ${c.on!==false?'checked':''}><span>On</span></label></div>
+        <div class="meter" data-meter="${c.id}"><i></i></div>
+        ${actSel(c.id,c.action,c)}
+        <label><span>Match</span><input type="range" id="thr-${c.id}" data-g="${c.id}" data-f="thr" min=".08" max=".5" step=".01" value="${c.thr}"><output>${c.thr<.15?'strict':c.thr>.3?'loose':'normal'}</output></label>
+        <label class="chk"><input type="checkbox" id="pos-${c.id}" data-g="${c.id}" data-f="usePos" ${c.usePos?'checked':''}><span>Where my hands are matters too</span></label>
+        <div class="acts"><button data-do="rerecord" data-g="${c.id}">Record again</button><button data-do="delete" data-g="${c.id}">Delete</button></div></div>`;
+    }
+    h+=`<button class="big primary" data-do="record">Record a new gesture</button>
+      <p class="note">${hasVid?'':'Start the camera first: recording needs to see your hands.'}</p></section>`;
+  }
+  const st=panel.scrollTop; panel.innerHTML=h; panel.scrollTop=st;
+}
+let confirmDel=null;
+panel.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tab],[data-do]'); if(!t) return;
+  if(t.dataset.tab){ panelTab=t.dataset.tab; renderPanel(); panel.scrollTop=0; return; }
+  const d=t.dataset.do, id=t.dataset.g;
+  if(d==='close') closePanel();
+  else if(d.startsWith('preview:')){ const i=+d.slice(8); setPair(i,i); if(clothOn) toggleCloth(); if(demo) demoManual=false; toast('Portal: '+FX_LABELS[i]+(demo?'':'. Make an “L” with both hands')); renderPanel(); }
+  else if(d==='cloth'){ toggleCloth(); renderPanel(); }
+  else if(d==='reset'){ S.fx=structuredClone(DEFAULTS.fx); applyFx(); buildAtlas(); save(); renderPanel(); toast('Effects reset'); }
+  else if(d==='record') recordGesture();
+  else if(d==='rerecord') recordGesture(id);
+  else if(d==='image') pickImage(id);
+  else if(d==='delete'){
+    if(confirmDel!==id){ confirmDel=id; t.textContent='Tap again to delete'; setTimeout(()=>{ if(confirmDel===id){ confirmDel=null; t.textContent='Delete'; } },2500); return; }
+    confirmDel=null; S.custom=S.custom.filter(c=>c.id!==id); RT.delete(id); if(keyOverlay==='img:'+id) keyOverlay=null; save(); renderPanel(); }
+});
+panel.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='pairL'||t.id==='pairR'){ const pr=curPair(); setPair(t.id==='pairL'?+t.value:pr[0], t.id==='pairR'?+t.value:pr[1]); return; }
+  if(t.dataset.k){ const [a,b]=t.dataset.k.split('.');
+    S.fx[a][b] = t.type==='checkbox' ? t.checked : t.type==='range' ? +t.value : t.value;
+    if(t.type==='range'){ const o=t.parentElement.querySelector('output'); if(o) o.textContent=+(+t.value).toFixed(2); }
+    applyFx(); if(t.dataset.k==='ascii.ramp') buildAtlas(); save(); return; }
+  if(t.dataset.g){ const o=ownerOf(t.dataset.g); if(!o) return; const f=t.dataset.f;
+    if(f==='on'||f==='usePos') o[f]=t.checked;
+    else if(f==='thr'){ o.thr=+t.value; const out=t.parentElement.querySelector('output'); if(out) out.textContent=o.thr<.15?'strict':o.thr>.3?'loose':'normal'; }
+    else if(f==='name') o.name=t.value.slice(0,40);
+    else if(f==='action'){ o.action=t.value; if(t.value==='overlay:custom' && !o.image){ save(); pickImage(t.dataset.g); } renderPanel(); }
+    save(); }
+});
+// live feedback while the gestures tab is open
+let meterT=0;
+function updateMeters(now){
+  if(!panel.classList.contains('open') || panelTab!=='gestures' || now-meterT<90) return; meterT=now;
+  for(const el of panel.querySelectorAll('[data-meter]')){ const c=S.custom.find(c=>c.id===el.dataset.meter), r=RT.get(el.dataset.meter); if(!c||!r) continue;
+    el.firstChild.style.width=(Math.max(0,Math.min(1,1-r.dist/(c.thr*2)))*100)+'%'; el.classList.toggle('hit',!!r.on); }
+  for(const el of panel.querySelectorAll('[data-live]')){ const id=el.dataset.live; let on=false;
+    if(id.startsWith('b-')){ const k=id.slice(2); on = k==='snap' ? now-lastSnap<600 : !!(G[k]&&G[k].on); } else { const r=RT.get(id); on=!!(r&&r.on); }
+    el.classList.toggle('hit',on); }
 }
 
 // ================= HUD =================
@@ -924,7 +1215,7 @@ const EDGES=[[0,1],[1,2],[2,3],[3,4],[4,5],[6,7],[7,8],[8,12],[9,12],[10,12],[11
 function drawHud(fps){
   hx.clearRect(0,0,W,H); if(clothOn) drawHands(); if(!showHud) return;
   const s=DPR*Math.min(1,(W/DPR)/540), ox=18*s, oy=18*s, bw=70*s, bh=13*s, gx=84*s, gy=22*s;
-  const active=new Set([...PAIRS[pi]].map(i=>NAMES[i]));
+  const active=new Set([...curPair()].map(i=>NAMES[i]));
   const now=performance.now();
   hx.save(); hx.globalAlpha=.75; hx.lineWidth=1*s; hx.font=`${8*s}px ui-monospace,monospace`;
   const pos=n=>({x:ox+n[1]*gx,y:oy+n[2]*gy});
@@ -943,7 +1234,7 @@ function drawHud(fps){
     const k=(bw*2+14*s); hx.fillStyle='#b6ff3b'; hx.fillRect(p.x,y,Math.min(1,micLevel/.6)*k,3*s);
     hx.fillStyle='#ff2d8f'; hx.fillRect(p.x+Math.min(1,Math.max(micThr,micAvg*5)/.6)*k,y-2*s,1.5*s,7*s); }
   hx.fillStyle='rgba(255,255,255,.8)';
-  hx.fillText(`fps ${fps.toFixed(0)}   hands ${demo?'demo':handsSeen}   you: ${snapState}   fx ${NAMES[PAIRS[pi][0]]} | ${NAMES[PAIRS[pi][1]]}   auto ${auto?'on':'off'}`, ox, oy+7.6*gy);
+  hx.fillText(`fps ${fps.toFixed(0)}   hands ${demo?'demo':handsSeen}   you: ${snapState}   fx ${NAMES[curPair()[0]]} | ${NAMES[curPair()[1]]}   auto ${auto?'on':'off'}`, ox, oy+7.6*gy);
   hx.restore();
   if(demo && !clothOn){ hx.fillStyle='rgba(255,255,255,.9)'; for(const c of corners){ hx.beginPath(); hx.arc(c.x,c.y,5*DPR,0,7); hx.fill(); } }
 }
@@ -983,12 +1274,13 @@ function frame(now){
   const qh=(Math.hypot(corners[3].x-corners[0].x,corners[3].y-corners[0].y)+Math.hypot(corners[2].x-corners[1].x,corners[2].y-corners[1].y))/2;
   gl.uniform2f(u.uRes,W,H); gl.uniform2f(u.uK,...coverK()); gl.uniform1f(u.uT,t);
   ['uA','uB','uC','uD'].forEach((n,i)=>gl.uniform2f(u[n],corners[i].x,corners[i].y));
-  gl.uniform1f(u.uAlpha,alpha); gl.uniform2i(u.uOld,...oldPair); gl.uniform2i(u.uNew,...PAIRS[pi]);
+  gl.uniform1f(u.uAlpha,alpha); gl.uniform2i(u.uOld,...oldPair); gl.uniform2i(u.uNew,...curPair()); setFxUniforms(u);
   gl.uniform1f(u.uMix, mixT*mixT*(3-2*mixT)); gl.uniform1f(u.uHasVid,hasVid?1:0); gl.uniform1f(u.uQA, Math.max(.2,Math.min(6,qw/Math.max(qh,1))));
   gl.uniform1f(u.uHide, hide?1:0); gl.uniform1f(u.uP,P); gl.uniform1f(u.uStep,step); gl.uniform4f(u.uBBox,...bbox);
   gl.drawArrays(gl.TRIANGLES,0,3);
 
   if(clothOn && cloth){ clothStep(dt,t); clothDraw(t); }
+  updateMeters(now);
 
   // pixel dust
   if(hide && (snapState==='dissolving'||snapState==='returning')){
