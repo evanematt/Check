@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --bg: #0b0f15;
   --glass: rgba(14, 19, 27, 0.72);
   --glass-strong: rgba(14, 19, 27, 0.92);
