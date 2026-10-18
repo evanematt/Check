@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lviv Drive — тренажер ПДР</title>
+  <meta name="description" content="3D-тренажер водія від першої особи: правила дорожнього руху України на вулицях Львова. Квести, екзаменаційні маршрути, практичні вправи, теоретичний і технічний тести." />
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="importmap">
+    { "imports": { "three": "./js/vendor/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="view" tabindex="0" aria-label="Вид з місця водія"></canvas>
+  <div id="ui"></div>
+  <div id="loading" class="screen">
+    <div class="menu-inner narrow">
+      <div class="logo big">ЛД</div>
+      <h1>Lviv Drive</h1>
+      <p id="loading-text">Завантаження…</p>
+      <noscript><p>Для роботи потрібен JavaScript і WebGL.</p></noscript>
+    </div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

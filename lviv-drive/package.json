@@ -1,0 +1,15 @@
+{
+  "name": "lviv-drive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lviv Drive — first-person driving trainer for Ukrainian traffic rules (ПДР України)",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node test/run-tests.mjs && node test/rules-sim.mjs && node test/import-osm.test.mjs",
+    "import-osm": "node tools/import-osm.mjs"
+  },
+  "devDependencies": {
+    "three": "0.170.0"
+  }
+}
