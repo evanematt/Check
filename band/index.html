@@ -386,25 +386,36 @@
 
   // current jar balance: band/jar.json is refreshed by a scheduled GitHub Action (amounts in kopecks)
   const hryvnia = k => Math.floor(k / 100).toLocaleString('uk-UA').replace(/\u00a0|\u202f/g, ' ') + ' ₴';
-  async function loadJar() {
+  // live jar balance straight from monobank's public jar API (it allows browser requests);
+  // band/jar.json, refreshed by a GitHub Action, is only the fallback
+  const JAR_API = 'https://api.monobank.ua/bank/jar/4A8x8vFLChP6jDTnPzQBpotDW3KW2fsj';
+  async function fetchJar() {
+    try {
+      const r = await fetch(JAR_API, { cache: 'no-store' });
+      if (r.ok) { const j = await r.json(); if (typeof j.amount === 'number') return j; }
+    } catch (e) {}
     try {
       const r = await fetch('jar.json', { cache: 'no-store' });
-      if (!r.ok) return;
-      const j = await r.json();
-      if (typeof j.amount !== 'number') return;
-      document.getElementById('jarSum').textContent = hryvnia(j.amount);
-      document.getElementById('jarBox').hidden = false;
-      const hasGoal = typeof j.goal === 'number' && j.goal > 0;
-      document.getElementById('jarBarWrap').hidden = !hasGoal;
-      document.getElementById('jarGoal').hidden = !hasGoal;
-      if (hasGoal) {
-        document.getElementById('jarBar').style.width = Math.min(100, (j.amount / j.goal) * 100) + '%';
-        document.getElementById('jarGoal').textContent = `з ${hryvnia(j.goal)}`;
-      }
-      dockDonate.textContent = `Донат · ${hryvnia(j.amount)}`;
+      if (r.ok) { const j = await r.json(); if (typeof j.amount === 'number') return j; }
     } catch (e) {}
+    return null;
   }
-  loadJar(); setInterval(loadJar, 60000);
+  async function loadJar() {
+    const j = await fetchJar();
+    if (!j) return;
+    document.getElementById('jarSum').textContent = hryvnia(j.amount);
+    document.getElementById('jarBox').hidden = false;
+    const hasGoal = typeof j.goal === 'number' && j.goal > 0;
+    document.getElementById('jarBarWrap').hidden = !hasGoal;
+    document.getElementById('jarGoal').hidden = !hasGoal;
+    if (hasGoal) {
+      document.getElementById('jarBar').style.width = Math.min(100, (j.amount / j.goal) * 100) + '%';
+      document.getElementById('jarGoal').textContent = `з ${hryvnia(j.goal)}`;
+    }
+    dockDonate.textContent = `Донат · ${hryvnia(j.amount)}`;
+  }
+  loadJar(); setInterval(() => { if (!document.hidden) loadJar(); }, 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadJar(); });
   if (CONFIG.donateUrl) { donateBtn.href = CONFIG.donateUrl; dockDonate.href = CONFIG.donateUrl; }
   else {
     // no link yet: the dock button opens the donate form (card number or "coming soon")
