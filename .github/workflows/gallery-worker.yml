@@ -1,0 +1,70 @@
+name: Gallery worker
+
+# Deploys band/gallery-worker to Cloudflare and writes its address into the site.
+# Needs repository secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, BOT_TOKEN.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gallery-worker
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check the secrets are there
+        run: |
+          missing=""
+          for s in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID BOT_TOKEN; do [ -n "${!s}" ] || missing="$missing $s"; done
+          if [ -n "$missing" ]; then echo "::error::Add these repository secrets (Settings → Secrets and variables → Actions):$missing"; exit 1; fi
+      - name: Deploy the worker
+        id: deploy
+        working-directory: band/gallery-worker
+        run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID"
+          AUTH=(-H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json")
+
+          # workers.dev subdomain: new accounts may not have one yet
+          SUB=$(curl -fsS "${AUTH[@]}" "$API/workers/subdomain" | jq -r '.result.subdomain // empty' || true)
+          if [ -z "$SUB" ]; then
+            SUB="netoikit$(date +%s | tail -c 6)"
+            curl -fsS "${AUTH[@]}" -X PUT "$API/workers/subdomain" -d "{\"subdomain\":\"$SUB\"}" > /dev/null
+          fi
+
+          # KV namespace for the gallery list and the rate limit
+          KV_ID=$(curl -fsS "${AUTH[@]}" "$API/storage/kv/namespaces?per_page=100" | jq -r '.result[] | select(.title=="ne-toi-kit-gallery") | .id' | head -n1)
+          if [ -z "$KV_ID" ]; then
+            KV_ID=$(curl -fsS "${AUTH[@]}" -X POST "$API/storage/kv/namespaces" -d '{"title":"ne-toi-kit-gallery"}' | jq -r '.result.id')
+          fi
+          sed "s/__KV_ID__/$KV_ID/" wrangler.toml.template > wrangler.toml
+
+          npx --yes wrangler@3.80.0 deploy
+          printf '%s' "$BOT_TOKEN" | npx --yes wrangler@3.80.0 secret put BOT_TOKEN
+
+          URL="https://ne-toi-kit-gallery.$SUB.workers.dev"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Worker: $URL" >> "$GITHUB_STEP_SUMMARY"
+      - name: Point the site at the worker
+        run: |
+          URL='${{ steps.deploy.outputs.url }}'
+          sed -i "s|uploadUrl: '[^']*'|uploadUrl: '$URL'|" band/index.html
+          if [ -z "$(git status --porcelain -- band/index.html)" ]; then echo "Site already points at $URL"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase --autostash origin "$GITHUB_REF_NAME"
+          git add band/index.html
+          git commit -m "Point the band site's gallery at the deployed worker"
+          git push

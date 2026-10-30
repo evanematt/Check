@@ -7,16 +7,18 @@
 1. Напиши [@BotFather](https://t.me/BotFather) → `/newbot` → придумай назву й username. Він видасть **токен** виду `123456:ABC...`. Нікому його не показуй.
 2. Відкрий канал @knopaband → Адміністратори → Додати адміністратора → знайди свого бота → дозволь **публікувати повідомлення**.
 
-## 2. Сервер на Cloudflare (10 хв, безкоштовно)
+## 2. Сервер на Cloudflare: його розгортає GitHub
 
-1. Зареєструйся на [dash.cloudflare.com](https://dash.cloudflare.com).
-2. **Workers & Pages → Create → Create Worker** → назви `ne-toi-kit-gallery` → **Deploy**.
-3. **Edit code** → видали все → встав увесь вміст `worker.js` → **Deploy**.
-4. **Settings → Variables and Secrets**:
-   - `BOT_TOKEN` — тип **Secret**, значення: токен бота;
-   - `CHAT_ID` — тип **Text**, значення: `@knopaband`.
-5. Для галереї на сайті й захисту від спаму: **Storage & Databases → KV → Create** (назва `gallery`), потім у воркері **Settings → Bindings → Add → KV namespace**, ім'я змінної `GALLERY`, вибери `gallery` → **Deploy**.
-6. Скопіюй адресу воркера, вона виглядає як `https://ne-toi-kit-gallery.<твій-нік>.workers.dev`, і впиши її в `index.html` у `CONFIG.uploadUrl` (або просто надішли її Claude).
+Сервер розгортає GitHub Actions (`.github/workflows/gallery-worker.yml`). Він сам створює сховище, викладає воркер, ховає токен і вписує адресу воркера в сайт. Треба лише дати йому доступ:
+
+1. Зареєструйся на [dash.cloudflare.com](https://dash.cloudflare.com) і один раз відкрий розділ **Workers & Pages**.
+2. **Account ID:** на головній сторінці акаунта праворуч, скопіюй його.
+3. **API-токен:** My Profile → API Tokens → **Create Token** → шаблон **Edit Cloudflare Workers** → вибери свій акаунт → Create → скопіюй токен.
+4. У GitHub: репозиторій **Check** → Settings → Secrets and variables → **Actions** → New repository secret, тричі:
+   - `CLOUDFLARE_API_TOKEN` — токен із кроку 3;
+   - `CLOUDFLARE_ACCOUNT_ID` — Account ID із кроку 2;
+   - `BOT_TOKEN` — токен бота від @BotFather.
+5. Actions → **Gallery worker** → **Run workflow** (або попроси Claude запустити).
 
 ## Що вміє
 

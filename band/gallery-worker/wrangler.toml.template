@@ -1,0 +1,12 @@
+name = "ne-toi-kit-gallery"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+workers_dev = true
+
+[vars]
+CHAT_ID = "@knopaband"
+ALLOWED_ORIGINS = "https://evanematt.github.io"
+
+[[kv_namespaces]]
+binding = "GALLERY"
+id = "__KV_ID__"
