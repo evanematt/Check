@@ -70,6 +70,9 @@
   .igpill { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); background: var(--paper) var(--noise);
     font: 600 14px/1 var(--font-heavy); text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 14px; border-radius: 999px; box-shadow: 2px 2px 0 var(--violet); }
   .igpill svg { width: 16px; height: 16px; }
+  .dots { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--dock, 70px) + 44px); display: flex; gap: 8px; margin: 0; }
+  .dots button { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 0; background: rgba(239, 233, 220, 0.35); cursor: pointer; transition: width .2s, background .2s; }
+  .dots button[aria-current="true"] { width: 24px; border-radius: 5px; background: var(--paper); }
   .tag { cursor: pointer; font: 600 14px/1 var(--font-heavy); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink);
     background: var(--paper) var(--noise); border: 0; border-radius: 6px; padding: 9px 12px; box-shadow: 2px 2px 0 var(--violet); }
   .igpill[aria-disabled="true"] { opacity: 0.75; pointer-events: none; }
@@ -167,7 +170,10 @@
   <div class="mark" aria-hidden="true"><h1><span>Єва</span><span>Яна <span class="amp">і</span></span><span>Михась</span></h1></div>
   <div class="hero-top"><span class="stars" aria-hidden="true">★ ★ ★</span><span>Картки гурту · <span class="no" id="focusLabel">№ 000–003</span></span></div>
   <a class="igpill" id="igPill" href="#" target="_blank" rel="noopener" hidden></a>
-  <p class="hint" id="hint">Тисни на картку · переверни, там Instagram</p>
+  <div class="dots" id="dots" role="group" aria-label="Картки">
+    <button type="button" aria-label="Єва" data-go="0"></button><button type="button" aria-label="Яна" data-go="1"></button><button type="button" aria-label="Михась" data-go="2"></button>
+  </div>
+  <p class="hint" id="hint">Свайпай картки · тап перевертає, на звороті Instagram</p>
   <p id="fail" hidden>3D-картки не завантажились. Перевір, чи увімкнено WebGL, і онови сторінку.</p>
 </header>
 
@@ -319,13 +325,22 @@
     });
   }
 
-  let focus = -1;
+  let focus = 1;
+  const dotBtns = [...document.querySelectorAll('[data-go]')];
   function setFocus(i) {
-    focus = i;
-    const m = MEMBERS[i];
-    document.getElementById('focusLabel').textContent = m ? `№ ${m.no} · ${m.name}` : '№ 000–003';
+    focus = Math.max(0, Math.min(MEMBERS.length - 1, i));
+    const m = MEMBERS[focus];
+    document.getElementById('focusLabel').textContent = `№ ${m.no} · ${m.name}`;
+    dotBtns.forEach((b, j) => b.setAttribute('aria-current', String(j === focus)));
   }
-  setFocus(MEMBERS.findIndex(m => '#' + m.key === location.hash));
+  dotBtns.forEach(b => b.addEventListener('click', () => setFocus(Number(b.dataset.go))));
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('sheet').hidden) return;
+    if (e.key === 'ArrowRight') setFocus(focus + 1);
+    if (e.key === 'ArrowLeft') setFocus(focus - 1);
+  });
+  const fromHash = MEMBERS.findIndex(m => '#' + m.key === location.hash);
+  setFocus(fromHash >= 0 ? fromHash : 1);
   if (location.hash === '#about') openSheet();
   if (location.hash === '#donate') openSheet('donate');
 
@@ -641,22 +656,37 @@
   // ---------- interaction ----------
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   const tilt = { x: 0, y: 0, tx: 0, ty: 0 };
-  let down = null;
+  let down = null, dragFrac = 0, stepPx = 300;
   canvas.addEventListener('pointermove', e => {
+    if (down) {
+      const dx = e.clientX - down.x;
+      if (!down.moved && Math.abs(dx) > 8) down.moved = true;
+      if (down.moved) {
+        dragFrac = -dx / stepPx;
+        // resist past the first and last card
+        const target = focus + dragFrac;
+        if (target < 0) dragFrac = -focus + target * 0.25;
+        if (target > MEMBERS.length - 1) dragFrac = MEMBERS.length - 1 - focus + (target - (MEMBERS.length - 1)) * 0.25;
+      }
+      return;
+    }
     if (e.pointerType !== 'mouse') return;
     const r = canvas.getBoundingClientRect();
-    tilt.tx = ((e.clientX - r.left) / r.width - 0.5) * 0.5; tilt.ty = ((e.clientY - r.top) / r.height - 0.5) * 0.3;
+    tilt.tx = ((e.clientX - r.left) / r.width - 0.5) * 0.3; tilt.ty = ((e.clientY - r.top) / r.height - 0.5) * 0.2;
   });
-  canvas.addEventListener('pointerleave', () => { tilt.tx = 0; tilt.ty = 0; });
-  canvas.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; });
-  canvas.addEventListener('pointerup', e => {
+  canvas.addEventListener('pointerleave', () => { if (!down) { tilt.tx = 0; tilt.ty = 0; } });
+  canvas.addEventListener('pointerdown', e => {
+    down = { x: e.clientX, y: e.clientY, moved: false };
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  function endDrag(e, cancelled) {
     if (!down) return;
-    const dx = e.clientX - down.x, dy = e.clientY - down.y;
+    const moved = down.moved, dx = e.clientX - down.x, dy = e.clientY - down.y;
     down = null;
-    // horizontal swipe flips through the cards
-    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
-      const cur = focus === -1 ? 1 : focus;
-      setFocus(Math.max(0, Math.min(2, cur + (dx < 0 ? 1 : -1))));
+    if (moved || cancelled) {
+      const step = Math.abs(dragFrac) > 0.2 ? Math.sign(dragFrac) * Math.max(1, Math.round(Math.abs(dragFrac))) : 0;
+      carPos = focus + dragFrac; dragFrac = 0;
+      setFocus(focus + step);
       return;
     }
     if (Math.hypot(dx, dy) > 8) return;
@@ -664,10 +694,12 @@
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
     const hit = ray.intersectObjects(cards.map(c => c.card), true)[0];
-    if (!hit) { setFocus(-1); return; }
+    if (!hit) return;
     const i = hit.object.userData.index;
     if (focus === i) cards[i].flipTarget += Math.PI; else setFocus(i);
-  });
+  }
+  canvas.addEventListener('pointerup', e => endDrag(e, false));
+  canvas.addEventListener('pointercancel', e => endDrag(e, true));
 
   // fit the cards into the space between the top label and the dock
   let narrow = false, H = 1, topRes = 52, botRes = 120;
@@ -703,7 +735,7 @@
   const mark = document.querySelector('.mark');
   setTimeout(() => mark.classList.add('gone'), reduce ? 400 : 2600);
   mark.addEventListener('transitionend', () => { if (mark.classList.contains('gone')) mark.hidden = true; });
-  const tmp = new THREE.Vector3();
+  let carPos = focus;
   const pill = document.getElementById('igPill'), hint = document.getElementById('hint');
   const IG_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg>';
   let pillOn = false, pillFor = -2;
@@ -725,35 +757,30 @@
     t += dt * (reduce ? 0.25 : 1); elapsed += dt;
     const p = Math.min(1, elapsed / INTRO);
     const introSpin = Math.PI * 4 * (1 - Math.pow(1 - p, 3));
-    const near = slot(0.9), mid = slot(0), back = slot(-2.6);
+    const near = slot(0.9);
     const hFit = a => (a.availH * 0.94) / (CH * 1.03);
-    // all three: a row on wide screens, a fan on phones
-    const rowS = narrow ? Math.min(hFit(mid), (mid.visW * 0.6) / CW) : Math.min(hFit(mid), (mid.visW * 0.9) / (CW * 3.3));
-    const spread = narrow ? mid.visW * 0.27 : CW * rowS * 1.12;
-    const focusS = Math.min(hFit(near), (near.visW * 0.86) / CW);
+    const focusS = Math.min(hFit(near), (near.visW * (narrow ? 0.74 : 0.5)) / CW);
+    const step = CW * focusS * 1.12;
+    stepPx = step / near.visW * (H * camera.aspect);
     tilt.x += (tilt.tx - tilt.x) * Math.min(1, dt * 4); tilt.y += (tilt.ty - tilt.y) * Math.min(1, dt * 4);
+    const goal = focus + dragFrac;
+    carPos += (goal - carPos) * Math.min(1, dt * (down ? 18 : 7));
 
     cards.forEach((c, i) => {
-      const o = i - 1, focused = focus === i;
-      let x, y, z, s, rz;
-      if (focus === -1) { x = o * spread; z = narrow ? -Math.abs(o) * 0.6 : 0; y = mid.cy - (narrow ? Math.abs(o) * 0.12 : 0); s = narrow && o ? rowS * 0.9 : rowS; rz = narrow ? -o * 0.12 : 0; }
-      else if (focused) { x = 0; z = 0.9; y = near.cy; s = focusS; rz = 0; }
-      else { const side = i < focus ? -1 : 1; x = side * back.visW * (narrow ? 0.44 : 0.36); z = -2.6; y = back.cy; s = hFit(back) * 0.75; rz = side * 0.08; }
-      const k = Math.min(1, dt * 4);
-      tmp.set(x, y + Math.sin(t * 0.9 + i * 2.1) * (focused ? 0.05 : 0.08), z);
-      c.holder.position.lerp(tmp, k);
-      c.holder.scale.setScalar(THREE.MathUtils.lerp(c.holder.scale.x, s, k));
-      const wob = focused ? 0.18 : 0.35;
+      const r = i - carPos, a = Math.min(1, Math.abs(r)), front = 1 - a;
+      // sides sit back and a little smaller, spaced so even a spinning card can't reach its neighbour
+      c.holder.position.set(r * step, near.cy + Math.sin(t * 0.9 + i * 2.1) * 0.05 * front, 0.9 - a * 1.8);
+      c.holder.scale.setScalar(focusS * (1 - a * 0.18));
       c.holder.rotation.set(
-        Math.sin(t * 0.7 + i) * 0.1 - 0.04 + tilt.y,
-        introSpin + Math.sin(t * 0.5 + i * 1.7) * wob + tilt.x,
-        THREE.MathUtils.lerp(c.holder.rotation.z, rz + Math.sin(t * 0.6 + i) * 0.04, k)
+        (Math.sin(t * 0.7 + i) * 0.06 - 0.03 + tilt.y) * front,
+        introSpin + (Math.sin(t * 0.5 + i * 1.7) * 0.16 + tilt.x) * front,
+        Math.sin(t * 0.6 + i) * 0.03 * front
       );
       c.flipNow += (c.flipTarget - c.flipNow) * Math.min(1, dt * 5);
       c.card.rotation.y = c.flipNow;
     });
     holoMats.forEach(m => { m.uniforms.uTime.value = elapsed; });
-    const showingBack = focus >= 0 && Math.round(cards[focus].flipTarget / Math.PI) % 2 !== 0;
+    const showingBack = Math.round(cards[focus].flipTarget / Math.PI) % 2 !== 0;
     if (showingBack !== pillOn || focus !== pillFor) updatePill(showingBack);
 
     for (let i = 0; i < N; i++) {
