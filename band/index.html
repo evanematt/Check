@@ -758,7 +758,8 @@
     if (!visible) return;
     t += dt * (reduce ? 0.25 : 1); elapsed += dt;
     const p = Math.min(1, elapsed / INTRO);
-    const introSpin = Math.PI * 4 * (1 - Math.pow(1 - p, 3));
+    // ends at 0, so once the intro is over a card moving to the centre doesn't inherit the two turns
+    const introSpin = -Math.PI * 4 * Math.pow(1 - p, 3);
     const near = slot(0.9);
     const hFit = a => (a.availH * 0.94) / (CH * 1.03);
     const focusS = Math.min(hFit(near), (near.visW * (narrow ? 0.74 : 0.5)) / CW);
