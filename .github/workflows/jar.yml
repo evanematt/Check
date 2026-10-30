@@ -1,0 +1,30 @@
+name: Jar balance
+
+# Keeps band/jar.json in step with the monobank jar so the site can show the current amount.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jar-balance
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the jar balance
+        run: python3 band/tools/jar.py 5bq8BQsJbc band/jar.json
+      - name: Commit when it changed
+        run: |
+          if [ -z "$(git status --porcelain -- band/jar.json)" ]; then echo "No change"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add band/jar.json
+          git commit -m "Update jar balance"
+          git push
