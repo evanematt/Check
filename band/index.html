@@ -70,6 +70,10 @@
   .igpill { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--ink); background: var(--paper) var(--noise);
     font: 600 14px/1 var(--font-heavy); text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 14px; border-radius: 999px; box-shadow: 2px 2px 0 var(--violet); }
   .igpill svg { width: 16px; height: 16px; }
+  .tracklinks { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--dock, 70px) + 58px); display: flex; gap: 8px; margin: 0; white-space: nowrap; }
+  .tracklinks a { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: var(--paper); border: 1px solid rgba(239, 233, 220, 0.4);
+    background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(6px); font: 600 13px/1 var(--font-heavy); text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 12px; border-radius: 999px; }
+  .tracklinks a:hover { background: var(--paper); color: var(--ink); }
   .dots { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(var(--dock, 70px) + 44px); display: flex; gap: 8px; margin: 0; }
   .dots button { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 0; background: rgba(239, 233, 220, 0.35); cursor: pointer; transition: width .2s, background .2s; }
   .dots button[aria-current="true"] { width: 24px; border-radius: 5px; background: var(--paper); }
@@ -169,6 +173,7 @@
   <canvas id="stage" aria-label="Не той кіт: три голографічні картки учасників, Єва, Яна і Михась"></canvas>
   <div class="mark" aria-hidden="true"><h1><span>Не той кіт</span><span class="sub">ми не бенд</span></h1></div>
   <div class="hero-top"><span class="stars" aria-hidden="true">★ ★ ★</span><span>Не той кіт · <span class="no" id="focusLabel">№ 000–003</span></span></div>
+  <div class="tracklinks" id="trackLinks" aria-label="Улюблений трек" hidden></div>
   <a class="igpill" id="igPill" href="#" target="_blank" rel="noopener" hidden></a>
   <div class="dots" id="dots" role="group" aria-label="Картки">
     <button type="button" aria-label="Єва" data-go="0"></button><button type="button" aria-label="Яна" data-go="1"></button><button type="button" aria-label="Михась" data-go="2"></button>
@@ -253,7 +258,7 @@
       flavor: 'Сідає на кахон, як на трон, і задає темп усьому гурту.'
     },
     {
-      key: 'yana', instagram: 'ynnbey', track: { title: '', artist: '' }, meme: '', name: 'Яна Бей', short: 'Яна', role: 'Вокалістка', instrument: 'Голос, мікрофон', style: 'beams', type: 'voice',
+      key: 'yana', instagram: 'ynnbey', track: { title: 'What Made the Red Man Red', artist: 'Candy Candido, The Jud Conlon Chorus · Peter Pan', youtube: 'https://music.youtube.com/watch?v=WlU7Gtl0Nd8', spotify: 'https://open.spotify.com/track/5v5BB1IDbjVFzlr8drWsTc' }, meme: '', name: 'Яна Бей', short: 'Яна', role: 'Вокалістка', instrument: 'Голос, мікрофон', style: 'beams', type: 'voice',
       stage: 'БАЗОВА', hp: 90, no: '002', photo: CARD.yana, fy: 0.3,
       ability: { name: 'Перший рядок', text: 'Коли ця картка виходить на сцену, зал вмикає ліхтарики на телефонах.' },
       attack: { cost: ['voice', 'voice'], name: 'Висока нота', dmg: '110', text: 'Ця атака ігнорує шум у залі та фон мікрофона.' },
@@ -788,6 +793,11 @@
     pillOn = on; pillFor = focus;
     const m = MEMBERS[focus];
     pill.hidden = !on; hint.hidden = on;
+    // favourite-track links ride along with the Instagram button; the page dots step aside meanwhile
+    const tl = document.getElementById('trackLinks'), tr = (m && m.track) || {};
+    const links = [tr.youtube && `<a href="${tr.youtube}" target="_blank" rel="noopener">▶ YouTube Music</a>`, tr.spotify && `<a href="${tr.spotify}" target="_blank" rel="noopener">▶ Spotify</a>`].filter(Boolean);
+    tl.innerHTML = links.join(''); tl.hidden = !on || !links.length;
+    document.getElementById('dots').style.visibility = on && links.length ? 'hidden' : '';
     if (!on || !m) return;
     if (m.instagram) {
       pill.href = `https://instagram.com/${encodeURIComponent(m.instagram.replace(/^@/, ''))}`; pill.removeAttribute('aria-disabled');
