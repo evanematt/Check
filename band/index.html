@@ -245,7 +245,7 @@
 
   const MEMBERS = [
     {
-      key: 'eva', instagram: 'evvanemat', name: 'Єва Немат', short: 'Єва', role: 'Барабанщиця', instrument: 'Кахон, ударні', style: 'checker', type: 'rhythm',
+      key: 'eva', instagram: 'evvanemat', track: { title: '', artist: '' }, meme: '', name: 'Єва Немат', short: 'Єва', role: 'Барабанщиця', instrument: 'Кахон, ударні', style: 'checker', type: 'rhythm',
       stage: 'БАЗОВА', hp: 100, no: '001', photo: CARD.eva, fy: 0.36,
       ability: { name: 'Тримати біт', text: 'Поки ця картка в грі, жоден трек не збивається з темпу.' },
       attack: { cost: ['rhythm', 'any'], name: 'Кахон-брейк', dmg: '90', text: 'Підкинь монетку. Якщо орел, зал починає плескати в такт.' },
@@ -253,7 +253,7 @@
       flavor: 'Сідає на кахон, як на трон, і задає темп усьому гурту.'
     },
     {
-      key: 'yana', instagram: 'ynnbey', name: 'Яна Бей', short: 'Яна', role: 'Вокалістка', instrument: 'Голос, мікрофон', style: 'beams', type: 'voice',
+      key: 'yana', instagram: 'ynnbey', track: { title: '', artist: '' }, meme: '', name: 'Яна Бей', short: 'Яна', role: 'Вокалістка', instrument: 'Голос, мікрофон', style: 'beams', type: 'voice',
       stage: 'БАЗОВА', hp: 90, no: '002', photo: CARD.yana, fy: 0.3,
       ability: { name: 'Перший рядок', text: 'Коли ця картка виходить на сцену, зал вмикає ліхтарики на телефонах.' },
       attack: { cost: ['voice', 'voice'], name: 'Висока нота', dmg: '110', text: 'Ця атака ігнорує шум у залі та фон мікрофона.' },
@@ -261,7 +261,7 @@
       flavor: 'Один жест рукою, і весь натовп співає разом з нею.'
     },
     {
-      key: 'mykhas', instagram: 'myhassss', name: 'Михась', short: 'Михась', role: 'Гітарист', instrument: 'Електрогітара', style: 'leopard', type: 'riff',
+      key: 'mykhas', instagram: 'myhassss', track: { title: '', artist: '' }, meme: '', name: 'Михась', short: 'Михась', role: 'Гітарист', instrument: 'Електрогітара', style: 'leopard', type: 'riff',
       stage: 'БАЗОВИЙ', hp: 100, no: '003', photo: CARD.mykhas, fy: 0.4,
       ability: { name: 'Темні окуляри', text: 'Цю картку не може засліпити жоден прожектор.' },
       attack: { cost: ['riff', 'riff', 'any'], name: 'Соло на біс', dmg: '120', text: 'Якщо зал кричить «ще», атака повторюється.' },
@@ -365,6 +365,7 @@
 
   const loadImage = src => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
   const photos = await Promise.all(MEMBERS.map(m => loadImage(m.photo)));
+  const memes = await Promise.all(MEMBERS.map(m => (m.meme ? loadImage(m.meme) : null)));
 
   let seedN = 7; const rnd = () => (seedN = (seedN * 16807) % 2147483647) / 2147483647;
   function rr(ctx, x, y, w, h, r) {
@@ -541,32 +542,74 @@
     return c;
   }
 
-  function makeBack(m) {
-    // a vinyl record in the member's colour, with their Instagram
+  function makeBack(m, meme) {
+    // back: Instagram first (vinyl + handle), then a meme and a favourite track
     const c = document.createElement('canvas'); c.width = TW; c.height = TH;
-    const ctx = c.getContext('2d'); const cx = TW / 2, cy = TH / 2;
+    const ctx = c.getContext('2d'); const cx = TW / 2, col = TYPES[m.type].icon;
     ctx.fillStyle = '#18151c'; ctx.fillRect(0, 0, TW, TH);
     rr(ctx, 46, 46, TW - 92, TH - 92, 28); ctx.fillStyle = '#0b0a0d'; ctx.fill();
-    ctx.fillStyle = '#060507'; ctx.beginPath(); ctx.arc(cx, cy, 560, 0, Math.PI * 2); ctx.fill();
-    for (let r = 200; r < 556; r += 5) { ctx.strokeStyle = `rgba(255,255,255,${0.03 + ((r / 5) % 3 === 0 ? 0.04 : 0)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); }
-    const sheen = ctx.createConicGradient ? ctx.createConicGradient(0.4, cx, cy) : null;
-    if (sheen) { ['rgba(255,255,255,0)', 'rgba(255,255,255,0.14)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0)'].forEach((col, i) => sheen.addColorStop(i / 5, col)); ctx.fillStyle = sheen; ctx.beginPath(); ctx.arc(cx, cy, 556, 0, Math.PI * 2); ctx.fill(); }
-    // label split into the three member colours
-    ctx.fillStyle = TYPES[m.type].icon; ctx.beginPath(); ctx.arc(cx, cy, 190, 0, Math.PI * 2); ctx.fill();
-    // instagram glyph on the label
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 12; rr(ctx, cx - 70, cy - 70, 140, 140, 40); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, cy, 34, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + 40, cy - 40, 9, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#f5efe6'; ctx.textAlign = 'center';
-    ctx.font = `900 76px ${DISPLAY}`; ctx.fillText(m.name.toUpperCase(), cx, 200);
-    ctx.font = `700 26px ${MONO}`; ctx.fillText(m.role.toUpperCase(), cx, 250);
-    ctx.font = `700 26px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText('INSTAGRAM', cx, TH - 250); ctx.globalAlpha = 1;
-    ctx.font = `900 ${m.instagram ? 64 : 54}px ${DISPLAY}`;
-    ctx.fillText(m.instagram ? '@' + m.instagram.replace(/^@/, '') : 'скоро', cx, TH - 170);
-    ctx.font = `700 22px ${MONO}`; ctx.globalAlpha = 0.6; ctx.fillText(`${m.no}/003 · СЕТ 01`, cx, TH - 100); ctx.globalAlpha = 1;
+    ctx.font = `900 64px ${DISPLAY}`; ctx.fillText(m.name.toUpperCase(), cx, 150);
+    ctx.font = `700 24px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText(m.role.toUpperCase(), cx, 196); ctx.globalAlpha = 1;
+
+    // vinyl with the Instagram glyph on its label
+    const vy = 470, R = 250;
+    ctx.fillStyle = '#060507'; ctx.beginPath(); ctx.arc(cx, vy, R, 0, Math.PI * 2); ctx.fill();
+    for (let r = 110; r < R - 4; r += 5) { ctx.strokeStyle = `rgba(255,255,255,${0.03 + ((r / 5) % 3 === 0 ? 0.05 : 0)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, vy, r, 0, Math.PI * 2); ctx.stroke(); }
+    if (ctx.createConicGradient) {
+      const sh = ctx.createConicGradient(0.4, cx, vy);
+      ['rgba(255,255,255,0)', 'rgba(255,255,255,0.16)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0)'].forEach((v, i) => sh.addColorStop(i / 5, v));
+      ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(cx, vy, R - 4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(cx, vy, 100, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 9; rr(ctx, cx - 50, vy - 50, 100, 100, 28); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, vy, 24, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + 29, vy - 29, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f5efe6';
+    ctx.font = `700 24px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText('INSTAGRAM', cx, 776); ctx.globalAlpha = 1;
+    const handleText = m.instagram ? '@' + m.instagram.replace(/^@/, '') : 'скоро';
+    let fs = 72; ctx.font = `900 ${fs}px ${DISPLAY}`;
+    while (ctx.measureText(handleText).width > 1000 && fs > 40) { fs -= 4; ctx.font = `900 ${fs}px ${DISPLAY}`; }
+    ctx.fillText(handleText, cx, 852);
+
+    // meme
+    const mx = 120, my = 900, mw = 1020, mh = 520;
+    ctx.fillStyle = '#f5efe6'; rr(ctx, mx, my, mw, mh, 14); ctx.fill();
+    const ix = mx + 14, iy = my + 14, iw = mw - 28, ih = mh - 64;
+    ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+    if (meme) {
+      const k = Math.max(iw / meme.width, ih / meme.height);
+      ctx.drawImage(meme, ix + (iw - meme.width * k) / 2, iy + (ih - meme.height * k) / 2, meme.width * k, meme.height * k);
+    } else {
+      ctx.fillStyle = '#1d1a21'; ctx.fillRect(ix, iy, iw, ih);
+      ctx.setLineDash([14, 10]); ctx.strokeStyle = 'rgba(245,239,230,0.35)'; ctx.lineWidth = 3; ctx.strokeRect(ix + 20, iy + 20, iw - 40, ih - 40); ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(245,239,230,0.6)'; ctx.font = `700 34px ${BODY}`; ctx.fillText('тут буде мем', cx, iy + ih / 2 + 12);
+    }
+    ctx.restore();
+    ctx.fillStyle = '#1b1a18'; ctx.font = `700 22px ${MONO}`; ctx.textAlign = 'left';
+    ctx.fillText('МЕМ ДНЯ', ix + 4, my + mh - 18);
+    ctx.textAlign = 'right'; ctx.fillText(`№ ${m.no}`, ix + iw - 4, my + mh - 18);
+
+    // favourite track, like a little player
+    const tr = m.track || {};
+    ctx.textAlign = 'left'; ctx.fillStyle = '#f5efe6';
+    ctx.font = `700 22px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText('УЛЮБЛЕНИЙ ТРЕК', 120, 1476); ctx.globalAlpha = 1;
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(156, 1540, 36, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(146, 1522); ctx.lineTo(172, 1540); ctx.lineTo(146, 1558); ctx.closePath(); ctx.fill();
+    const title = tr.title || 'скоро';
+    fs = 44; ctx.font = `900 ${fs}px ${DISPLAY}`; ctx.fillStyle = '#f5efe6';
+    while (ctx.measureText(title).width > 930 && fs > 26) { fs -= 2; ctx.font = `900 ${fs}px ${DISPLAY}`; }
+    ctx.fillText(title, 214, tr.artist ? 1532 : 1554);
+    if (tr.artist) { ctx.font = `400 28px ${BODY}`; ctx.globalAlpha = 0.75; ctx.fillText(tr.artist, 214, 1572); ctx.globalAlpha = 1; }
+    ctx.fillStyle = 'rgba(245,239,230,0.18)'; rr(ctx, 120, 1606, 1020, 8, 4); ctx.fill();
+    ctx.fillStyle = col; rr(ctx, 120, 1606, 360, 8, 4); ctx.fill();
+    ctx.beginPath(); ctx.arc(480, 1610, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.textAlign = 'center'; ctx.fillStyle = '#f5efe6'; ctx.font = `700 20px ${MONO}`; ctx.globalAlpha = 0.5;
+    ctx.fillText(`${m.no}/003 · НЕ ТОЙ КІТ`, cx, 1674); ctx.globalAlpha = 1;
     ctx.textAlign = 'left';
     return c;
   }
+
 
   // ---------- scene ----------
   const hero = document.getElementById('top');
@@ -635,7 +678,7 @@
       vertexShader: holoVert, fragmentShader: holoFrag, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
     holoMats.push(holoMat);
     const holo = new THREE.Mesh(faceGeo, holoMat); holo.position.z = CT / 2 + 0.004;
-    const back = new THREE.Mesh(faceGeo, new THREE.MeshPhysicalMaterial({ map: tex(makeBack(m)), roughness: 0.45, clearcoat: 0.5, clearcoatRoughness: 0.25 })); back.rotation.y = Math.PI; back.position.z = -CT / 2 - 0.002;
+    const back = new THREE.Mesh(faceGeo, new THREE.MeshPhysicalMaterial({ map: tex(makeBack(m, memes[i])), roughness: 0.45, clearcoat: 0.5, clearcoatRoughness: 0.25 })); back.rotation.y = Math.PI; back.position.z = -CT / 2 - 0.002;
     card.add(new THREE.Mesh(edgeGeo, edgeMat), front, holo, back);
     card.traverse(o => { o.userData.index = i; });
     holder.add(card); scene.add(holder);
