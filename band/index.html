@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Єва, Яна і Михась: 3D-картки учасників гурту, Instagram і донат.">
+<meta name="description" content="Не той кіт — ми не бенд. Картки Єви, Яни й Михася, наші інстаграми і донат.">
 <style>
   :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
   body { margin: 0; font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
   img { max-width: 100%; }
   [hidden] { display: none !important; }
 </style>
-<title>Єва, Яна і Михась</title>
+<title>Не той кіт</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,10 +55,10 @@
   #stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: pointer; }
   .mark { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; mix-blend-mode: difference; color: #fff; padding-inline: 16px; }
   .mark h1 { margin: 0; text-align: center; font-family: var(--font-grunge); font-weight: 400; text-transform: uppercase;
-    font-size: clamp(54px, 13vw, 210px); line-height: 0.86; letter-spacing: -0.01em;
+    font-size: clamp(50px, 12.5vw, 200px); line-height: 0.86; letter-spacing: -0.01em; text-wrap: balance;
     transition: opacity 1.2s ease, filter 1.2s ease, transform 1.4s cubic-bezier(.2,.7,.2,1); }
   .mark h1 span { display: block; }
-  .mark h1 .amp { font-family: var(--font-hand); text-transform: none; font-size: 0.5em; line-height: 1; }
+  .mark h1 .sub { font-family: var(--font-type); text-transform: none; font-size: 0.17em; letter-spacing: 0.2em; line-height: 1; margin-top: 0.7em; }
   .mark.gone h1 { opacity: 0; filter: blur(14px); transform: scale(1.15) rotate(-2deg); }
   .hero-top, .hero-bottom { position: absolute; left: 0; right: 0; pointer-events: none;
     padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -166,9 +166,9 @@
 </head>
 <body>
 <header class="hero" id="top">
-  <canvas id="stage" aria-label="Три голографічні картки учасників гурту: Єва, Яна і Михась"></canvas>
-  <div class="mark" aria-hidden="true"><h1><span>Єва</span><span>Яна <span class="amp">і</span></span><span>Михась</span></h1></div>
-  <div class="hero-top"><span class="stars" aria-hidden="true">★ ★ ★</span><span>Картки гурту · <span class="no" id="focusLabel">№ 000–003</span></span></div>
+  <canvas id="stage" aria-label="Не той кіт: три голографічні картки учасників, Єва, Яна і Михась"></canvas>
+  <div class="mark" aria-hidden="true"><h1><span>Не той кіт</span><span class="sub">ми не бенд</span></h1></div>
+  <div class="hero-top"><span class="stars" aria-hidden="true">★ ★ ★</span><span>Не той кіт · <span class="no" id="focusLabel">№ 000–003</span></span></div>
   <a class="igpill" id="igPill" href="#" target="_blank" rel="noopener" hidden></a>
   <div class="dots" id="dots" role="group" aria-label="Картки">
     <button type="button" aria-label="Єва" data-go="0"></button><button type="button" aria-label="Яна" data-go="1"></button><button type="button" aria-label="Михась" data-go="2"></button>
@@ -191,7 +191,7 @@
 <main class="wrap">
   <article class="doc tilt-l about-doc" aria-labelledby="aboutTitle">
     <div class="stars" aria-hidden="true"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
-    <p class="kicker"><span>Гурт · Сет 01 · Склад</span><b>0003</b></p>
+    <p class="kicker"><span>Не той кіт · ми не бенд · Склад</span><b>0003</b></p>
     <div class="stamp" aria-hidden="true">Сет 01<br>Перевірено</div>
     <h2 class="lineup" id="aboutTitle">
       <span class="row" style="--c: var(--eva)"><span class="nm">Єва Немат</span><span class="rl">Барабани <small>кахон, ударні</small></span></span>
@@ -245,7 +245,7 @@
 
   const MEMBERS = [
     {
-      key: 'eva', instagram: '', name: 'Єва Немат', short: 'Єва', role: 'Барабанщиця', instrument: 'Кахон, ударні', style: 'checker', type: 'rhythm',
+      key: 'eva', instagram: 'evvanemat', name: 'Єва Немат', short: 'Єва', role: 'Барабанщиця', instrument: 'Кахон, ударні', style: 'checker', type: 'rhythm',
       stage: 'БАЗОВА', hp: 100, no: '001', photo: CARD.eva, fy: 0.36,
       ability: { name: 'Тримати біт', text: 'Поки ця картка в грі, жоден трек не збивається з темпу.' },
       attack: { cost: ['rhythm', 'any'], name: 'Кахон-брейк', dmg: '90', text: 'Підкинь монетку. Якщо орел, зал починає плескати в такт.' },
@@ -253,7 +253,7 @@
       flavor: 'Сідає на кахон, як на трон, і задає темп усьому гурту.'
     },
     {
-      key: 'yana', instagram: '', name: 'Яна Бей', short: 'Яна', role: 'Вокалістка', instrument: 'Голос, мікрофон', style: 'beams', type: 'voice',
+      key: 'yana', instagram: 'ynnbey', name: 'Яна Бей', short: 'Яна', role: 'Вокалістка', instrument: 'Голос, мікрофон', style: 'beams', type: 'voice',
       stage: 'БАЗОВА', hp: 90, no: '002', photo: CARD.yana, fy: 0.3,
       ability: { name: 'Перший рядок', text: 'Коли ця картка виходить на сцену, зал вмикає ліхтарики на телефонах.' },
       attack: { cost: ['voice', 'voice'], name: 'Висока нота', dmg: '110', text: 'Ця атака ігнорує шум у залі та фон мікрофона.' },
@@ -261,7 +261,7 @@
       flavor: 'Один жест рукою, і весь натовп співає разом з нею.'
     },
     {
-      key: 'mykhas', instagram: '', name: 'Михась', short: 'Михась', role: 'Гітарист', instrument: 'Електрогітара', style: 'leopard', type: 'riff',
+      key: 'mykhas', instagram: 'myhassss', name: 'Михась', short: 'Михась', role: 'Гітарист', instrument: 'Електрогітара', style: 'leopard', type: 'riff',
       stage: 'БАЗОВИЙ', hp: 100, no: '003', photo: CARD.mykhas, fy: 0.4,
       ability: { name: 'Темні окуляри', text: 'Цю картку не може засліпити жоден прожектор.' },
       attack: { cost: ['riff', 'riff', 'any'], name: 'Соло на біс', dmg: '120', text: 'Якщо зал кричить «ще», атака повторюється.' },
