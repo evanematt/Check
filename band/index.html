@@ -195,7 +195,7 @@
 
   const MEMBERS = [
     {
-      key: 'eva', instagram: 'evvanemat', track: { title: '', artist: '' }, meme: MEME.eva, name: 'Єва Немат', short: 'Єва', role: 'Барабанщиця', instrument: 'Кахон, ударні', style: 'checker', type: 'rhythm',
+      key: 'eva', instagram: 'evvanemat', track: { label: 'УЛЮБЛЕНИЙ ГУРТ', title: 'tricot', artist: 'японський math rock', youtube: 'https://music.youtube.com/@tricotOfficialChannel', spotify: 'https://open.spotify.com/search/tricot' }, meme: MEME.eva, name: 'Єва Немат', short: 'Єва', role: 'Барабанщиця', instrument: 'Кахон, ударні', style: 'checker', type: 'rhythm',
       stage: 'БАЗОВА', hp: 100, no: '001', photo: CARD.eva, fy: 0.36,
       ability: { name: 'Тримати біт', text: 'Поки ця картка в грі, жоден трек не збивається з темпу.' },
       attack: { cost: ['rhythm', 'any'], name: 'Кахон-брейк', dmg: '90', text: 'Підкинь монетку. Якщо орел, зал починає плескати в такт.' },
@@ -545,13 +545,13 @@
     }
     ctx.restore();
     ctx.fillStyle = '#1b1a18'; ctx.font = `700 22px ${MONO}`; ctx.textAlign = 'left';
-    ctx.fillText('МЕМ ДНЯ', ix + 4, my + mh - 18);
+    ctx.fillText('УЛЮБЛЕНИЙ МЕМ', ix + 4, my + mh - 18);
     ctx.textAlign = 'right'; ctx.fillText(`№ ${m.no}`, ix + iw - 4, my + mh - 18);
 
     // favourite track, like a little player
     const tr = m.track || {};
     ctx.textAlign = 'left'; ctx.fillStyle = '#f5efe6';
-    ctx.font = `700 22px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText('УЛЮБЛЕНИЙ ТРЕК', 120, 1494); ctx.globalAlpha = 1;
+    ctx.font = `700 22px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText(tr.label || 'УЛЮБЛЕНИЙ ТРЕК', 120, 1494); ctx.globalAlpha = 1;
     ctx.fillStyle = col; ctx.beginPath(); ctx.arc(156, 1552, 34, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(146, 1535); ctx.lineTo(171, 1552); ctx.lineTo(146, 1569); ctx.closePath(); ctx.fill();
     const title = tr.title || 'скоро';
