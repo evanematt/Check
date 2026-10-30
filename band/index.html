@@ -289,7 +289,7 @@
         document.getElementById('jarBar').style.width = Math.min(100, (j.amount / j.goal) * 100) + '%';
         document.getElementById('jarGoal').textContent = `з ${hryvnia(j.goal)}`;
       }
-      if (j.amount > 0) dockDonate.textContent = `Донат · ${hryvnia(j.amount)}`;
+      dockDonate.textContent = `Донат · ${hryvnia(j.amount)}`;
     } catch (e) {}
   }
   loadJar(); setInterval(loadJar, 60000);
