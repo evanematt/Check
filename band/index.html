@@ -767,13 +767,15 @@
     carPos += (goal - carPos) * Math.min(1, dt * (down ? 18 : 7));
 
     cards.forEach((c, i) => {
-      const r = i - carPos, a = Math.min(1, Math.abs(r)), front = 1 - a;
-      // sides sit back and a little smaller, spaced so even a spinning card can't reach its neighbour
-      c.holder.position.set(r * step, near.cy + Math.sin(t * 0.9 + i * 2.1) * 0.05 * front, 0.9 - a * 1.8);
-      c.holder.scale.setScalar(focusS * (1 - a * 0.18));
+      const r = i - carPos, d = Math.min(2, Math.abs(r)), a = Math.min(1, d), far = Math.max(0, d - 1), front = 1 - a;
+      // a stack: each step away from the centre sits a full layer further back, so cards only ever pass behind each other
+      const x = Math.sign(r) * (a * step + far * step * 0.38);
+      c.holder.position.set(x, near.cy + Math.sin(t * 0.9 + i * 2.1) * 0.05 * front, 0.9 - a * 1.8 - far * 1.6);
+      c.holder.scale.setScalar(focusS * (1 - a * 0.18 - far * 0.1));
+      c.holder.renderOrder = 10 - Math.round(d * 3);
       c.holder.rotation.set(
         (Math.sin(t * 0.7 + i) * 0.06 - 0.03 + tilt.y) * front,
-        introSpin + (Math.sin(t * 0.5 + i * 1.7) * 0.16 + tilt.x) * front,
+        introSpin * front + (Math.sin(t * 0.5 + i * 1.7) * 0.16 + tilt.x) * front,
         Math.sin(t * 0.6 + i) * 0.03 * front
       );
       c.flipNow += (c.flipTarget - c.flipNow) * Math.min(1, dt * 5);
