@@ -94,6 +94,14 @@
   .dock .about .s { font: 400 11px/1.3 var(--font-type); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dock .about .l { display: grid; gap: 4px; min-width: 0; }
   .dock .about .arr { font: 600 13px/1 var(--font-heavy); text-transform: uppercase; white-space: nowrap; }
+  .cta { display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; cursor: pointer;
+    font: 700 clamp(22px, 3vw, 28px)/1 var(--font-heavy); text-transform: uppercase; letter-spacing: 0.02em; color: var(--ink);
+    background: var(--green); border: 2px solid var(--ink); border-radius: 12px; padding: 20px 26px; box-shadow: 5px 5px 0 var(--ink);
+    transform: rotate(-1.5deg); transition: transform .15s, box-shadow .15s; }
+  .cta:hover { transform: rotate(0) translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+  .cta[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+  .card-no { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .card-no span { font-size: 22px; letter-spacing: 0.1em; user-select: all; overflow-wrap: anywhere; }
   .dock .cta { transform: none; box-shadow: 2px 2px 0 var(--paper); padding: 0 18px; font-size: 17px; border-radius: 8px; border-width: 1.5px; }
   .dock .cta:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--paper); }
   @media (max-width: 420px) { .dock .about .s { display: none; } .dock .cta { font-size: 16px; padding: 0 14px; } }
@@ -178,7 +186,7 @@
   <div class="dots" id="dots" role="group" aria-label="Картки">
     <button type="button" aria-label="Єва" data-go="0"></button><button type="button" aria-label="Яна" data-go="1"></button><button type="button" aria-label="Михась" data-go="2"></button>
   </div>
-  <p class="hint" id="hint">Свайпай картки · тап перевертає, на звороті Instagram</p>
+  <p class="hint" id="hint">Свайпай · тап перевертає картку</p>
   <p id="fail" hidden>3D-картки не завантажились. Перевір, чи увімкнено WebGL, і онови сторінку.</p>
 </header>
 
@@ -556,38 +564,45 @@
     ctx.fillStyle = '#18151c'; ctx.fillRect(0, 0, TW, TH);
     rr(ctx, 46, 46, TW - 92, TH - 92, 28); ctx.fillStyle = '#0b0a0d'; ctx.fill();
     ctx.fillStyle = '#f5efe6'; ctx.textAlign = 'center';
-    ctx.font = `900 64px ${DISPLAY}`; ctx.fillText(m.name.toUpperCase(), cx, 150);
-    ctx.font = `700 24px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText(m.role.toUpperCase(), cx, 196); ctx.globalAlpha = 1;
+    ctx.font = `900 60px ${DISPLAY}`; ctx.fillText(m.name.toUpperCase(), cx, 140);
+    ctx.font = `700 24px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText(m.role.toUpperCase(), cx, 182); ctx.globalAlpha = 1;
 
     // vinyl with the Instagram glyph on its label
-    const vy = 470, R = 250;
+    const vy = 370, R = 165;
     ctx.fillStyle = '#060507'; ctx.beginPath(); ctx.arc(cx, vy, R, 0, Math.PI * 2); ctx.fill();
-    for (let r = 110; r < R - 4; r += 5) { ctx.strokeStyle = `rgba(255,255,255,${0.03 + ((r / 5) % 3 === 0 ? 0.05 : 0)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, vy, r, 0, Math.PI * 2); ctx.stroke(); }
+    for (let r = 76; r < R - 4; r += 5) { ctx.strokeStyle = `rgba(255,255,255,${0.03 + ((r / 5) % 3 === 0 ? 0.05 : 0)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, vy, r, 0, Math.PI * 2); ctx.stroke(); }
     if (ctx.createConicGradient) {
       const sh = ctx.createConicGradient(0.4, cx, vy);
       ['rgba(255,255,255,0)', 'rgba(255,255,255,0.16)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0)'].forEach((v, i) => sh.addColorStop(i / 5, v));
       ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(cx, vy, R - 4, 0, Math.PI * 2); ctx.fill();
     }
-    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(cx, vy, 100, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 9; rr(ctx, cx - 50, vy - 50, 100, 100, 28); ctx.stroke();
-    ctx.beginPath(); ctx.arc(cx, vy, 24, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + 29, vy - 29, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(cx, vy, 68, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 7; rr(ctx, cx - 34, vy - 34, 68, 68, 19); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, vy, 16, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + 20, vy - 20, 5, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#f5efe6';
-    ctx.font = `700 24px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText('INSTAGRAM', cx, 776); ctx.globalAlpha = 1;
+    ctx.font = `700 24px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText('INSTAGRAM', cx, 586); ctx.globalAlpha = 1;
     const handleText = m.instagram ? '@' + m.instagram.replace(/^@/, '') : 'скоро';
     let fs = 72; ctx.font = `900 ${fs}px ${DISPLAY}`;
     while (ctx.measureText(handleText).width > 1000 && fs > 40) { fs -= 4; ctx.font = `900 ${fs}px ${DISPLAY}`; }
-    ctx.fillText(handleText, cx, 852);
+    ctx.fillText(handleText, cx, 660);
 
     // meme
-    const mx = 120, my = 900, mw = 1020, mh = 520;
+    const mx = 120, my = 700, mw = 1020, mh = 740;
     ctx.fillStyle = '#f5efe6'; rr(ctx, mx, my, mw, mh, 14); ctx.fill();
     const ix = mx + 14, iy = my + 14, iw = mw - 28, ih = mh - 64;
     ctx.save(); ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
     if (meme) {
-      ctx.fillStyle = '#111014'; ctx.fillRect(ix, iy, iw, ih);
-      const k = Math.min(iw / meme.width, ih / meme.height);
-      ctx.drawImage(meme, ix + (iw - meme.width * k) / 2, iy + (ih - meme.height * k) / 2, meme.width * k, meme.height * k);
+      // fill the whole box; a meme too tall or wide to crop gets a blurred fill of itself behind it instead of empty bars
+      const ar = meme.width / meme.height, box = iw / ih;
+      const lost = ar < box ? 1 - ar / box : 1 - box / ar;
+      const draw = k => ctx.drawImage(meme, ix + (iw - meme.width * k) / 2, iy + (ih - meme.height * k) * (m.memeFy ?? 0.5), meme.width * k, meme.height * k);
+      const cover = Math.max(iw / meme.width, ih / meme.height);
+      if (lost <= 0.45) draw(cover);
+      else {
+        ctx.filter = 'blur(28px) brightness(0.75) saturate(1.2)'; draw(cover * 1.15); ctx.filter = 'none';
+        draw(Math.min(iw / meme.width, ih / meme.height));
+      }
     } else {
       ctx.fillStyle = '#1d1a21'; ctx.fillRect(ix, iy, iw, ih);
       ctx.setLineDash([14, 10]); ctx.strokeStyle = 'rgba(245,239,230,0.35)'; ctx.lineWidth = 3; ctx.strokeRect(ix + 20, iy + 20, iw - 40, ih - 40); ctx.setLineDash([]);
@@ -601,19 +616,19 @@
     // favourite track, like a little player
     const tr = m.track || {};
     ctx.textAlign = 'left'; ctx.fillStyle = '#f5efe6';
-    ctx.font = `700 22px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText('УЛЮБЛЕНИЙ ТРЕК', 120, 1476); ctx.globalAlpha = 1;
-    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(156, 1540, 36, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(146, 1522); ctx.lineTo(172, 1540); ctx.lineTo(146, 1558); ctx.closePath(); ctx.fill();
+    ctx.font = `700 22px ${MONO}`; ctx.globalAlpha = 0.7; ctx.fillText('УЛЮБЛЕНИЙ ТРЕК', 120, 1494); ctx.globalAlpha = 1;
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(156, 1552, 34, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(146, 1535); ctx.lineTo(171, 1552); ctx.lineTo(146, 1569); ctx.closePath(); ctx.fill();
     const title = tr.title || 'скоро';
     fs = 44; ctx.font = `900 ${fs}px ${DISPLAY}`; ctx.fillStyle = '#f5efe6';
     while (ctx.measureText(title).width > 930 && fs > 26) { fs -= 2; ctx.font = `900 ${fs}px ${DISPLAY}`; }
-    ctx.fillText(title, 214, tr.artist ? 1532 : 1554);
-    if (tr.artist) { ctx.font = `400 28px ${BODY}`; ctx.globalAlpha = 0.75; ctx.fillText(tr.artist, 214, 1572); ctx.globalAlpha = 1; }
-    ctx.fillStyle = 'rgba(245,239,230,0.18)'; rr(ctx, 120, 1606, 1020, 8, 4); ctx.fill();
-    ctx.fillStyle = col; rr(ctx, 120, 1606, 360, 8, 4); ctx.fill();
-    ctx.beginPath(); ctx.arc(480, 1610, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText(title, 214, tr.artist ? 1546 : 1566);
+    if (tr.artist) { ctx.font = `400 28px ${BODY}`; ctx.globalAlpha = 0.75; ctx.fillText(tr.artist, 214, 1584); ctx.globalAlpha = 1; }
+    ctx.fillStyle = 'rgba(245,239,230,0.18)'; rr(ctx, 120, 1616, 1020, 8, 4); ctx.fill();
+    ctx.fillStyle = col; rr(ctx, 120, 1616, 360, 8, 4); ctx.fill();
+    ctx.beginPath(); ctx.arc(480, 1620, 12, 0, Math.PI * 2); ctx.fill();
     ctx.textAlign = 'center'; ctx.fillStyle = '#f5efe6'; ctx.font = `700 20px ${MONO}`; ctx.globalAlpha = 0.5;
-    ctx.fillText(`${m.no}/003 · НЕ ТОЙ КІТ`, cx, 1674); ctx.globalAlpha = 1;
+    ctx.fillText(`${m.no}/003 · НЕ ТОЙ КІТ`, cx, 1680); ctx.globalAlpha = 1;
     ctx.textAlign = 'left';
     return c;
   }
@@ -800,7 +815,7 @@
     const tl = document.getElementById('trackLinks'), tr = (m && m.track) || {};
     const links = [tr.youtube && `<a href="${tr.youtube}" target="_blank" rel="noopener">▶ YouTube Music</a>`, tr.spotify && `<a href="${tr.spotify}" target="_blank" rel="noopener">▶ Spotify</a>`].filter(Boolean);
     tl.innerHTML = links.join(''); tl.hidden = !on || !links.length;
-    document.getElementById('dots').style.visibility = on && links.length ? 'hidden' : '';
+    document.getElementById('dots').style.visibility = on ? 'hidden' : '';
     if (!on || !m) return;
     if (m.instagram) {
       pill.href = `https://instagram.com/${encodeURIComponent(m.instagram.replace(/^@/, ''))}`; pill.removeAttribute('aria-disabled');
