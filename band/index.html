@@ -147,7 +147,8 @@
   .btn[aria-disabled="true"] { opacity: 0.45; pointer-events: none; box-shadow: none; }
 
   /* about: one typographic block */
-  .about-doc .stamp { top: 64px; right: 28px; }
+  .about-doc .stamp { top: auto; bottom: 26px; right: 28px; }
+  .about-doc .kicker { margin-bottom: 26px; }
   .kicker { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); }
   .kicker b { color: var(--red); font-weight: 400; letter-spacing: 0.16em; }
   .lineup { margin: 0; display: grid; }
@@ -202,17 +203,10 @@
   <div class="sheet-head"><span class="stars" aria-hidden="true"><span>★</span><span>★</span><span>★</span></span><button class="tag" id="closeSheet" type="button">Закрити ↓</button></div>
   <div class="sheet-body">
 <main class="wrap">
-  <article class="doc tilt-l about-doc" aria-labelledby="aboutTitle">
+  <article class="doc tilt-l about-doc" aria-label="Не той кіт: Instagram і донат">
     <div class="stars" aria-hidden="true"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
-    <p class="kicker"><span>Не той кіт · ми не бенд · Склад</span><b>0003</b></p>
+    <p class="kicker"><span>Не той кіт · ми не бенд</span><b>0003</b></p>
     <div class="stamp" aria-hidden="true">Сет 01<br>Перевірено</div>
-    <h2 class="lineup" id="aboutTitle">
-      <span class="row" style="--c: var(--eva)"><span class="nm">Єва Немат</span><span class="rl">Барабани <small>кахон, ударні</small></span></span>
-      <span class="row" style="--c: var(--yana)"><span class="nm">Яна Бей</span><span class="rl">Голос <small>вокал</small></span></span>
-      <span class="and" aria-hidden="true">і</span>
-      <span class="row" style="--c: var(--mykhas)"><span class="nm">Михась</span><span class="rl">Гітара <small>електрогітара</small></span></span>
-    </h2>
-    <p class="manifest">Нас троє: Єва на ударних, Яна співає, Михась на гітарі. Дякуємо, що прийшли <span class="hl">на концерт</span>!</p>
     <div class="cols2">
       <div>
         <h3>Instagram</h3>
