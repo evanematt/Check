@@ -14,7 +14,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Onest:wght@400;500;600;700&family=Playfair+Display:ital@1&family=JetBrains+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@1,400;1,500;1,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Onest:wght@400;500;600;700&family=Playfair+Display:ital@1&family=JetBrains+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@1,400;1,500;1,700&family=Rubik+Wet+Paint&display=swap">
 <style>
   /* Layout: one quiet dark screen. The cards are the only colour; type is a soft italic serif for the name,
      a plain sans for text, small mono for labels. Bottom dock opens a dark sheet with Instagram and the jar. */
@@ -53,7 +53,41 @@
     padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
     display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
   .hero-top .name { font: italic 400 22px/1 var(--font-serif); }
-  .hero-top .no { font: 400 11px/1.3 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: right; }
+  .hero-top .no { font: 400 11px/1.3 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .hero-top .left { display: grid; gap: 6px; min-width: 0; }
+  .skins { pointer-events: auto; display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line-2); border-radius: 999px; background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(8px); }
+  .skins button { font: 500 12px/1 var(--font-body); color: var(--muted); background: transparent; border: 0; border-radius: 999px; padding: 8px 12px; cursor: pointer; }
+  .skins button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+
+  /* ---------- Halloween skin (default for now) ---------- */
+  .spooky { display: none; }
+  body[data-skin="halloween"] {
+    --bg: #0b0710; --surface: #170e1d; --surface-2: #1f1327; --line: rgba(255, 138, 40, 0.12); --line-2: rgba(255, 138, 40, 0.24);
+    --text: #f3e6d6; --muted: #a58e9d; --sand: #ff7a1a; --font-spooky: "Rubik Wet Paint", "Cormorant Garamond", Georgia, serif;
+  }
+  body[data-skin="halloween"] .spooky { display: block; }
+  body[data-skin="halloween"] .hero { background:
+      radial-gradient(70% 40% at 50% 105%, rgba(255, 106, 0, 0.30), transparent 70%),
+      radial-gradient(60% 45% at 15% 0%, rgba(120, 40, 170, 0.35), transparent 70%),
+      var(--bg); }
+  body[data-skin="halloween"] .mark { mix-blend-mode: normal; color: var(--sand); }
+  body[data-skin="halloween"] .mark h1 { font-family: var(--font-spooky); font-style: normal; font-weight: 400; letter-spacing: 0; text-shadow: 0 0 40px rgba(255, 106, 0, 0.45); }
+  body[data-skin="halloween"] .mark h1 .sub { font-family: var(--font-mono); text-shadow: none; }
+  body[data-skin="halloween"] .hero-top .name,
+  body[data-skin="halloween"] .dock .about .t,
+  body[data-skin="halloween"] .title { font-family: var(--font-spooky); font-style: normal; color: var(--sand); }
+  body[data-skin="halloween"] .hero-top .name { font-size: 20px; }
+  body[data-skin="halloween"] .title { font-size: clamp(42px, 11vw, 64px); }
+  body[data-skin="halloween"] .donate-box .ask { color: var(--text); }
+  .moon { position: absolute; top: calc(70px + env(safe-area-inset-top, 0px)); right: 9%; width: min(28vw, 170px); aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle at 38% 38%, #fff4cf 0%, #f6cf78 55%, #d9953a 100%); box-shadow: 0 0 90px 24px rgba(246, 180, 80, 0.22); opacity: 0.85; }
+  .moon::after { content: ""; position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle at 62% 30%, rgba(160, 100, 40, 0.25) 0 9%, transparent 10%), radial-gradient(circle at 35% 65%, rgba(160, 100, 40, 0.2) 0 12%, transparent 13%), radial-gradient(circle at 70% 70%, rgba(160, 100, 40, 0.18) 0 6%, transparent 7%); }
+  .bats { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .bat { position: absolute; left: -12%; width: 46px; animation: bat-fly var(--d, 16s) linear infinite; animation-delay: var(--delay, 0s); }
+  .bat svg { display: block; width: 100%; fill: #07040a; animation: bat-flap 0.28s ease-in-out infinite alternate; transform-origin: 50% 40%; }
+  @keyframes bat-fly { 0% { transform: translate(0, 0); } 25% { transform: translate(30vw, -24px); } 50% { transform: translate(60vw, 14px); } 75% { transform: translate(90vw, -18px); } 100% { transform: translate(125vw, 6px); } }
+  @keyframes bat-flap { from { transform: scaleY(1); } to { transform: scaleY(0.35); } }
 
   .hint, .igpill, .tracklinks, .dots { position: absolute; left: 50%; transform: translateX(-50%); margin: 0; white-space: nowrap; }
   .hint { bottom: calc(var(--dock, 64px) + 14px); font: 400 11px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); pointer-events: none; }
@@ -129,15 +163,25 @@
   footer { padding-top: 8px; font: 400 11px/1.5 var(--font-mono); letter-spacing: 0.06em; color: var(--muted); }
   .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 10;
     background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px; font: 500 14px/1 var(--font-body); }
-  @media (prefers-reduced-motion: reduce) { .mark h1, .sheet, .scrim, .dots button { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .mark h1, .sheet, .scrim, .dots button { transition: none; } .bat, .bat svg { animation: none; } .bat { display: none; } }
 </style>
 
 </head>
 <body>
 <header class="hero" id="top">
+  <div class="spooky moon" aria-hidden="true"></div>
+  <div class="spooky bats" aria-hidden="true">
+    <span class="bat" style="top: 16%; --d: 17s; --delay: -3s"><svg viewBox="0 0 64 30" aria-hidden="true"><path d="M32 9c-1.6-3.4-3.6-4.6-5.6-4.6.9 1.8.8 3.6-.2 4.8C23.4 6.4 18 5.6 11.6 6.8c2.8 1.8 3.8 4.6 3.6 7.6-3-1-6.8-.8-9.8.8 5.8 1.2 10.8 4.2 13.6 9 2.2-2.6 5-3.6 7.8-3.4 2.2.2 3.6 1.2 5.2 3.2 1.6-2 3-3 5.2-3.2 2.8-.2 5.6.8 7.8 3.4 2.8-4.8 7.8-7.8 13.6-9-3-1.6-6.8-1.8-9.8-.8-.2-3 .8-5.8 3.6-7.6-6.4-1.2-11.8-.4-14.6 2.4-1-1.2-1.1-3-.2-4.8-2 0-4 1.2-5.6 4.6z"/></svg></span>
+    <span class="bat" style="top: 24%; --d: 22s; --delay: -11s; width: 34px"><svg viewBox="0 0 64 30" aria-hidden="true"><path d="M32 9c-1.6-3.4-3.6-4.6-5.6-4.6.9 1.8.8 3.6-.2 4.8C23.4 6.4 18 5.6 11.6 6.8c2.8 1.8 3.8 4.6 3.6 7.6-3-1-6.8-.8-9.8.8 5.8 1.2 10.8 4.2 13.6 9 2.2-2.6 5-3.6 7.8-3.4 2.2.2 3.6 1.2 5.2 3.2 1.6-2 3-3 5.2-3.2 2.8-.2 5.6.8 7.8 3.4 2.8-4.8 7.8-7.8 13.6-9-3-1.6-6.8-1.8-9.8-.8-.2-3 .8-5.8 3.6-7.6-6.4-1.2-11.8-.4-14.6 2.4-1-1.2-1.1-3-.2-4.8-2 0-4 1.2-5.6 4.6z"/></svg></span>
+    <span class="bat" style="top: 9%; --d: 26s; --delay: -18s; width: 28px"><svg viewBox="0 0 64 30" aria-hidden="true"><path d="M32 9c-1.6-3.4-3.6-4.6-5.6-4.6.9 1.8.8 3.6-.2 4.8C23.4 6.4 18 5.6 11.6 6.8c2.8 1.8 3.8 4.6 3.6 7.6-3-1-6.8-.8-9.8.8 5.8 1.2 10.8 4.2 13.6 9 2.2-2.6 5-3.6 7.8-3.4 2.2.2 3.6 1.2 5.2 3.2 1.6-2 3-3 5.2-3.2 2.8-.2 5.6.8 7.8 3.4 2.8-4.8 7.8-7.8 13.6-9-3-1.6-6.8-1.8-9.8-.8-.2-3 .8-5.8 3.6-7.6-6.4-1.2-11.8-.4-14.6 2.4-1-1.2-1.1-3-.2-4.8-2 0-4 1.2-5.6 4.6z"/></svg></span>
+    <span class="bat" style="top: 31%; --d: 19s; --delay: -7s; width: 40px"><svg viewBox="0 0 64 30" aria-hidden="true"><path d="M32 9c-1.6-3.4-3.6-4.6-5.6-4.6.9 1.8.8 3.6-.2 4.8C23.4 6.4 18 5.6 11.6 6.8c2.8 1.8 3.8 4.6 3.6 7.6-3-1-6.8-.8-9.8.8 5.8 1.2 10.8 4.2 13.6 9 2.2-2.6 5-3.6 7.8-3.4 2.2.2 3.6 1.2 5.2 3.2 1.6-2 3-3 5.2-3.2 2.8-.2 5.6.8 7.8 3.4 2.8-4.8 7.8-7.8 13.6-9-3-1.6-6.8-1.8-9.8-.8-.2-3 .8-5.8 3.6-7.6-6.4-1.2-11.8-.4-14.6 2.4-1-1.2-1.1-3-.2-4.8-2 0-4 1.2-5.6 4.6z"/></svg></span>
+  </div>
   <canvas id="stage" aria-label="Не той кіт: три голографічні картки учасників, Єва, Яна і Михась"></canvas>
   <div class="mark" aria-hidden="true"><h1><span>не той кіт</span><span class="sub">ми не бенд</span></h1></div>
-  <div class="hero-top"><span class="name">не той кіт</span><span class="no" id="focusLabel">№ 000–003</span></div>
+  <div class="hero-top">
+    <span class="left"><span class="name">не той кіт</span><span class="no" id="focusLabel">№ 000–003</span></span>
+    <span class="skins" role="group" aria-label="Тема сайту"><button type="button" data-skin="halloween">Хелловін</button><button type="button" data-skin="classic">Класика</button></span>
+  </div>
   <div class="tracklinks" id="trackLinks" aria-label="Улюблений трек" hidden></div>
   <a class="igpill" id="igPill" href="#" target="_blank" rel="noopener" hidden></a>
   <div class="dots" id="dots" role="group" aria-label="Картки">
@@ -167,7 +211,7 @@
   <section class="block" aria-labelledby="tgTitle">
     <h3 id="tgTitle">Telegram</h3>
     <ul class="leaders">
-      <li><span>Канал <span class="soon">(не активний)</span></span><span class="fill"></span><a href="https://t.me/knopaband" target="_blank" rel="noopener">@knopaband</a></li>
+      <li><span>Канал</span><span class="fill"></span><a href="https://t.me/knopaband" target="_blank" rel="noopener">@knopaband</a></li>
     </ul>
   </section>
   <section class="block" id="donate" aria-labelledby="donateTitle">
@@ -240,6 +284,20 @@
       flavor: 'Леопардова кепка, шахові штани й дисторшн на максимум.'
     }
   ];
+
+  // ---------- site theme: Halloween by default; a viewer's own pick is remembered on their device ----------
+  const SKINS = ['halloween', 'classic'];
+  const skinBtns = [...document.querySelectorAll('[data-skin]')].filter(b => b.tagName === 'BUTTON');
+  function setSkin(k, remember) {
+    document.body.dataset.skin = k;
+    skinBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skin === k)));
+    if (remember) { try { localStorage.setItem('ntk-skin', k); } catch (e) {} }
+    window.dispatchEvent(new CustomEvent('skinchange', { detail: k }));
+  }
+  let startSkin = 'halloween';
+  try { const saved = localStorage.getItem('ntk-skin'); if (SKINS.includes(saved)) startSkin = saved; } catch (e) {}
+  setSkin(startSkin, false);
+  skinBtns.forEach(b => b.addEventListener('click', () => setSkin(b.dataset.skin, true)));
 
   // ---------- page content (works without WebGL) ----------
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -698,6 +756,13 @@
   const streakGeo = new THREE.BufferGeometry(); streakGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const streakMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16 });
   scene.add(new THREE.LineSegments(streakGeo, streakMat));
+  function sceneSkin(k) {
+    const spooky = k === 'halloween';
+    streakMat.color.set(spooky ? 0xff8a2a : 0xffffff);
+    streakMat.opacity = spooky ? 0.32 : 0.16;
+  }
+  sceneSkin(document.body.dataset.skin);
+  window.addEventListener('skinchange', e => sceneSkin(e.detail));
 
   // ---------- interaction ----------
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
