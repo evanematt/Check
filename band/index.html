@@ -115,6 +115,12 @@
   .donate-box { background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 16px; }
   .donate-box .ask { margin: 0; font: italic 400 26px/1.15 var(--font-serif); }
   .donate-box .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .jar { display: grid; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+  .jar .lbl { font: 400 11px/1 var(--font-mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  .jar .sum { font: italic 500 clamp(44px, 12vw, 60px)/1 var(--font-serif); font-variant-numeric: tabular-nums; }
+  .jar .bar { height: 4px; border-radius: 2px; background: var(--line-2); overflow: hidden; }
+  .jar .bar i { display: block; height: 100%; width: 0; background: var(--sand); border-radius: 2px; transition: width .8s ease; }
+  .jar .goal { font: 400 12px/1 var(--font-mono); color: var(--muted); }
   .card-no { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
   .card-no span { font: 400 17px/1 var(--font-mono); letter-spacing: 0.08em; user-select: all; overflow-wrap: anywhere; }
   footer { padding-top: 8px; font: 400 11px/1.5 var(--font-mono); letter-spacing: 0.06em; color: var(--muted); }
@@ -158,6 +164,12 @@
   <section class="block" id="donate" aria-labelledby="donateTitle">
     <h3 id="donateTitle">Підтримай нас</h3>
     <div class="donate-box">
+      <div class="jar" id="jarBox" hidden>
+        <span class="lbl">На банці зараз</span>
+        <span class="sum" id="jarSum"></span>
+        <div class="bar" id="jarBarWrap" hidden><i id="jarBar"></i></div>
+        <span class="goal" id="jarGoal" hidden></span>
+      </div>
       <p class="ask">даааай пару гривеееень йой</p>
       <div class="actions"><a class="pill" id="donateBtn" href="#" target="_blank" rel="noopener">Відкрити банку</a></div>
       <div class="card-no" id="cardRow" hidden><span id="cardNo"></span><button class="pill ghost" type="button" id="copyCard">Скопіювати</button></div>
@@ -256,6 +268,28 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) closeSheet(); });
 
   const donateBtn = document.getElementById('donateBtn'), dockDonate = document.getElementById('dockDonate');
+
+  // current jar balance: band/jar.json is refreshed by a scheduled GitHub Action (amounts in kopecks)
+  const hryvnia = k => Math.floor(k / 100).toLocaleString('uk-UA').replace(/\u00a0|\u202f/g, ' ') + ' ₴';
+  async function loadJar() {
+    try {
+      const r = await fetch('jar.json', { cache: 'no-store' });
+      if (!r.ok) return;
+      const j = await r.json();
+      if (typeof j.amount !== 'number') return;
+      document.getElementById('jarSum').textContent = hryvnia(j.amount);
+      document.getElementById('jarBox').hidden = false;
+      const hasGoal = typeof j.goal === 'number' && j.goal > 0;
+      document.getElementById('jarBarWrap').hidden = !hasGoal;
+      document.getElementById('jarGoal').hidden = !hasGoal;
+      if (hasGoal) {
+        document.getElementById('jarBar').style.width = Math.min(100, (j.amount / j.goal) * 100) + '%';
+        document.getElementById('jarGoal').textContent = `з ${hryvnia(j.goal)}`;
+      }
+      if (j.amount > 0) dockDonate.textContent = `Донат · ${hryvnia(j.amount)}`;
+    } catch (e) {}
+  }
+  loadJar(); setInterval(loadJar, 60000);
   if (CONFIG.donateUrl) { donateBtn.href = CONFIG.donateUrl; dockDonate.href = CONFIG.donateUrl; }
   else {
     // no link yet: the dock button opens the donate form (card number or "coming soon")
