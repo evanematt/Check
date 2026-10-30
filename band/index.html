@@ -59,6 +59,8 @@
     font: 500 12px/1 var(--font-mono); letter-spacing: 0.06em; color: var(--text); background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(8px);
     border: 1px solid var(--line-2); border-radius: 999px; padding: 9px 14px; cursor: pointer; white-space: nowrap; }
   .nope:hover { border-color: var(--text); }
+  /* the scare button only lives in the Backrooms */
+  body:not([data-skin="halloween"]) .nope { display: none; }
   .scare { position: fixed; inset: 0; z-index: 100; background: #000; display: grid; place-items: center; overflow: hidden; }
   .scare img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; animation: scare-in 2s linear forwards; }
   @keyframes scare-in {
