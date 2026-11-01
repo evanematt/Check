@@ -1,0 +1,254 @@
+{
+ "format_version": "1.12.0",
+ "minecraft:geometry": [
+  {
+   "description": {
+    "identifier": "geometry.lewandivka.sky_tram",
+    "texture_width": 256,
+    "texture_height": 256,
+    "visible_bounds_width": 8.0,
+    "visible_bounds_height": 5.0,
+    "visible_bounds_offset": [
+     0,
+     1.5,
+     0
+    ]
+   },
+   "bones": [
+    {
+     "name": "root",
+     "pivot": [
+      0,
+      0,
+      0
+     ]
+    },
+    {
+     "name": "body",
+     "pivot": [
+      0,
+      0,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -14,
+        5,
+        -30
+       ],
+       "size": [
+        28,
+        22,
+        60
+       ],
+       "uv": [
+        0,
+        0
+       ]
+      },
+      {
+       "origin": [
+        -13,
+        27,
+        -29
+       ],
+       "size": [
+        26,
+        3,
+        58
+       ],
+       "uv": [
+        0,
+        82
+       ]
+      },
+      {
+       "origin": [
+        -15,
+        3,
+        -30
+       ],
+       "size": [
+        30,
+        3,
+        60
+       ],
+       "uv": [
+        0,
+        143
+       ]
+      },
+      {
+       "origin": [
+        6,
+        12,
+        -31
+       ],
+       "size": [
+        5,
+        4,
+        1
+       ],
+       "uv": [
+        180,
+        143
+       ]
+      },
+      {
+       "origin": [
+        -11,
+        12,
+        -31
+       ],
+       "size": [
+        5,
+        4,
+        1
+       ],
+       "uv": [
+        192,
+        143
+       ]
+      },
+      {
+       "origin": [
+        -2,
+        4,
+        -32
+       ],
+       "size": [
+        4,
+        3,
+        2
+       ],
+       "uv": [
+        204,
+        143
+       ]
+      }
+     ],
+     "parent": "root"
+    },
+    {
+     "name": "pantograph",
+     "pivot": [
+      0,
+      30,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -1,
+        30,
+        -2
+       ],
+       "size": [
+        2,
+        9,
+        2
+       ],
+       "uv": [
+        216,
+        143
+       ]
+      },
+      {
+       "origin": [
+        -8,
+        39,
+        -5
+       ],
+       "size": [
+        16,
+        1,
+        10
+       ],
+       "uv": [
+        0,
+        206
+       ]
+      }
+     ],
+     "parent": "body"
+    },
+    {
+     "name": "wheels",
+     "pivot": [
+      0,
+      3,
+      0
+     ],
+     "cubes": [
+      {
+       "origin": [
+        -15,
+        0,
+        -26
+       ],
+       "size": [
+        30,
+        5,
+        8
+       ],
+       "uv": [
+        52,
+        206
+       ]
+      },
+      {
+       "origin": [
+        -15,
+        0,
+        -12
+       ],
+       "size": [
+        30,
+        5,
+        8
+       ],
+       "uv": [
+        128,
+        206
+       ]
+      },
+      {
+       "origin": [
+        -15,
+        0,
+        4
+       ],
+       "size": [
+        30,
+        5,
+        8
+       ],
+       "uv": [
+        0,
+        219
+       ]
+      },
+      {
+       "origin": [
+        -15,
+        0,
+        18
+       ],
+       "size": [
+        30,
+        5,
+        8
+       ],
+       "uv": [
+        76,
+        219
+       ]
+      }
+     ],
+     "parent": "root"
+    }
+   ]
+  }
+ ]
+}

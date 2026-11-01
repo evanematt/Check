@@ -1,0 +1,27 @@
+# Gradle / build output
+.gradle/
+build/
+core/.gradle/
+core/build/
+out/
+bin/
+# Dev runs (contain accepted-EULA test servers, worlds and logs)
+run/
+run-server/
+run-client/
+*.log
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+# Python
+__pycache__/
+*.pyc
+# Downloaded third-party jars used to assemble packs locally (never committed)
+modpack/cache/
+
+# javac argument files left by the compiler on a failed build
+javac.*.args

@@ -1,0 +1,1194 @@
+{
+  "ambient.district.loop": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "lewandivka:ambient/district/loop",
+        "volume": 0.6,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ambient.district.loop"
+  },
+  "ambient.district.mood": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "lewandivka:ambient/district/mood_1",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:ambient/district/mood_2",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ambient.district.mood"
+  },
+  "ambient.chroma.loop": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "lewandivka:ambient/chroma/loop",
+        "volume": 0.6,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ambient.chroma.loop"
+  },
+  "ambient.chroma.additions": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "lewandivka:ambient/chroma/additions_1",
+        "volume": 0.7
+      },
+      {
+        "name": "lewandivka:ambient/chroma/additions_2",
+        "volume": 0.7
+      },
+      {
+        "name": "lewandivka:ambient/chroma/additions_3",
+        "volume": 0.7
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ambient.chroma.additions"
+  },
+  "ambient.garage.loop": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "lewandivka:ambient/garage/loop",
+        "volume": 0.5,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ambient.garage.loop"
+  },
+  "ambient.tower.loop": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "lewandivka:ambient/tower/loop",
+        "volume": 0.5,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ambient.tower.loop"
+  },
+  "ambient.aquapark": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "lewandivka:ambient/aquapark",
+        "volume": 0.5,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ambient.aquapark"
+  },
+  "music.district": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "lewandivka:music/district",
+        "volume": 0.7,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.music.district"
+  },
+  "music.chroma": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "lewandivka:music/chroma",
+        "volume": 0.7,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.music.chroma"
+  },
+  "music.boss": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "lewandivka:music/boss",
+        "volume": 0.7,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.music.boss"
+  },
+  "music.tower": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "lewandivka:music/tower",
+        "volume": 0.6,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.music.tower"
+  },
+  "music.credits": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "lewandivka:music/credits",
+        "volume": 0.8,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.music.credits"
+  },
+  "tram.bell": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tram/bell_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:tram/bell_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tram.bell"
+  },
+  "tram.arrive": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tram/arrive",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tram.arrive"
+  },
+  "tram.horn": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tram/horn",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tram.horn"
+  },
+  "tram.rumble": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tram/rumble",
+        "volume": 0.8,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tram.rumble"
+  },
+  "tram.validate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tram/validate_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:tram/validate_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tram.validate"
+  },
+  "tram.compost": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tram/compost_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:tram/compost_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tram.compost"
+  },
+  "kiosk.place": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:kiosk/place",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.kiosk.place"
+  },
+  "kiosk.open": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:kiosk/open",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.kiosk.open"
+  },
+  "npc.mutter": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:npc/mutter_1",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:npc/mutter_2",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:npc/mutter_3",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.npc.mutter"
+  },
+  "npc.blip": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:npc/blip_1",
+        "volume": 0.6
+      },
+      {
+        "name": "lewandivka:npc/blip_2",
+        "volume": 0.6
+      },
+      {
+        "name": "lewandivka:npc/blip_3",
+        "volume": 0.6
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.npc.blip"
+  },
+  "gopnik.ambient": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:gopnik/ambient_1",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:gopnik/ambient_2",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:gopnik/ambient_3",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.gopnik.ambient"
+  },
+  "gopnik.hurt": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:gopnik/hurt_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:gopnik/hurt_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.gopnik.hurt"
+  },
+  "gopnik.death": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:gopnik/death",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.gopnik.death"
+  },
+  "gopnik.throw": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:gopnik/throw_1",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:gopnik/throw_2",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.gopnik.throw"
+  },
+  "seed.crunch": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:seed/crunch_1",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:seed/crunch_2",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:seed/crunch_3",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.seed.crunch"
+  },
+  "stash.open": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:stash/open_1",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:stash/open_2",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.stash.open"
+  },
+  "note.read": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:note/read_1",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:note/read_2",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.note.read"
+  },
+  "box.rustle": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:box/rustle_1",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:box/rustle_2",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:box/rustle_3",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.box.rustle"
+  },
+  "box.open": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:box/open",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.box.open"
+  },
+  "package.growl": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:package/growl_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:package/growl_2",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:package/growl_3",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.package.growl"
+  },
+  "package.place": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:package/place",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.package.place"
+  },
+  "package.pickup": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:package/pickup",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.package.pickup"
+  },
+  "kettle.pour": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:kettle/pour",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.kettle.pour"
+  },
+  "kettle.pink": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:kettle/pink",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.kettle.pink"
+  },
+  "kettle.place": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:kettle/place",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.kettle.place"
+  },
+  "chroma.consume": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:chroma/consume",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.chroma.consume"
+  },
+  "chroma.tick": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "lewandivka:chroma/tick",
+        "volume": 0.6
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.chroma.tick"
+  },
+  "chroma.fail": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "lewandivka:chroma/fail",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.chroma.fail"
+  },
+  "chroma.transition": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "lewandivka:chroma/transition",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.chroma.transition"
+  },
+  "chroma.arrive": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "lewandivka:chroma/arrive",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.chroma.arrive"
+  },
+  "crystal.chime": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:crystal/chime_1",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:crystal/chime_2",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:crystal/chime_3",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:crystal/chime_4",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.crystal.chime"
+  },
+  "crystal.hum": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:crystal/hum",
+        "volume": 0.5,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.crystal.hum"
+  },
+  "portal.ambient": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:portal/ambient",
+        "volume": 0.6,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.portal.ambient"
+  },
+  "portal.activate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:portal/activate",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.portal.activate"
+  },
+  "portal.enter": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:portal/enter",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.portal.enter"
+  },
+  "garage.power_on": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:garage/power_on",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.garage.power_on"
+  },
+  "garage.power_off": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:garage/power_off",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.garage.power_off"
+  },
+  "garage.clack": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:garage/clack_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:garage/clack_2",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:garage/clack_3",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.garage.clack"
+  },
+  "garage.door": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:garage/door_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:garage/door_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.garage.door"
+  },
+  "garage.press": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:garage/press_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:garage/press_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.garage.press"
+  },
+  "garage.lift": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:garage/lift",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.garage.lift"
+  },
+  "lever.pull": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:lever/pull_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:lever/pull_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.lever.pull"
+  },
+  "switch.click": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:switch/click_1",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:switch/click_2",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.switch.click"
+  },
+  "tap.pour": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tap/pour_1",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:tap/pour_2",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tap.pour"
+  },
+  "pump.start": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:pump/start",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.pump.start"
+  },
+  "pump.fill": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:pump/fill",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.pump.fill"
+  },
+  "drain.open": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:drain/open",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.drain.open"
+  },
+  "water.whoosh": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:water/whoosh_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:water/whoosh_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.water.whoosh"
+  },
+  "boss.telegraph": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/telegraph_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:boss/telegraph_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.telegraph"
+  },
+  "boss.slam": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/slam_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:boss/slam_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.slam"
+  },
+  "boss.phase": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/phase",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.phase"
+  },
+  "boss.roar": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/roar_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:boss/roar_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.roar"
+  },
+  "boss.shield_on": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/shield_on",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.shield_on"
+  },
+  "boss.shield_off": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/shield_off",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.shield_off"
+  },
+  "boss.defeat": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/defeat",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.defeat"
+  },
+  "boss.spawn": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/spawn",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.spawn"
+  },
+  "boss.bell": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "lewandivka:boss/bell",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.boss.bell"
+  },
+  "tower.ticket": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tower/ticket",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tower.ticket"
+  },
+  "tower.bell": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tower/bell",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tower.bell"
+  },
+  "tower.door": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:tower/door",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.tower.door"
+  },
+  "ability.dash": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ability/dash_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:ability/dash_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ability.dash"
+  },
+  "ability.spring": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ability/spring_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:ability/spring_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ability.spring"
+  },
+  "ability.glide_start": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ability/glide_start",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ability.glide_start"
+  },
+  "ability.glide_end": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ability/glide_end",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ability.glide_end"
+  },
+  "ability.unlock": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ability/unlock",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ability.unlock"
+  },
+  "ability.ready": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ability/ready",
+        "volume": 0.5
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ability.ready"
+  },
+  "ui.notebook_open": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ui/notebook_open",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ui.notebook_open"
+  },
+  "ui.quest_update": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ui/quest_update",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ui.quest_update"
+  },
+  "ui.checkpoint": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:ui/checkpoint",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ui.checkpoint"
+  },
+  "ui.warning": {
+    "category": "master",
+    "sounds": [
+      {
+        "name": "lewandivka:ui/warning",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.ui.warning"
+  },
+  "cat.purr": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:cat/purr",
+        "volume": 0.7,
+        "stream": true
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.cat.purr"
+  },
+  "cat.meow_low": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:cat/meow_low_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:cat/meow_low_2",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:cat/meow_low_3",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.cat.meow_low"
+  },
+  "cat.meow_high": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:cat/meow_high_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:cat/meow_high_2",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:cat/meow_high_3",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.cat.meow_high"
+  },
+  "cat.hiss": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:cat/hiss",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.cat.hiss"
+  },
+  "cat.scratch": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:cat/scratch_1",
+        "volume": 0.9
+      },
+      {
+        "name": "lewandivka:cat/scratch_2",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.cat.scratch"
+  },
+  "cat.eat": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:cat/eat_1",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:cat/eat_2",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.cat.eat"
+  },
+  "cat.sniff": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "lewandivka:cat/sniff_1",
+        "volume": 0.8
+      },
+      {
+        "name": "lewandivka:cat/sniff_2",
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.cat.sniff"
+  },
+  "relay.active": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:relay/active",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.relay.active"
+  },
+  "relay.pass": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:relay/pass",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.relay.pass"
+  },
+  "charge.overload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "lewandivka:charge/overload",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.charge.overload"
+  },
+  "platform.crumble": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:platform/crumble_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:platform/crumble_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.platform.crumble"
+  },
+  "platform.collapse": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:platform/collapse",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.platform.collapse"
+  },
+  "spring.boing": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:spring/boing_1",
+        "volume": 1.0
+      },
+      {
+        "name": "lewandivka:spring/boing_2",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.spring.boing"
+  },
+  "checkpoint.set": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:checkpoint/set",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.checkpoint.set"
+  },
+  "lift.move": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:lift/move",
+        "volume": 0.9
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.lift.move"
+  },
+  "validator.ok": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:validator/ok",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.validator.ok"
+  },
+  "validator.fail": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "lewandivka:validator/fail",
+        "volume": 1.0
+      }
+    ],
+    "subtitle": "subtitles.lewandivka.validator.fail"
+  }
+}

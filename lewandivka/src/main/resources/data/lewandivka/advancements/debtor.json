@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:debtor_note"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.debtor.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.debtor.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:kiosk"
+}

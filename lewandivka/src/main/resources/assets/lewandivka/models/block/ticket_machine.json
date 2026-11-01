@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "lewandivka:block/ticket_machine_front",
+    "side": "lewandivka:block/ticket_machine_side",
+    "top": "lewandivka:block/ticket_machine_top"
+  }
+}

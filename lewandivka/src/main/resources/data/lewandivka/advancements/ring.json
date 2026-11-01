@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:ring_fragment_conductor"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.ring.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.ring.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:ticket_ok"
+}

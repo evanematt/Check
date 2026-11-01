@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "lewandivka:block/chromatic_crystal_cyan"
+  }
+}

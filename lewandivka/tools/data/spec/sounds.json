@@ -1,0 +1,893 @@
+[
+  {
+    "id": "ambient.district.loop",
+    "subtitleUk": "Гуде район",
+    "subtitleEn": "The district hums",
+    "category": "ambient",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.6
+  },
+  {
+    "id": "ambient.district.mood",
+    "subtitleUk": "Десь далеко дзвонить трамвай",
+    "subtitleEn": "A tram bell far away",
+    "category": "ambient",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "ambient.chroma.loop",
+    "subtitleUk": "Повітря співає",
+    "subtitleEn": "The air sings",
+    "category": "ambient",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.6
+  },
+  {
+    "id": "ambient.chroma.additions",
+    "subtitleUk": "Дзвенять скляні дзвіночки",
+    "subtitleEn": "Glass chimes",
+    "category": "ambient",
+    "variants": 3,
+    "stream": false,
+    "volume": 0.7
+  },
+  {
+    "id": "ambient.garage.loop",
+    "subtitleUk": "Гуде механізм",
+    "subtitleEn": "Machinery hums",
+    "category": "ambient",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.5
+  },
+  {
+    "id": "ambient.tower.loop",
+    "subtitleUk": "Гудуть лампи в офісі",
+    "subtitleEn": "Office lights buzz",
+    "category": "ambient",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.5
+  },
+  {
+    "id": "ambient.aquapark",
+    "subtitleUk": "Крапає вода",
+    "subtitleEn": "Water drips",
+    "category": "ambient",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.5
+  },
+  {
+    "id": "music.district",
+    "subtitleUk": "Тиха мелодія",
+    "subtitleEn": "A quiet melody",
+    "category": "music",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.7
+  },
+  {
+    "id": "music.chroma",
+    "subtitleUk": "Мрійлива мелодія",
+    "subtitleEn": "A dreamy melody",
+    "category": "music",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.7
+  },
+  {
+    "id": "music.boss",
+    "subtitleUk": "Напружена музика",
+    "subtitleEn": "Tense music",
+    "category": "music",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.7
+  },
+  {
+    "id": "music.tower",
+    "subtitleUk": "Канцелярська мелодія",
+    "subtitleEn": "A bureaucratic melody",
+    "category": "music",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.6
+  },
+  {
+    "id": "music.credits",
+    "subtitleUk": "Музика титрів",
+    "subtitleEn": "Credits music",
+    "category": "music",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.8
+  },
+  {
+    "id": "tram.bell",
+    "subtitleUk": "Дзвонить трамвай",
+    "subtitleEn": "A tram bell rings",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "tram.arrive",
+    "subtitleUk": "Наближається трамвай",
+    "subtitleEn": "A tram approaches",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "tram.horn",
+    "subtitleUk": "Гудок трамвая",
+    "subtitleEn": "A tram horn",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "tram.rumble",
+    "subtitleUk": "Гуркоче трамвай",
+    "subtitleEn": "A tram rumbles",
+    "category": "block",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.8
+  },
+  {
+    "id": "tram.validate",
+    "subtitleUk": "Квиток прозвучав",
+    "subtitleEn": "A ticket chimes",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "tram.compost",
+    "subtitleUk": "Компостер клацає",
+    "subtitleEn": "A composter clacks",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "kiosk.place",
+    "subtitleUk": "Кіоск стає на місце",
+    "subtitleEn": "The kiosk settles",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "kiosk.open",
+    "subtitleUk": "Кіоск відчиняється",
+    "subtitleEn": "The kiosk opens",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "npc.mutter",
+    "subtitleUk": "Хтось бурмоче",
+    "subtitleEn": "Someone mutters",
+    "category": "neutral",
+    "variants": 3,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "npc.blip",
+    "subtitleUk": "Говорить",
+    "subtitleEn": "Talking",
+    "category": "neutral",
+    "variants": 3,
+    "stream": false,
+    "volume": 0.6
+  },
+  {
+    "id": "gopnik.ambient",
+    "subtitleUk": "Гопник бурчить",
+    "subtitleEn": "A gopnik grumbles",
+    "category": "hostile",
+    "variants": 3,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "gopnik.hurt",
+    "subtitleUk": "Гопник скрикує",
+    "subtitleEn": "A gopnik yelps",
+    "category": "hostile",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "gopnik.death",
+    "subtitleUk": "Гопник падає",
+    "subtitleEn": "A gopnik falls",
+    "category": "hostile",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "gopnik.throw",
+    "subtitleUk": "Летить сємка",
+    "subtitleEn": "A seed flies",
+    "category": "hostile",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "seed.crunch",
+    "subtitleUk": "Хрускіт сємок",
+    "subtitleEn": "Seeds crunch",
+    "category": "player",
+    "variants": 3,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "stash.open",
+    "subtitleUk": "Шарудить у смітті",
+    "subtitleEn": "Rummaging",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "note.read",
+    "subtitleUk": "Шурхіт паперу",
+    "subtitleEn": "Paper rustles",
+    "category": "player",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "box.rustle",
+    "subtitleUk": "Шарудить коробка",
+    "subtitleEn": "A box rustles",
+    "category": "block",
+    "variants": 3,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "box.open",
+    "subtitleUk": "Коробка відкрита",
+    "subtitleEn": "A box opens",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "package.growl",
+    "subtitleUk": "Посилка бурчить",
+    "subtitleEn": "The package growls",
+    "category": "neutral",
+    "variants": 3,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "package.place",
+    "subtitleUk": "Посилку поставлено",
+    "subtitleEn": "The package is set down",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "package.pickup",
+    "subtitleUk": "Посилку піднято",
+    "subtitleEn": "The package is picked up",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "kettle.pour",
+    "subtitleUk": "Вода ллється",
+    "subtitleEn": "Water pours",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "kettle.pink",
+    "subtitleUk": "Щось дивне з водою",
+    "subtitleEn": "Something odd happens to the water",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "kettle.place",
+    "subtitleUk": "Чайник ставлять",
+    "subtitleEn": "A kettle is set down",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "chroma.consume",
+    "subtitleUk": "Ковток Хроми",
+    "subtitleEn": "A gulp of Chroma",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "chroma.tick",
+    "subtitleUk": "Хрома відлічує",
+    "subtitleEn": "Chroma counts down",
+    "category": "master",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.6
+  },
+  {
+    "id": "chroma.fail",
+    "subtitleUk": "Хрома згасає",
+    "subtitleEn": "Chroma fades",
+    "category": "master",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "chroma.transition",
+    "subtitleUk": "Реальність вигинається",
+    "subtitleEn": "Reality bends",
+    "category": "master",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "chroma.arrive",
+    "subtitleUk": "Колір повертається",
+    "subtitleEn": "Colour returns",
+    "category": "master",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "crystal.chime",
+    "subtitleUk": "Дзвенить кристал",
+    "subtitleEn": "A crystal chimes",
+    "category": "block",
+    "variants": 4,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "crystal.hum",
+    "subtitleUk": "Кристал гуде",
+    "subtitleEn": "A crystal hums",
+    "category": "block",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.5
+  },
+  {
+    "id": "portal.ambient",
+    "subtitleUk": "Гуде портал",
+    "subtitleEn": "A portal hums",
+    "category": "block",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.6
+  },
+  {
+    "id": "portal.activate",
+    "subtitleUk": "Портал прокидається",
+    "subtitleEn": "The portal awakens",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "portal.enter",
+    "subtitleUk": "Портал проковтує",
+    "subtitleEn": "The portal swallows",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "garage.power_on",
+    "subtitleUk": "Вмикається живлення",
+    "subtitleEn": "Power comes on",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "garage.power_off",
+    "subtitleUk": "Живлення зникає",
+    "subtitleEn": "Power cuts out",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "garage.clack",
+    "subtitleUk": "Клацає перемикач",
+    "subtitleEn": "A switch clacks",
+    "category": "block",
+    "variants": 3,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "garage.door",
+    "subtitleUk": "Важкі двері",
+    "subtitleEn": "A heavy door moves",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "garage.press",
+    "subtitleUk": "Гупає прес",
+    "subtitleEn": "A press thumps",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "garage.lift",
+    "subtitleUk": "Гуде підйомник",
+    "subtitleEn": "A lift whirs",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "lever.pull",
+    "subtitleUk": "Клацає важіль",
+    "subtitleEn": "A lever clunks",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "switch.click",
+    "subtitleUk": "Клацає стрілка",
+    "subtitleEn": "A switch clicks",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "tap.pour",
+    "subtitleUk": "Тече фарба",
+    "subtitleEn": "Paint flows",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "pump.start",
+    "subtitleUk": "Запускається насос",
+    "subtitleEn": "A pump starts",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "pump.fill",
+    "subtitleUk": "Басейн наповнюється",
+    "subtitleEn": "A pool fills",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "drain.open",
+    "subtitleUk": "Відкривається злив",
+    "subtitleEn": "A drain opens",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "water.whoosh",
+    "subtitleUk": "Шумить вода",
+    "subtitleEn": "Water rushes",
+    "category": "hostile",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.telegraph",
+    "subtitleUk": "Бос готується",
+    "subtitleEn": "The boss prepares an attack",
+    "category": "hostile",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.slam",
+    "subtitleUk": "Бос гупає",
+    "subtitleEn": "The boss slams",
+    "category": "hostile",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.phase",
+    "subtitleUk": "Бос змінює фазу",
+    "subtitleEn": "The boss changes phase",
+    "category": "hostile",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.roar",
+    "subtitleUk": "Бос ревіще",
+    "subtitleEn": "The boss roars",
+    "category": "hostile",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.shield_on",
+    "subtitleUk": "Щит увімкнено",
+    "subtitleEn": "The shield rises",
+    "category": "hostile",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.shield_off",
+    "subtitleUk": "Щит зник",
+    "subtitleEn": "The shield drops",
+    "category": "hostile",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.defeat",
+    "subtitleUk": "Бос переможений",
+    "subtitleEn": "The boss is defeated",
+    "category": "hostile",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.spawn",
+    "subtitleUk": "З'являється бос",
+    "subtitleEn": "A boss appears",
+    "category": "hostile",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "boss.bell",
+    "subtitleUk": "Дзвінок попередження",
+    "subtitleEn": "A warning bell",
+    "category": "hostile",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "tower.ticket",
+    "subtitleUk": "Автомат видає талон",
+    "subtitleEn": "The machine prints a ticket",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "tower.bell",
+    "subtitleUk": "Дзвонить табло черги",
+    "subtitleEn": "The queue display chimes",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "tower.door",
+    "subtitleUk": "Скриплять двері",
+    "subtitleEn": "A door creaks",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "ability.dash",
+    "subtitleUk": "Ривок",
+    "subtitleEn": "Dash",
+    "category": "player",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "ability.spring",
+    "subtitleUk": "Підскок",
+    "subtitleEn": "Spring",
+    "category": "player",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "ability.glide_start",
+    "subtitleUk": "Розкривається планер",
+    "subtitleEn": "The glider opens",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "ability.glide_end",
+    "subtitleUk": "Планер складається",
+    "subtitleEn": "The glider closes",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "ability.unlock",
+    "subtitleUk": "Нова здібність",
+    "subtitleEn": "A new ability",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "ability.ready",
+    "subtitleUk": "Здібність готова",
+    "subtitleEn": "An ability is ready",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.5
+  },
+  {
+    "id": "ui.notebook_open",
+    "subtitleUk": "Відкривається блокнот",
+    "subtitleEn": "The notebook opens",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "ui.quest_update",
+    "subtitleUk": "Нотатку оновлено",
+    "subtitleEn": "The notebook is updated",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "ui.checkpoint",
+    "subtitleUk": "Контрольна точка",
+    "subtitleEn": "Checkpoint",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "ui.warning",
+    "subtitleUk": "Попередження",
+    "subtitleEn": "Warning",
+    "category": "master",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "cat.purr",
+    "subtitleUk": "Кіт муркоче",
+    "subtitleEn": "A cat purrs",
+    "category": "neutral",
+    "variants": 1,
+    "stream": true,
+    "volume": 0.7
+  },
+  {
+    "id": "cat.meow_low",
+    "subtitleUk": "Кіт нявкає",
+    "subtitleEn": "A cat meows",
+    "category": "neutral",
+    "variants": 3,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "cat.meow_high",
+    "subtitleUk": "Кіт мявкає",
+    "subtitleEn": "A cat mews",
+    "category": "neutral",
+    "variants": 3,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "cat.hiss",
+    "subtitleUk": "Кіт шипить",
+    "subtitleEn": "A cat hisses",
+    "category": "neutral",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "cat.scratch",
+    "subtitleUk": "Кіт дряпає",
+    "subtitleEn": "A cat scratches",
+    "category": "neutral",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "cat.eat",
+    "subtitleUk": "Кіт їсть",
+    "subtitleEn": "A cat eats",
+    "category": "neutral",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "cat.sniff",
+    "subtitleUk": "Кіт нюхає",
+    "subtitleEn": "A cat sniffs",
+    "category": "neutral",
+    "variants": 2,
+    "stream": false,
+    "volume": 0.8
+  },
+  {
+    "id": "relay.active",
+    "subtitleUk": "Реле вмикається",
+    "subtitleEn": "A relay activates",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "relay.pass",
+    "subtitleUk": "Заряд перелітає",
+    "subtitleEn": "The charge flies over",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "charge.overload",
+    "subtitleUk": "Заряд перегрівається",
+    "subtitleEn": "The charge overheats",
+    "category": "player",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "platform.crumble",
+    "subtitleUk": "Платформа тріскається",
+    "subtitleEn": "A platform cracks",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "platform.collapse",
+    "subtitleUk": "Платформа обвалюється",
+    "subtitleEn": "A platform collapses",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "spring.boing",
+    "subtitleUk": "Пружина",
+    "subtitleEn": "A spring boings",
+    "category": "block",
+    "variants": 2,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "checkpoint.set",
+    "subtitleUk": "Лампа спалахує",
+    "subtitleEn": "A lamp lights",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "lift.move",
+    "subtitleUk": "Рухається платформа",
+    "subtitleEn": "A platform moves",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 0.9
+  },
+  {
+    "id": "validator.ok",
+    "subtitleUk": "Квиток дійсний",
+    "subtitleEn": "The ticket is valid",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  },
+  {
+    "id": "validator.fail",
+    "subtitleUk": "Квиток недійсний",
+    "subtitleEn": "The ticket is invalid",
+    "category": "block",
+    "variants": 1,
+    "stream": false,
+    "volume": 1.0
+  }
+]

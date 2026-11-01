@@ -1,0 +1,44 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "kind": "0"
+      },
+      "apply": {
+        "model": "lewandivka:block/clue_prop_0"
+      }
+    },
+    {
+      "when": {
+        "kind": "1"
+      },
+      "apply": {
+        "model": "lewandivka:block/clue_prop_1"
+      }
+    },
+    {
+      "when": {
+        "kind": "2"
+      },
+      "apply": {
+        "model": "lewandivka:block/clue_prop_2"
+      }
+    },
+    {
+      "when": {
+        "kind": "3"
+      },
+      "apply": {
+        "model": "lewandivka:block/clue_prop_3"
+      }
+    },
+    {
+      "when": {
+        "kind": "4"
+      },
+      "apply": {
+        "model": "lewandivka:block/clue_prop_4"
+      }
+    }
+  ]
+}

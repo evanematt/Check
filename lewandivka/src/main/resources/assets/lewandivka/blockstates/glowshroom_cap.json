@@ -1,0 +1,36 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "color": "0"
+      },
+      "apply": {
+        "model": "lewandivka:block/glowshroom_cap_cyan"
+      }
+    },
+    {
+      "when": {
+        "color": "1"
+      },
+      "apply": {
+        "model": "lewandivka:block/glowshroom_cap_orange"
+      }
+    },
+    {
+      "when": {
+        "color": "2"
+      },
+      "apply": {
+        "model": "lewandivka:block/glowshroom_cap_pink"
+      }
+    },
+    {
+      "when": {
+        "color": "3"
+      },
+      "apply": {
+        "model": "lewandivka:block/glowshroom_cap_violet"
+      }
+    }
+  ]
+}

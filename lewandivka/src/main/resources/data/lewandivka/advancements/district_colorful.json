@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "lewandivka:chromatic_compass"
+    },
+    "title": {
+      "translate": "advancements.lewandivka.district_colorful.title"
+    },
+    "description": {
+      "translate": "advancements.lewandivka.district_colorful.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "lewandivka:ring"
+}

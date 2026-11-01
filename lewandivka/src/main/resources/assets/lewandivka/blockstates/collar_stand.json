@@ -1,0 +1,84 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "filled": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/collar_stand",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "filled": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/collar_stand",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "filled": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/collar_stand",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "filled": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/collar_stand",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "filled": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "lewandivka:block/collar_stand_filled",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "filled": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "lewandivka:block/collar_stand_filled",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "filled": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "lewandivka:block/collar_stand_filled",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "filled": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "lewandivka:block/collar_stand_filled",
+        "y": 270
+      }
+    }
+  ]
+}

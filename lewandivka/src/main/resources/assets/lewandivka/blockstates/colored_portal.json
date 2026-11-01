@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=0": {
+      "model": "lewandivka:block/colored_portal"
+    },
+    "axis=1": {
+      "model": "lewandivka:block/colored_portal",
+      "y": 90
+    }
+  }
+}

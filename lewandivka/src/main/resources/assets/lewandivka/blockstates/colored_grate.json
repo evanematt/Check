@@ -1,0 +1,28 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "color": "0"
+      },
+      "apply": {
+        "model": "lewandivka:block/colored_grate_orange"
+      }
+    },
+    {
+      "when": {
+        "color": "1"
+      },
+      "apply": {
+        "model": "lewandivka:block/colored_grate_green"
+      }
+    },
+    {
+      "when": {
+        "color": "2"
+      },
+      "apply": {
+        "model": "lewandivka:block/colored_grate_purple"
+      }
+    }
+  ]
+}
