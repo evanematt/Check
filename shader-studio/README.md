@@ -63,8 +63,20 @@ A shader is `{ id, name, category, tags, animated, params, fragment }`.
 `section` groups controls under a `/ SECTION` heading; `randomize: false` excludes a param from Shuffle.
 Compile errors are shown as a toast and logged to the console with the offending shader id.
 
-`mosaic`, `dots` and `scanlines` are placeholders that exercise every control type and an animated style.
-Delete them (and their imports) once you add your own. `original` is the passthrough used by "compare".
+Shared GLSL helpers (`luma`, `hash`, `blurLuma`, `sobel`) live in `js/shaders/lib.js`; interpolate them into a
+fragment string with `${LUMA}${SOBEL}`.
+
+**Styles included**
+
+| Category | Styles |
+| --- | --- |
+| ASCII & Text | ASCII (procedural 5×7 glyphs) |
+| Pixel & Blocks | Glyph Tiles, Pixel Sketch, Mosaic, Halftone Dots |
+| Print & Ink | Dither (Bayer 2/4/8 + noise), Scribbles (hatching), Hope (3/4-tone poster) |
+| Technical | Blueprint |
+| Glow & Signal | Hologram (animated), Chroma, CRT Signal (animated) |
+
+`original` is the passthrough used by "compare".
 
 ## Shortcuts
 

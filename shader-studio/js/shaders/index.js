@@ -6,11 +6,28 @@
 // The left panel, thumbnails, search and right-hand controls are all generated from it.
 
 import original from './original.js';
+import ascii from './ascii.js';
+import glyphTiles from './glyph-tiles.js';
+import pixelSketch from './pixel-sketch.js';
 import mosaic from './mosaic.js';
 import dots from './dots.js';
+import dither from './dither.js';
+import scribbles from './scribbles.js';
+import hope from './hope.js';
+import blueprint from './blueprint.js';
+import hologram from './hologram.js';
+import chroma from './chroma.js';
 import scanlines from './scanlines.js';
 
-const RAW_SHADERS = [original, mosaic, dots, scanlines];
+// Order here = order of categories and tiles in the left panel.
+const RAW_SHADERS = [
+  original,
+  ascii,
+  glyphTiles, pixelSketch, mosaic, dots,
+  dither, scribbles, hope,
+  blueprint,
+  hologram, chroma, scanlines,
+];
 
 // ---------------------------------------------------------------------------
 function normalizeParam(p) {

@@ -1,8 +1,7 @@
-// PLACEHOLDER style - replace with your own shaders. Shows an animated style (uses u_time).
 export default {
   id: 'scanlines',
   name: 'CRT Signal',
-  category: 'Glitch & Signal',
+  category: 'Glow & Signal',
   tags: ['crt', 'scanlines', 'vhs', 'glitch', 'animated'],
   animated: true,
   params: [

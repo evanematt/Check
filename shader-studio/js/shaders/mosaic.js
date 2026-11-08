@@ -1,4 +1,3 @@
-// PLACEHOLDER style - replace with your own shaders.
 export default {
   id: 'mosaic',
   name: 'Mosaic',
