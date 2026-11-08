@@ -71,12 +71,20 @@ fragment string with `${LUMA}${SOBEL}`.
 | Category | Styles |
 | --- | --- |
 | ASCII & Text | ASCII (procedural 5×7 glyphs) |
-| Pixel & Blocks | Glyph Tiles, Pixel Sketch, Mosaic, Halftone Dots |
+| Pixel & Blocks | Glyph Tiles, Pixel Sketch, Low Poly, Mosaic, Halftone Dots |
 | Print & Ink | Dither (Bayer 2/4/8 + noise), Scribbles (hatching), Hope (3/4-tone poster) |
 | Technical | Blueprint |
+| Glitch & Stretch | Pixel Stretch (random boxes with stretched pixels, outlines, numbered labels) |
+| Silhouette | Silhouette Glitch (blocky smear growing out of the subject), Silhouette Fill (flat or dotted fill) |
 | Glow & Signal | Hologram (animated), Chroma, CRT Signal (animated) |
 
 `original` is the passthrough used by "compare".
+
+**Silhouette styles** need a subject mask. Pick one in *Subject Mask*: auto (nearest of the four corner colours),
+a key color, the image's alpha channel (upload a transparent PNG cut-out), or a dark/light brightness threshold.
+Person cut-outs from busy photos need real segmentation, which isn't included.
+
+`lib.js` also has `bspRect` (random rectangles), `subjectMask` + `maskParams()` and `h11`/`h22` hashes.
 
 ## Shortcuts
 

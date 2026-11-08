@@ -17,15 +17,21 @@ import hope from './hope.js';
 import blueprint from './blueprint.js';
 import hologram from './hologram.js';
 import chroma from './chroma.js';
+import lowPoly from './low-poly.js';
+import pixelStretch from './pixel-stretch.js';
+import silhouetteGlitch from './silhouette-glitch.js';
+import silhouetteFill from './silhouette-fill.js';
 import scanlines from './scanlines.js';
 
 // Order here = order of categories and tiles in the left panel.
 const RAW_SHADERS = [
   original,
   ascii,
-  glyphTiles, pixelSketch, mosaic, dots,
+  glyphTiles, pixelSketch, lowPoly, mosaic, dots,
   dither, scribbles, hope,
   blueprint,
+  pixelStretch,
+  silhouetteGlitch, silhouetteFill,
   hologram, chroma, scanlines,
 ];
 
