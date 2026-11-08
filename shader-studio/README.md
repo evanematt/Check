@@ -73,10 +73,11 @@ fragment string with `${LUMA}${SOBEL}`.
 | ASCII & Text | ASCII (procedural 5×7 glyphs) |
 | Pixel & Blocks | Glyph Tiles, Pixel Sketch, Low Poly, Mosaic, Halftone Dots |
 | Print & Ink | Dither (Bayer 2/4/8 + noise), Scribbles (hatching), Hope (3/4-tone poster) |
-| Technical | Blueprint |
+| Technical | Blueprint, HUD Overlay (heat-grid patches, target box, brackets, ruler, number readout) |
 | Glitch & Stretch | Pixel Stretch (random boxes with stretched pixels, outlines, numbered labels) |
 | Silhouette | Silhouette Glitch (blocky smear growing out of the subject), Silhouette Fill (flat or dotted fill) |
-| Glow & Signal | Hologram (animated), Chroma, CRT Signal (animated) |
+| Glow & Signal | LED Matrix (round LEDs with bloom), Dream Glow (soft focus + haze), Hologram (animated), Chroma, CRT Signal (animated) |
+| Color & Tone | X-Ray, Thermal Map (5-stop gradient map with banding, solarize, edge heat) |
 
 `original` is the passthrough used by "compare".
 
@@ -84,7 +85,7 @@ fragment string with `${LUMA}${SOBEL}`.
 a key color, the image's alpha channel (upload a transparent PNG cut-out), or a dark/light brightness threshold.
 Person cut-outs from busy photos need real segmentation, which isn't included.
 
-`lib.js` also has `bspRect` (random rectangles), `subjectMask` + `maskParams()` and `h11`/`h22` hashes.
+`lib.js` also has a 3×5 digit font (`FONT3X5`), `bspRect` (random rectangles), `subjectMask` + `maskParams()` and `h11`/`h22` hashes.
 
 ## Shortcuts
 

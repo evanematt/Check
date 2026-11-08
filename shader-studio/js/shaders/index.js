@@ -17,6 +17,11 @@ import hope from './hope.js';
 import blueprint from './blueprint.js';
 import hologram from './hologram.js';
 import chroma from './chroma.js';
+import ledMatrix from './led-matrix.js';
+import dreamGlow from './dream-glow.js';
+import xray from './xray.js';
+import thermal from './thermal.js';
+import hud from './hud.js';
 import lowPoly from './low-poly.js';
 import pixelStretch from './pixel-stretch.js';
 import silhouetteGlitch from './silhouette-glitch.js';
@@ -29,10 +34,11 @@ const RAW_SHADERS = [
   ascii,
   glyphTiles, pixelSketch, lowPoly, mosaic, dots,
   dither, scribbles, hope,
-  blueprint,
+  blueprint, hud,
   pixelStretch,
   silhouetteGlitch, silhouetteFill,
-  hologram, chroma, scanlines,
+  ledMatrix, dreamGlow, hologram, chroma, scanlines,
+  xray, thermal,
 ];
 
 // ---------------------------------------------------------------------------

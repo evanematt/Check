@@ -131,3 +131,16 @@ export const maskParams = (section = 'Subject') => [
   { id: 'tol', label: 'Color Tolerance', type: 'range', min: 0.02, max: 0.6, step: 0.01, default: 0.14, section, randomize: false },
   { id: 'thr', label: 'Brightness Threshold', type: 'range', min: 0, max: 1, step: 0.01, default: 0.5, section, randomize: false },
 ];
+
+// 3x5 pixel font: digits 0-9, then arrow down (10) and arrow right (11).
+const FONT_ART = [
+  ['###', '#.#', '#.#', '#.#', '###'], ['.#.', '##.', '.#.', '.#.', '###'], ['###', '..#', '###', '#..', '###'],
+  ['###', '..#', '###', '..#', '###'], ['#.#', '#.#', '###', '..#', '..#'], ['###', '#..', '###', '..#', '###'],
+  ['###', '#..', '###', '#.#', '###'], ['###', '..#', '..#', '..#', '..#'], ['###', '#.#', '###', '#.#', '###'],
+  ['###', '#.#', '###', '..#', '###'], ['.#.', '.#.', '.#.', '#.#', '.#.'], ['.#.', '..#', '###', '..#', '.#.'],
+];
+const FONT_BITS = FONT_ART.map((g) => parseInt(g.join('').replace(/#/g, '1').replace(/\./g, '0'), 2));
+/** glyphAt(index, col 0-2, row 0-4) -> 0/1 */
+export const FONT3X5 = `const int FONT[12] = int[12](${FONT_BITS.join(', ')});
+int glyphAt(int idx, int cx, int cy) { return (FONT[idx] >> (14 - (cy * 3 + cx))) & 1; }
+`;

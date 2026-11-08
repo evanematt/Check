@@ -1,14 +1,5 @@
-import { H11, BSP } from './lib.js';
+import { H11, BSP, FONT3X5 } from './lib.js';
 
-// 3x5 pixel font for the box labels: digits 0-9, then arrow down (10) and arrow right (11).
-const FONT = [
-  ['###', '#.#', '#.#', '#.#', '###'], ['.#.', '##.', '.#.', '.#.', '###'], ['###', '..#', '###', '#..', '###'],
-  ['###', '..#', '###', '..#', '###'], ['#.#', '#.#', '###', '..#', '..#'], ['###', '#..', '###', '..#', '###'],
-  ['###', '#..', '###', '#.#', '###'], ['###', '..#', '..#', '..#', '..#'], ['###', '#.#', '###', '#.#', '###'],
-  ['###', '#.#', '###', '..#', '###'], ['.#.', '.#.', '.#.', '#.#', '.#.'], ['.#.', '..#', '###', '..#', '.#.'],
-];
-const bits = FONT.map((g) => parseInt(g.join('').replace(/#/g, '1').replace(/\./g, '0'), 2));
-const TABLE = `const int FONT[12] = int[12](${bits.join(', ')});`;
 
 export default {
   id: 'pixel-stretch',
@@ -33,9 +24,7 @@ uniform float u_seed, u_depth, u_stop, u_amount, u_hshare, u_boxes, u_labelSize;
 uniform bool u_outline, u_labels;
 uniform vec3 u_line, u_ink;
 ${H11}${BSP}
-${TABLE}
-
-int glyphAt(int idx, int cx, int cy) { return (FONT[idx] >> (14 - (cy * 3 + cx))) & 1; }
+${FONT3X5}
 
 void main() {
   vec2 uv = v_uv;
