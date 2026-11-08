@@ -284,6 +284,52 @@ kbd { font: 11px var(--mono); padding: 2px 6px; background: var(--panel-2); bord
 .fatal { height: 100%; display: grid; place-content: center; gap: 8px; text-align: center; padding: 24px; color: var(--muted); }
 .fatal h1 { color: var(--text); font-size: 18px; }
 
+
+/* ---------- mode switch + generative panel ---------- */
+.seg.modes { display: flex; margin: 0 12px 10px; flex: none; }
+.seg.modes .seg-btn { flex: 1; padding: 6px 0; }
+.gen-wrap { flex: 1; min-height: 0; overflow-y: auto; padding: 0 14px 24px; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+.gen textarea {
+  width: 100%; resize: vertical; min-height: 84px; padding: 9px 10px; background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 7px; outline: 0; font: 12px/1.45 var(--font); color: var(--text);
+}
+.gen textarea:focus, .gen .field input:focus { border-color: var(--line-2); }
+.gen textarea::placeholder, .gen .field input::placeholder { color: var(--dim); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.chip-btn { padding: 3px 9px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 99px; color: var(--muted); font-size: 11px; }
+.chip-btn:hover { color: var(--text); border-color: var(--dim); }
+.gen .seg-row { margin-bottom: 8px; }
+.check { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11.5px; cursor: pointer; }
+.check input { accent-color: #fff; }
+.gen-actions { display: flex; gap: 6px; margin: 12px 0 6px; }
+.gen-actions .btn { height: 34px; }
+.gen-status { min-height: 16px; color: var(--muted); font-size: 11.5px; line-height: 1.45; margin-bottom: 8px; }
+.gen-status.error { color: var(--danger); }
+.gen-settings { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 2px 0 10px; margin-bottom: 4px; }
+.gen-settings summary { cursor: pointer; padding: 10px 0 6px; color: var(--muted); font-size: 11.5px; list-style: none; }
+.gen-settings summary::-webkit-details-marker { display: none; }
+.gen-settings summary::before { content: "+ "; color: var(--dim); }
+.gen-settings[open] summary::before { content: "– "; }
+.field { display: flex; flex-direction: column; gap: 4px; padding: 6px 0; }
+.field input, .gen-settings select { width: 100%; height: 30px; padding: 0 9px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; outline: 0; font-size: 11.5px; }
+.gen-settings .select select { width: 100%; }
+.field small { color: var(--dim); font-size: 10.5px; }
+.note { color: var(--dim); font-size: 10.5px; line-height: 1.5; padding: 4px 0 6px; }
+.versions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 4px; }
+.ver { display: flex; flex-direction: column; gap: 4px; padding: 0; background: none; border: 0; text-align: left; min-width: 0; color: var(--muted); font-size: 10.5px; }
+.ver canvas { width: 100%; aspect-ratio: 1; border-radius: 5px; background: var(--panel-2); outline: 1px solid var(--line); outline-offset: -1px; }
+.ver span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ver:hover canvas { outline-color: var(--dim); }
+.ver.active canvas { outline: 2px solid var(--text); outline-offset: -2px; }
+.ver.active { color: var(--text); }
+
+.busy {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 9px; z-index: 15;
+  padding: 7px 14px; border-radius: 99px; background: rgba(14,14,16,0.92); border: 1px solid var(--line-2); font: 11px var(--mono); pointer-events: none;
+}
+.busy i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--line-2); border-top-color: var(--text); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* ---------- small screens: panels become drawers ---------- */
 @media (max-width: 900px) {
   .app { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "stage"; }

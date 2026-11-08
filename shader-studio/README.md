@@ -87,6 +87,22 @@ Person cut-outs from busy photos need real segmentation, which isn't included.
 
 `lib.js` also has a 3×5 digit font (`FONT3X5`), `bspRect` (random rectangles), `subjectMask` + `maskParams()` and `h11`/`h22` hashes.
 
+## AI restyle (Generative tab)
+
+Left panel -> **Generative**. Describe a style (or click a preset such as *Low-poly 3D*), choose how closely to follow the photo
+(Loose / Balanced / Strict) and press Generate. The model restyles the photo; the result is added to **Versions** and
+becomes the working image, so you can switch back to **Realtime** and put any shader style on top. "Build on the current
+version" feeds the last result back in for iterative edits.
+
+Providers live in `js/ai/providers.js` (`gemini`, `openai`). Each is one `edit({ apiKey, model, baseUrl, prompt, image, signal })`
+function that returns an image Blob, so adding another is a few lines. Model names are editable because they change often.
+
+- Calls go **straight from the browser** with your own key, which is stored in `localStorage`. That is fine locally.
+  For a shared or public deployment, put the calls behind your own proxy and set its address as *Base URL*.
+- The photo is downscaled to 1024 px on its long side before sending.
+- The hosted preview blocks outside requests, so the AI tab only works when you run the app yourself.
+- Tested against a local mock of the Gemini API (request shape, errors, cancel, text-only replies), not against the live APIs.
+
 ## Shortcuts
 
 `Ctrl/⌘+Z` undo · `Ctrl/⌘+Shift+Z` redo · hold `C` compare · `R` restyle · `S` shuffle · `0` fit · `+`/`-` zoom ·

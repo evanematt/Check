@@ -9,6 +9,7 @@ import { createTopbar } from './ui/topbar.js';
 import { createStylesPanel } from './ui/styles-panel.js';
 import { createControlsPanel } from './ui/controls-panel.js';
 import { createDock } from './ui/dock.js';
+import { createGenerativePanel } from './ui/generative-panel.js';
 import { openLibrary, openHelp } from './ui/modals.js';
 import { toast } from './ui/components.js';
 
@@ -43,6 +44,7 @@ let comparing = false;
 let mouse = [0.5, 0.5];
 const reportedErrors = new Set();
 const uploads = []; // this session's uploads, for the Library
+const imageListeners = new Set(); // notified whenever the working image changes
 
 const markDirty = () => { dirty = true; };
 
@@ -85,7 +87,7 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
-function useImage(source, name) {
+function useImage(source, name, meta = {}) {
   image = { canvas: source, name };
   renderer.setImage(source);
   base = previewSize(source.width, source.height);
@@ -93,6 +95,7 @@ function useImage(source, name) {
   badge.textContent = `${source.width} × ${source.height}`;
   thumbs.generate(source, base.w);
   markDirty();
+  imageListeners.forEach((fn) => fn(source, name, meta));
 }
 
 async function loadFile(file) {
@@ -116,8 +119,15 @@ fileInput.addEventListener('change', () => {
 });
 
 const mobile = matchMedia('(max-width: 900px)');
+const busy = $('#busy');
 const actions = {
   upload: () => fileInput.click(),
+  useImage,
+  onImage: (fn) => imageListeners.add(fn),
+  setBusy(text) {
+    busy.hidden = !text;
+    busy.querySelector('span').textContent = text || '';
+  },
   library: () => openLibrary({ samples: SAMPLES, uploads, onPick: useImage, onUpload: actions.upload }),
   help: openHelp,
   fit: () => stage.fit(),
@@ -184,7 +194,7 @@ const stage = createStage({
   onPointer: (m) => { mouse = m; if (getShader(store.state.styleId).animated) markDirty(); },
 });
 const topbar = createTopbar({ root: $('#topbar'), actions });
-createStylesPanel({ root: $('#stylesPanel'), store, shaders: SHADERS, thumbs, actions });
+createStylesPanel({ root: $('#stylesPanel'), store, shaders: SHADERS, thumbs, actions, generative: createGenerativePanel({ actions }) });
 createControlsPanel({ root: $('#controlsPanel'), store, actions });
 createDock({ root: $('#dock'), actions });
 

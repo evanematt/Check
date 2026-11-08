@@ -7,7 +7,8 @@ import { clone, DEFAULT_ADJUST } from '../state.js';
 import { resolveValues, getShader } from '../shaders/index.js';
 import { toast } from './components.js';
 
-export function createStylesPanel({ root, store, shaders, thumbs, actions }) {
+export function createStylesPanel({ root, store, shaders, thumbs, actions, generative }) {
+  let mode = 'realtime';
   let tab = 'explore';
   let query = '';
   let favorites = new Set(load('favorites', []));
@@ -22,6 +23,11 @@ export function createStylesPanel({ root, store, shaders, thumbs, actions }) {
     h('button', { class: 'tab', type: 'button', role: 'tab', dataset: { tab: id }, onClick: () => { tab = id; render(); } }, label),
   );
   const searchBox = h('div', { class: 'search' }, icon('search', 14), search);
+  const tabsNav = h('nav', { class: 'tabs', role: 'tablist' }, tabs);
+  const modeBtns = [['realtime', 'Realtime'], ['generative', 'Generative']].map(([id, label]) =>
+    h('button', { class: 'seg-btn', type: 'button', role: 'tab', dataset: { mode: id }, onClick: () => { mode = id; render(); } }, label));
+  const modeBar = h('div', { class: 'seg modes', role: 'tablist' }, modeBtns);
+  const genEl = h('div', { class: 'gen-wrap' }, generative);
 
   root.append(
     h(
@@ -35,9 +41,11 @@ export function createStylesPanel({ root, store, shaders, thumbs, actions }) {
         h('button', { class: 'icon-btn', title: 'Collapse panel', 'aria-label': 'Collapse panel', onClick: () => actions.togglePanel('left') }, icon('chevronLeft', 16)),
       ),
     ),
+    modeBar,
     searchBox,
-    h('nav', { class: 'tabs', role: 'tablist' }, tabs),
+    tabsNav,
     body,
+    genEl,
   );
 
   // --- tiles -----------------------------------------------------------------
@@ -172,7 +180,16 @@ export function createStylesPanel({ root, store, shaders, thumbs, actions }) {
       t.classList.toggle('active', on);
       t.setAttribute('aria-selected', String(on));
     });
-    searchBox.hidden = tab !== 'explore';
+    const real = mode === 'realtime';
+    modeBtns.forEach((b) => {
+      const on = b.dataset.mode === mode;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', String(on));
+    });
+    searchBox.hidden = !real || tab !== 'explore';
+    tabsNav.hidden = !real;
+    body.hidden = !real;
+    genEl.hidden = real;
     body.replaceChildren();
     ({ explore: renderExplore, favorites: renderFavorites, recipes: renderRecipes })[tab]();
     syncState();
