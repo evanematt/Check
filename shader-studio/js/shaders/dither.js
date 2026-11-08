@@ -12,6 +12,7 @@ export default {
       options: [{ value: 3, label: 'Bayer 8×8' }, { value: 2, label: 'Bayer 4×4' }, { value: 1, label: 'Bayer 2×2' }, { value: 0, label: 'Noise' }],
     },
     { id: 'levels', label: 'Levels', type: 'range', min: 2, max: 8, step: 1, default: 2, section: 'Pattern' },
+    { id: 'invert', label: 'Invert Mapping', type: 'toggle', default: false, section: 'Color' },
     {
       id: 'mode', label: 'Color Mode', type: 'select', default: 0, section: 'Color',
       options: [{ value: 0, label: 'Two-tone' }, { value: 1, label: 'Per channel' }],
@@ -22,6 +23,7 @@ export default {
   fragment: /* glsl */ `
 uniform float u_pixel, u_levels;
 uniform int u_pattern, u_mode;
+uniform bool u_invert;
 uniform vec3 u_dark, u_light;
 ${HASH}
 float bayer(ivec2 p, int levels) {
@@ -41,6 +43,7 @@ void main() {
   vec2 c = (id + 0.5) * cell;
   float lod = log2(max(1.0, cell * u_imageSize.x / u_resolution.x));
   vec3 src = textureLod(u_image, c / u_resolution, lod).rgb;
+  if (u_invert) src = 1.0 - src;
   float thr = (u_pattern == 0) ? hash(id) : bayer(ivec2(id), u_pattern);
   float n = u_levels - 1.0;
   vec3 q;

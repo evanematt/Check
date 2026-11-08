@@ -67,6 +67,8 @@ precision highp float;
 uniform sampler2D u_tex;
 uniform float u_brightness, u_contrast, u_exposure, u_saturation, u_hue;
 uniform float u_vignette, u_grain, u_invert, u_time;
+uniform vec2 u_res;
+uniform float u_dual, u_dualPos, u_dualGap, u_flipB;
 in vec2 v_uv;
 out vec4 outColor;
 
@@ -87,6 +89,15 @@ vec3 hueRotate(vec3 c, float a) {
 
 void main() {
   vec3 c = texture(u_tex, v_uv).rgb;
+  // Dual view: second panel is the inverted twin; the gap is painted white at the end
+  float inGap = 0.0;
+  if (u_dual > 0.5) {
+    bool rows = u_dual < 1.5;
+    float a = rows ? (1.0 - v_uv.y) * u_res.y : v_uv.x * u_res.x;
+    float edge = u_dualPos * (rows ? u_res.y : u_res.x);
+    if (a >= edge && u_flipB > 0.5) c = 1.0 - c;
+    inGap = step(0.5, u_dualGap) * step(abs(a - edge), u_dualGap * 0.5);
+  }
   c *= exp2(u_exposure);
   c += u_brightness / 200.0;
   c = (c - 0.5) * max(0.0, 1.0 + u_contrast / 100.0) + 0.5;
@@ -96,11 +107,13 @@ void main() {
   c *= 1.0 - (u_vignette / 100.0) * smoothstep(0.25, 0.85, distance(v_uv, vec2(0.5)));
   c += (hash(gl_FragCoord.xy + fract(u_time) * 100.0) - 0.5) * (u_grain / 100.0) * 0.35;
   c = mix(c, 1.0 - c, u_invert);
+  c = mix(c, vec3(1.0), inGap);
   outColor = vec4(clamp(c, 0.0, 1.0), 1.0);
 }`;
 
 const NEUTRAL_ADJUST = {
   brightness: 0, contrast: 0, exposure: 0, saturation: 100, hue: 0, vignette: 0, grain: 0, invert: false,
+  dual: 0, dualPos: 0.5, dualGap: 0,
 };
 
 // ---------------------------------------------------------------------------
@@ -284,6 +297,10 @@ export class Renderer {
     let input = this.image.tex;
     const entry = style ? this.getProgram(style) : null;
 
+    const a = adjust || NEUTRAL_ADJUST;
+    let dual = 0;
+    let flipB = 0;
+
     if (entry && !entry.error) {
       this.ensureTarget(width, height);
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.target.fbo);
@@ -298,18 +315,37 @@ export class Renderer {
       setUniform(gl, U.u_time, time);
       setUniform(gl, U.u_pxScale, pxScale);
       setUniform(gl, U.u_mouse, mouse);
-      for (const p of style.params) {
-        const v = values[p.id] ?? p.default;
-        setUniform(gl, U[p.uniform], coerce(p, v));
+      const drawStyle = (flipInvert) => {
+        for (const p of style.params) {
+          let v = values[p.id] ?? p.default;
+          if (flipInvert && p.id === 'invert' && p.type === 'toggle') v = !v;
+          setUniform(gl, U[p.uniform], coerce(p, v));
+        }
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      };
+      drawStyle(false);
+
+      // Dual view: draw the second panel with the style's own "invert" toggled
+      // (falls back to inverting colours in the post pass when the style has none).
+      dual = a.dual | 0;
+      if (dual) {
+        if (style.params.some((p) => p.id === 'invert' && p.type === 'toggle')) {
+          const edge = Math.round(a.dualPos * (dual === 1 ? height : width));
+          gl.enable(gl.SCISSOR_TEST);
+          if (dual === 1) gl.scissor(0, 0, width, Math.max(0, height - edge));
+          else gl.scissor(edge, 0, Math.max(0, width - edge), height);
+          drawStyle(true);
+          gl.disable(gl.SCISSOR_TEST);
+        } else {
+          flipB = 1;
+        }
       }
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
       input = this.target.tex;
     } else if (entry) {
       error = entry.error;
     }
 
     // Post pass -> canvas
-    const a = adjust || NEUTRAL_ADJUST;
     const P = this.post.uniforms;
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, width, height);
@@ -326,6 +362,11 @@ export class Renderer {
     setUniform(gl, P.u_grain, a.grain);
     setUniform(gl, P.u_invert, a.invert ? 1 : 0);
     setUniform(gl, P.u_time, time);
+    setUniform(gl, P.u_res, [width, height]);
+    setUniform(gl, P.u_dual, dual);
+    setUniform(gl, P.u_dualPos, a.dualPos);
+    setUniform(gl, P.u_dualGap, a.dualGap * pxScale);
+    setUniform(gl, P.u_flipB, flipB);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     return error;
   }

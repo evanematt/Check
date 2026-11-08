@@ -70,12 +70,12 @@ fragment string with `${LUMA}${SOBEL}`.
 
 | Category | Styles |
 | --- | --- |
-| ASCII & Text | ASCII (procedural 5×7 glyphs) |
-| Pixel & Blocks | Glyph Tiles, Pixel Sketch, Low Poly, Mosaic, Halftone Dots |
+| ASCII & Text | ASCII (procedural 5×7 glyphs), Letter Field (scattered A–Z letters, pixel texture in the darks) |
+| Pixel & Blocks | Glyph Tiles, Pixel Squares (hollow squares), Pixel Sketch, Low Poly, Mosaic, Halftone Dots |
 | Print & Ink | Dither (Bayer 2/4/8 + noise), Scribbles (hatching), Hope (3/4-tone poster) |
 | Technical | Blueprint, HUD Overlay (heat-grid patches, target box, brackets, ruler, number readout) |
-| Glitch & Stretch | Pixel Stretch (random boxes with stretched pixels, outlines, numbered labels) |
-| Silhouette | Silhouette Glitch (blocky smear growing out of the subject), Silhouette Fill (flat or dotted fill) |
+| Glitch & Stretch | Pixel Stretch (random boxes with stretched pixels, dash/dot pattern boxes, outlines, numbered labels) |
+| Silhouette | Silhouette Glitch (blocky smear growing out of the subject), Silhouette Fill (flat or dotted fill), Cursor Fill (subject filled with mouse-pointer arrows) |
 | Glow & Signal | LED Matrix (round LEDs with bloom), Dream Glow (soft focus + haze), Hologram (animated), Chroma, CRT Signal (animated) |
 | Color & Tone | X-Ray, Thermal Map (5-stop gradient map with banding, solarize, edge heat) |
 
@@ -86,6 +86,13 @@ a key color, the image's alpha channel (upload a transparent PNG cut-out), or a 
 Person cut-outs from busy photos need real segmentation, which isn't included.
 
 `lib.js` also has a 3×5 digit font (`FONT3X5`), `bspRect` (random rectangles), `subjectMask` + `maskParams()` and `h11`/`h22` hashes.
+
+## Dual View (Adjust tab)
+
+Shows the result twice, top/bottom or left/right: the normal render and its inverted twin, with an optional gap.
+If the style has a toggle param with the id `invert`, the second panel is drawn with it flipped (so each style defines what
+"inverted" means, e.g. Pixel Squares puts white squares over the blurred photo). Styles without one get their colors inverted.
+Give a new style an `invert` toggle and Dual View picks it up automatically.
 
 ## AI restyle (Generative tab)
 

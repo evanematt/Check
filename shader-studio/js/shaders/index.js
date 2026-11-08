@@ -22,6 +22,9 @@ import dreamGlow from './dream-glow.js';
 import xray from './xray.js';
 import thermal from './thermal.js';
 import hud from './hud.js';
+import letterField from './letter-field.js';
+import cursorFill from './cursor-fill.js';
+import pixelSquares from './pixel-squares.js';
 import lowPoly from './low-poly.js';
 import pixelStretch from './pixel-stretch.js';
 import silhouetteGlitch from './silhouette-glitch.js';
@@ -31,12 +34,12 @@ import scanlines from './scanlines.js';
 // Order here = order of categories and tiles in the left panel.
 const RAW_SHADERS = [
   original,
-  ascii,
-  glyphTiles, pixelSketch, lowPoly, mosaic, dots,
+  ascii, letterField,
+  glyphTiles, pixelSquares, pixelSketch, lowPoly, mosaic, dots,
   dither, scribbles, hope,
   blueprint, hud,
   pixelStretch,
-  silhouetteGlitch, silhouetteFill,
+  silhouetteGlitch, silhouetteFill, cursorFill,
   ledMatrix, dreamGlow, hologram, chroma, scanlines,
   xray, thermal,
 ];

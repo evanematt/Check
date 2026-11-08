@@ -20,6 +20,9 @@ export const DEFAULT_ADJUST = Object.freeze({
   vignette: 0, // 0..100
   grain: 0, // 0..100
   invert: false,
+  dual: 0, // 0 off, 1 top/bottom, 2 left/right
+  dualPos: 0.5, // where the split sits (0.2..0.8)
+  dualGap: 0, // px of white between the panels
 });
 
 export const DEFAULT_MOTION = Object.freeze({ playing: true, speed: 1 });

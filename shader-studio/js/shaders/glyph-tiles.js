@@ -10,6 +10,7 @@ export default {
     { id: 'outline', label: 'Outline', type: 'range', min: 0, max: 0.15, step: 0.005, default: 0.05, section: 'Grid' },
     { id: 'cutoff', label: 'Cutoff', type: 'range', min: 0, max: 0.8, step: 0.01, default: 0.16, section: 'Intensity' },
     { id: 'gain', label: 'Gain', type: 'range', min: 0.5, max: 3, step: 0.05, default: 1.5, section: 'Intensity' },
+    { id: 'invert', label: 'Invert Mapping', type: 'toggle', default: false, section: 'Intensity' },
     { id: 'bg', label: 'Background', type: 'color', default: '#000000', section: 'Palette' },
     { id: 'c1', label: 'Tone 1', type: 'color', default: '#5b2a86', section: 'Palette' },
     { id: 'c2', label: 'Tone 2', type: 'color', default: '#cdb4f0', section: 'Palette' },
@@ -20,6 +21,7 @@ export default {
   fragment: /* glsl */ `
 uniform float u_cell, u_radius, u_outline, u_cutoff, u_gain;
 uniform vec3 u_bg, u_c1, u_c2, u_c3, u_c4, u_c5;
+uniform bool u_invert;
 
 float box(vec2 p, float hs, float r) {
   vec2 q = abs(p) - vec2(hs - r);
@@ -36,6 +38,7 @@ void main() {
   float lod = log2(max(1.0, cell * u_imageSize.x / u_resolution.x));
   vec3 src = textureLod(u_image, c / u_resolution, lod).rgb;
   float l = clamp(dot(src, vec3(0.2126, 0.7152, 0.0722)) * u_gain, 0.0, 1.0);
+  if (u_invert) l = 1.0 - l;
   float aa = 1.0 / cell;
   vec3 col = u_bg;
 

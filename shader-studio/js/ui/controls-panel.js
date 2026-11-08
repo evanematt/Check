@@ -84,6 +84,16 @@ export function createControlsPanel({ root, store, actions }) {
       h('section', { class: 'section' }, sectionTitle('Color'), sl('saturation', 'Saturation', 0, 200, 1, '%'), sl('hue', 'Hue', -180, 180, 1, '°'),
         toggle({ label: 'Invert', value: a.invert, onChange: (v) => { set('invert', v); commit(); } })),
       h('section', { class: 'section' }, sectionTitle('Finish'), sl('vignette', 'Vignette', 0, 100), sl('grain', 'Grain', 0, 100)),
+      h('section', { class: 'section' }, sectionTitle('Dual View'),
+        select({
+          label: 'Layout', value: a.dual,
+          options: [{ value: 0, label: 'Off' }, { value: 1, label: 'Top / bottom' }, { value: 2, label: 'Left / right' }],
+          onChange: (v) => { set('dual', v); commit(); },
+        }),
+        sl('dualPos', 'Split Position', 0.15, 0.85, 0.01),
+        sl('dualGap', 'Gap', 0, 80, 1, 'px'),
+        h('p', { class: 'meta' }, 'The second panel uses the style’s Invert Mapping when it has one, otherwise it inverts the colors.'),
+      ),
     );
   }
 
