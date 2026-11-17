@@ -58,7 +58,7 @@ A shader is `{ id, name, category, tags, animated, params, fragment }`.
 | `range` | `float` | `min`, `max`, `step`, `default`, `unit` |
 | `select` | `int` | `options: [{ value, label }]` |
 | `toggle` | `bool` | |
-| `color` | `vec3` | `default: '#rrggbb'` |
+| `color` | `vec3` | `default: '#rrggbb'` (the control has a picker and a hex field: `ff8800`, `#f80` and `#FF8800` all work) |
 
 `section` groups controls under a `/ SECTION` heading; `randomize: false` excludes a param from Shuffle.
 Compile errors are shown as a toast and logged to the console with the offending shader id.
