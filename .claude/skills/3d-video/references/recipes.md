@@ -66,6 +66,20 @@ Overlay text with `D.wordReveal(el, text)`; drive with `D.prog(t, start, 0.8–1
 ### Big number / stat
 `.stat` gradient text + counter: `el.textContent = Math.round(target * D.prog(t, s, 1.8, D.ease.outCubic))`. Pair with `D.barChart`.
 
+### Stylized character (no model file)
+Build a person from primitives in a `Group` facing +z, then rotate the group to face the action (`templates/character-orbit.html`):
+- Head: `SphereGeometry` with vertices pushed in below the equator (narrower jaw); a canvas texture for blush, moles and freckles (sphere u = 0.25 is the front).
+- Features as separate meshes so they read at any distance: big nose sphere, eye whites pushed slightly out of the skin with an iris + pupil + glint, a half-sphere upper lid (rotate it for sleepy eyes and blinks), capsule brows.
+- Hair: a cap shell cut at the brow line with a vertical-strand canvas texture (bangs) + an `InstancedMesh` of ~1500 small spheres in a shell for curl volume + ~70 helical `TubeGeometry` ringlets merged with `mergeGeometries`. Keep the face region empty.
+- Clothes: `LatheGeometry` torso (scale z ≈ 0.65), cylinders between joint points for limbs (`limb(A, B, rA, rB)`), canvas textures for heather knit and plaid, a `CatmullRomCurve3` tube for a bag strap.
+- Check it like a turnaround sheet before building the shot: hide the set and orbit a still camera around the head with `--query "ang=3.14&r=4&hide=pc,props,desk,smoke&bright=1"` at 4 angles, then compare side by side with the reference.
+
+### Time-lapse lighting (day → night → morning)
+Drive everything from a phase `f = (t / CYCLE) % 1` and a keyframe table of `[phase, sunI, sunColour, hemiSky, hemiGround, hemiI, skyTop, skyBottom, …, night, lamp]`, interpolated with `inOutQuad`. Move one shadow-casting `DirectionalLight` along a sun arc in the day and a moon arc at night, switching arcs where its intensity is 0. Put a gradient sky `ShaderMaterial` plane, stars (`Points`), a sun/moon disc and a skyline (alpha-mapped silhouettes + an additive lit-windows layer whose opacity = night) outside a window, so the light visibly comes from somewhere. Practical lights (desk lamp, CRT, cigarette ember) take over at night; raise a dim cool fill so the dark side of the room doesn't go black.
+
+### Smoke
+Deterministic sprites: for a rising stream, sprite i has `age = (t - i * life / N) mod life`; position = tip + rise(age) + sine swirl × age, size and fade from age. For exhaled puffs, a list of exhale times; each puff sprite moves along the head's forward vector with `1 - exp(-k·age)`. Tint the smoke with the time of day.
+
 ## Camera moves (use one per beat)
 | Move | How |
 |---|---|
@@ -74,6 +88,7 @@ Overlay text with `D.wordReveal(el, text)`; drive with `D.prog(t, start, 0.8–1
 | Orbit (show 3D-ness) | `angle` tween 0.4–1.0 rad per beat |
 | Crane | `elevation` tween 0.1 → 0.6 |
 | Whip transition | `angle` jump ~1.5 rad in 0.35s with `inOutExpo` + motion blur via overlay `filter: blur()` |
+| Full orbit around a subject | `angle = a0 - turns·2π·ease(t)` with a sine ease; raise the camera and shorten the radius on the side where props (a monitor) would block the subject |
 | Always | `D.handheld(camera, t, 0.6–1)` after positioning |
 
 Use `D.track([[t, value], ...])` for multi-beat camera paths so each beat flows into the next.
