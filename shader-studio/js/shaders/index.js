@@ -27,6 +27,11 @@ import cursorFill from './cursor-fill.js';
 import pixelSquares from './pixel-squares.js';
 import lowPoly from './low-poly.js';
 import pixelStretch from './pixel-stretch.js';
+import pixelDissolve from './pixel-dissolve.js';
+import scanRelief from './scan-relief.js';
+import motionStreak from './motion-streak.js';
+import columnDisplay from './column-display.js';
+import heatScan from './heat-scan.js';
 import silhouetteGlitch from './silhouette-glitch.js';
 import silhouetteFill from './silhouette-fill.js';
 import scanlines from './scanlines.js';
@@ -38,10 +43,10 @@ const RAW_SHADERS = [
   glyphTiles, pixelSquares, pixelSketch, lowPoly, mosaic, dots,
   dither, scribbles, hope,
   blueprint, hud,
-  pixelStretch,
+  pixelStretch, pixelDissolve, motionStreak,
   silhouetteGlitch, silhouetteFill, cursorFill,
-  ledMatrix, dreamGlow, hologram, chroma, scanlines,
-  xray, thermal,
+  ledMatrix, columnDisplay, scanRelief, dreamGlow, hologram, chroma, scanlines,
+  xray, thermal, heatScan,
 ];
 
 // ---------------------------------------------------------------------------

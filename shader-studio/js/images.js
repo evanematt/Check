@@ -148,3 +148,68 @@ export function previewSize(w, h) {
   const [pw, ph] = fit(w, h, PREVIEW_MAX);
   return { w: pw, h: ph };
 }
+
+// --- built-in animated demo --------------------------------------------------
+/**
+ * A canvas animation streamed into a <video>, so the video code path can be tried without a file.
+ * The stream has no duration (live), so there is no scrubbing.
+ */
+export function makeDemoVideo() {
+  const W = 640, H = 360;
+  const c = makeCanvas(W, H);
+  const g = c.getContext('2d');
+  const t0 = performance.now();
+  let raf = 0;
+  const draw = () => {
+    const t = (performance.now() - t0) / 1000;
+    const sky = g.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#0e1233');
+    sky.addColorStop(0.6, `hsl(${300 + 30 * Math.sin(t * 0.4)}, 60%, 38%)`);
+    sky.addColorStop(1, '#ff9a5a');
+    g.fillStyle = sky;
+    g.fillRect(0, 0, W, H);
+    const sx = W / 2 + Math.cos(t * 0.8) * 190, sy = 205 + Math.sin(t * 0.8) * 55;
+    const sun = g.createRadialGradient(sx, sy, 0, sx, sy, 130);
+    sun.addColorStop(0, 'rgba(255,245,210,1)');
+    sun.addColorStop(0.25, 'rgba(255,190,110,.9)');
+    sun.addColorStop(1, 'rgba(255,120,80,0)');
+    g.fillStyle = sun;
+    g.fillRect(0, 0, W, H);
+    ['#6b2a72', '#3d1c5c', '#1a0f33'].forEach((col, i) => {
+      g.fillStyle = col;
+      g.beginPath();
+      g.moveTo(0, H);
+      for (let x = 0; x <= W; x += 8) g.lineTo(x, H - 70 - i * 38 - 38 * Math.sin(x * (0.012 + i * 0.004) + i * 2 + t * 0.15));
+      g.lineTo(W, H);
+      g.fill();
+    });
+    const shapes = [['#ffd166', 0], ['#06d6a0', 2.1], ['#ef476f', 4.2]];
+    shapes.forEach(([col, ph], i) => {
+      const x = 110 + i * 210, y = 120 + Math.abs(Math.sin(t * 2 + ph)) * -60 + 90;
+      g.fillStyle = col;
+      g.beginPath();
+      if (i === 0) g.arc(x, y, 34, 0, 7);
+      else if (i === 1) g.rect(x - 32, y - 32, 64, 64);
+      else { g.moveTo(x, y - 38); g.lineTo(x + 38, y + 30); g.lineTo(x - 38, y + 30); g.closePath(); }
+      g.fill();
+    });
+    g.fillStyle = '#fff';
+    g.font = 'bold 84px system-ui, sans-serif';
+    g.textAlign = 'center';
+    g.fillText('PIXELS', W / 2, 92);
+    raf = requestAnimationFrame(draw);
+  };
+  draw();
+  const video = document.createElement('video');
+  video.muted = true;
+  video.playsInline = true;
+  video.srcObject = c.captureStream(30);
+  return {
+    video,
+    dispose() {
+      cancelAnimationFrame(raf);
+      video.pause();
+      video.srcObject = null;
+    },
+  };
+}

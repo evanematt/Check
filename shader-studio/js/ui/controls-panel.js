@@ -110,6 +110,19 @@ export function createControlsPanel({ root, store, actions }) {
       paint();
     });
     paint();
+    if (actions.hasVideo()) {
+      panel.append(
+        head('Motion'),
+        h('p', { class: 'meta' }, shader.animated
+          ? `${shader.name} follows the video clock. Use the bar under the picture to play, pause or scrub.`
+          : `${shader.name} is a still style; it is applied to every video frame.`),
+        h('section', { class: 'section' }, sectionTitle('Effect Clock'),
+          slider({ label: 'Speed', min: 0, max: 4, step: 0.05, unit: '×', value: m.speed, def: 1, onInput: (v) => store.update((s) => { s.motion.speed = v; }) }),
+          h('button', { class: 'btn wide ghost', type: 'button', onClick: actions.restartTime }, icon('reset', 14), 'Restart video'),
+        ),
+      );
+      return;
+    }
     panel.append(
       head('Motion'),
       h('p', { class: 'meta' }, shader.animated ? `${shader.name} is animated.` : `${shader.name} is a still style - motion has no effect.`),

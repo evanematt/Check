@@ -261,6 +261,21 @@ input[type="range"]:focus-visible { outline-offset: 3px; border-radius: 4px; }
 .popover-actions { display: flex; gap: 6px; margin-top: 12px; }
 .dims { font: 10px var(--mono); color: var(--muted); }
 
+/* ---------- video bar ---------- */
+.vbar {
+  position: absolute; left: 50%; bottom: 74px; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 8px;
+  width: min(560px, calc(100% - 24px)); padding: 5px 10px 5px 6px; background: rgba(14,14,16,0.92); border: 1px solid var(--line-2);
+  border-radius: 11px; backdrop-filter: blur(10px); box-shadow: 0 10px 40px rgba(0,0,0,0.5); cursor: default;
+}
+.vb-btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; min-width: 28px; justify-content: center; padding: 0 6px; background: none; border: 0; border-radius: 7px; color: var(--muted); font-size: 11.5px; }
+.vb-btn:hover { color: var(--text); background: #1e1e22; }
+.vb-btn[aria-pressed="false"] { opacity: 0.45; }
+.vb-seek { flex: 1; min-width: 0; }
+.vb-time { font: 10.5px var(--mono); color: var(--muted); min-width: 74px; text-align: center; font-variant-numeric: tabular-nums; }
+.vb-btn.rec i { width: 9px; height: 9px; border-radius: 50%; background: #ff4d4d; }
+.vb-btn.rec.on { background: #3a1214; color: #ffb3b3; }
+.vb-btn.rec.on i { border-radius: 2px; }
+
 /* ---------- modal / toast ---------- */
 .modal-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); }
 .modal { width: 100%; max-height: min(86vh, 720px); display: flex; flex-direction: column; background: #0e0e10; border: 1px solid var(--line-2); border-radius: 14px; box-shadow: 0 30px 90px rgba(0,0,0,0.8); }
@@ -353,6 +368,8 @@ kbd { font: 11px var(--mono); padding: 2px 6px; background: var(--panel-2); bord
   .tb-center { justify-content: center; }
   .tb-center .tb-sep, .tb-center .tb-btn:nth-of-type(3) { display: none; }
   .badge:not(.compare) { display: none; }
+  .vbar { bottom: 66px; }
+  .vb-btn.rec span { display: none; }
   .dock-btn span:last-child { display: none; }
   .dock-btn { padding: 0 11px; }
   .dock-btn.primary span:last-child { display: inline; }

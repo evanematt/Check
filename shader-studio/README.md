@@ -74,10 +74,10 @@ fragment string with `${LUMA}${SOBEL}`.
 | Pixel & Blocks | Glyph Tiles, Pixel Squares (hollow squares), Pixel Sketch, Low Poly, Mosaic, Halftone Dots |
 | Print & Ink | Dither (Bayer 2/4/8 + noise), Scribbles (hatching), Hope (3/4-tone poster) |
 | Technical | Blueprint, HUD Overlay (heat-grid patches, target box, brackets, ruler, number readout) |
-| Glitch & Stretch | Pixel Stretch (random boxes with stretched pixels, dash/dot pattern boxes, outlines, numbered labels) |
+| Glitch & Stretch | Pixel Stretch (random boxes with stretched pixels, dash/dot pattern boxes, outlines, numbered labels), Pixel Dissolve (frame breaks into pixel blocks that fly away; animated), Motion Streak (linear/radial smear that drags highlights) |
 | Silhouette | Silhouette Glitch (blocky smear growing out of the subject), Silhouette Fill (flat or dotted fill), Cursor Fill (subject filled with mouse-pointer arrows) |
-| Glow & Signal | LED Matrix (round LEDs with bloom), Dream Glow (soft focus + haze), Hologram (animated), Chroma, CRT Signal (animated) |
-| Color & Tone | X-Ray, Thermal Map (5-stop gradient map with banding, solarize, edge heat) |
+| Glow & Signal | LED Matrix (round LEDs with bloom), Column Display (vertical-bar pixels with glow and detection boxes), Scan Relief (glowing scan lines lifted by brightness over a grid), Dream Glow (soft focus + haze), Hologram (animated), Chroma, CRT Signal (animated) |
+| Color & Tone | X-Ray, Thermal Map (5-stop gradient map with banding, solarize, edge heat), Heat Scan (cool-to-hot vertical gradient with defocus, speckle and grain) |
 
 `original` is the passthrough used by "compare".
 
@@ -86,6 +86,19 @@ a key color, the image's alpha channel (upload a transparent PNG cut-out), or a 
 Person cut-outs from busy photos need real segmentation, which isn't included.
 
 `lib.js` also has a 3×5 digit font (`FONT3X5`), `bspRect` (random rectangles), `subjectMask` + `maskParams()` and `h11`/`h22` hashes.
+
+## Video
+
+Upload (or drop / paste) an MP4, WebM or MOV: the video plays in a loop and **every shader style is applied to each frame in real time**.
+A bar under the picture has play/pause (`Space`), a scrub slider, loop, and **Record**.
+
+- Styles that are `animated` follow the **video clock** (`u_time` = `currentTime` × Motion speed), so e.g. *Pixel Dissolve*
+  can start at second 2 of the clip and stays in sync when you scrub or loop. Use *Restart video* in the Motion tab.
+- **Record** plays the video once from the start and records the rendered canvas in real time (MP4 where the browser can,
+  otherwise WebM), then downloads it. It uses the preview size and has no audio. Streams without a duration (the built-in
+  *Animated demo* in the Library) record for 8 seconds.
+- Which formats play depends on the browser; if one doesn't, convert it to MP4 (H.264) or WebM.
+- Heavy styles on large videos can drop frames; the render size is capped at 1600 px on the long side.
 
 ## Dual View (Adjust tab)
 

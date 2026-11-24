@@ -2,13 +2,14 @@ import { $, h } from './dom.js';
 import { Renderer } from './renderer.js';
 import { createStore, clone, DEFAULT_ADJUST, DEFAULT_MOTION } from './state.js';
 import { SHADERS, getShader, resolveValues, randomValues } from './shaders/index.js';
-import { SAMPLES, fileToCanvas, previewSize } from './images.js';
+import { SAMPLES, fileToCanvas, previewSize, makeDemoVideo, toCanvas } from './images.js';
 import { createThumbs } from './thumbs.js';
 import { createStage } from './ui/stage.js';
 import { createTopbar } from './ui/topbar.js';
 import { createStylesPanel } from './ui/styles-panel.js';
 import { createControlsPanel } from './ui/controls-panel.js';
 import { createDock } from './ui/dock.js';
+import { createVideoBar } from './ui/video-bar.js';
 import { createGenerativePanel } from './ui/generative-panel.js';
 import { openLibrary, openHelp } from './ui/modals.js';
 import { toast } from './ui/components.js';
@@ -35,18 +36,24 @@ const store = createStore({
 });
 
 // --- engine ----------------------------------------------------------------------
-let image = null; // { canvas, name }
+let image = null; // { name }
+let video = null; // HTMLVideoElement when the working source is a video
+let disposeVideo = null;
+let videoDirty = false; // a new frame (seek, first frame) must be uploaded while paused
 let base = { w: 1, h: 1 }; // preview render size
 let dirty = true;
 let time = 0;
 let last = performance.now();
 let comparing = false;
 let mouse = [0.5, 0.5];
+let recorder = null;
 const reportedErrors = new Set();
 const uploads = []; // this session's uploads, for the Library
 const imageListeners = new Set(); // notified whenever the working image changes
+const RECORD_LIVE_SECONDS = 8; // length of a recording of a stream without a duration
 
 const markDirty = () => { dirty = true; };
+const isFiniteVideo = () => video && Number.isFinite(video.duration);
 
 function frameArgs(width, height, pxScale) {
   const s = store.state;
@@ -76,7 +83,18 @@ function loop(now) {
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   const s = store.state;
-  if (getShader(s.styleId).animated && s.motion.playing && !comparing) {
+  const style = getShader(s.styleId);
+  if (video) {
+    if (video.readyState >= 2 && (!video.paused || videoDirty)) {
+      renderer.updateImage(video);
+      videoDirty = false;
+      dirty = true;
+    }
+    // effects follow the video clock (a stream without a duration keeps its own clock)
+    if (isFiniteVideo()) time = video.currentTime * s.motion.speed;
+    else if (!video.paused) time += dt * s.motion.speed;
+    videoBar.update();
+  } else if (style.animated && s.motion.playing && !comparing) {
     time += dt * s.motion.speed;
     dirty = true;
   }
@@ -87,27 +105,144 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
-function useImage(source, name, meta = {}) {
-  image = { canvas: source, name };
+/** Common tail of loading any source (canvas or video element). */
+function applySource(source, w, h, name, meta) {
+  image = { name };
   renderer.setImage(source);
-  base = previewSize(source.width, source.height);
+  base = previewSize(w, h);
   stage.setSize(base.w, base.h);
-  badge.textContent = `${source.width} × ${source.height}`;
+  badge.textContent = `${w} × ${h}`;
   thumbs.generate(source, base.w);
   markDirty();
-  imageListeners.forEach((fn) => fn(source, name, meta));
+  const still = video ? toCanvas(source, 1024) : source;
+  imageListeners.forEach((fn) => fn(still, name, meta));
 }
+
+function releaseVideo() {
+  if (recorder) recorder.stop();
+  if (!video) return;
+  video.pause();
+  disposeVideo?.();
+  video = null;
+  disposeVideo = null;
+  videoBar.hide();
+}
+
+function useImage(source, name, meta = {}) {
+  releaseVideo();
+  applySource(source, source.width, source.height, name, meta);
+}
+
+async function useVideo(el, name, dispose) {
+  releaseVideo();
+  const ready = new Promise((resolve, reject) => {
+    if (el.readyState >= 2) return resolve();
+    el.addEventListener('loadeddata', resolve, { once: true });
+    el.addEventListener('error', () => reject(new Error('This browser can’t play that video. Try MP4 (H.264) or WebM.')), { once: true });
+  });
+  await ready;
+  video = el;
+  disposeVideo = dispose;
+  el.addEventListener('seeked', () => { videoDirty = true; });
+  time = 0;
+  await el.play().catch(() => {});
+  applySource(el, el.videoWidth, el.videoHeight, name, { video: true });
+  videoBar.show(el);
+}
+
+function loadVideoFile(file) {
+  const url = URL.createObjectURL(file);
+  const el = document.createElement('video');
+  el.muted = true;
+  el.loop = true;
+  el.playsInline = true;
+  el.preload = 'auto';
+  el.src = url;
+  return useVideo(el, file.name.replace(/\.[^.]+$/, '') || 'video', () => {
+    URL.revokeObjectURL(url);
+    el.removeAttribute('src');
+    el.load();
+  });
+}
+
+function loadDemoVideo() {
+  const demo = makeDemoVideo();
+  return useVideo(demo.video, 'Animated demo', () => demo.dispose());
+}
+
+const isVideoFile = (f) => f.type.startsWith('video/') || /\.(mp4|webm|mov|m4v|ogv)$/i.test(f.name);
 
 async function loadFile(file) {
   try {
+    if (isVideoFile(file)) return await loadVideoFile(file);
     const c = await fileToCanvas(file);
     const name = file.name.replace(/\.[^.]+$/, '') || 'image';
     uploads.unshift({ name, canvas: c });
     uploads.length = Math.min(uploads.length, 12);
     useImage(c, name);
   } catch (err) {
-    toast(err.message || 'Could not load that image', { error: true });
+    toast(err.message || 'Could not load that file', { error: true });
   }
+}
+
+// --- video controls ------------------------------------------------------------------
+function toggleVideo() {
+  if (!video) return;
+  if (video.paused || video.ended) video.play().catch(() => {});
+  else video.pause();
+}
+
+const pickRecorderType = () =>
+  typeof MediaRecorder === 'undefined'
+    ? null
+    : ['video/mp4;codecs=avc1.42E01E', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t)) || null;
+
+/** Record the rendered canvas in real time while the video plays once from the start. */
+async function toggleRecord() {
+  if (recorder) { recorder.stop(); return; }
+  if (!video) { toast('Load a video first (Upload or Library)'); return; }
+  const type = pickRecorderType();
+  if (!type) { toast('This browser can’t record video', { error: true }); return; }
+
+  const rec = new MediaRecorder(canvas.captureStream(30), { mimeType: type, videoBitsPerSecond: 10_000_000 });
+  const chunks = [];
+  rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+  const stopped = new Promise((res) => { rec.onstop = res; });
+  const wasLoop = video.loop;
+  const finite = isFiniteVideo();
+  video.loop = false;
+  if (finite && video.currentTime > 0) {
+    video.currentTime = 0;
+    await new Promise((res) => video.addEventListener('seeked', res, { once: true }));
+  }
+  recorder = rec;
+  videoBar.setRecording(true);
+  const t0 = performance.now();
+  const tick = setInterval(() => actions.setBusy(`● Recording ${((performance.now() - t0) / 1000).toFixed(1)}s · click Stop to finish`), 200);
+  const stop = () => { if (rec.state !== 'inactive') rec.stop(); };
+  let timer = 0;
+  if (finite) video.addEventListener('ended', stop, { once: true });
+  else timer = setTimeout(stop, RECORD_LIVE_SECONDS * 1000);
+  await video.play().catch(() => {});
+  rec.start(200);
+  await stopped;
+  clearInterval(tick);
+  clearTimeout(timer);
+  video.removeEventListener('ended', stop);
+  actions.setBusy(null);
+  recorder = null;
+  videoBar.setRecording(false);
+  video.loop = wasLoop;
+  if (finite) { video.currentTime = 0; video.play().catch(() => {}); }
+
+  const blob = new Blob(chunks, { type: type.split(';')[0] });
+  const ext = type.startsWith('video/mp4') ? 'mp4' : 'webm';
+  const a = h('a', { href: URL.createObjectURL(blob), download: `${actions.fileName()}.${ext}` });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast(`Saved ${ext.toUpperCase()} (${(blob.size / 1e6).toFixed(1)} MB)`);
 }
 
 // --- actions -------------------------------------------------------------------
@@ -128,13 +263,19 @@ const actions = {
     busy.hidden = !text;
     busy.querySelector('span').textContent = text || '';
   },
-  library: () => openLibrary({ samples: SAMPLES, uploads, onPick: useImage, onUpload: actions.upload }),
+  library: () => openLibrary({ samples: SAMPLES, uploads, onPick: useImage, onUpload: actions.upload, onDemo: loadDemoVideo }),
+  hasVideo: () => !!video,
+  toggleVideo,
   help: openHelp,
   fit: () => stage.fit(),
   zoomBy: (k) => stage.zoomBy(k),
   undo: () => store.undo(),
   redo: () => store.redo(),
-  restartTime: () => { time = 0; markDirty(); },
+  restartTime() {
+    time = 0;
+    if (isFiniteVideo()) video.currentTime = 0;
+    markDirty();
+  },
   setCompare(on) {
     if (comparing === on) return;
     comparing = on;
@@ -193,6 +334,13 @@ const stage = createStage({
   onZoom: (z) => topbar.setZoom(z),
   onPointer: (m) => { mouse = m; if (getShader(store.state.styleId).animated) markDirty(); },
 });
+const videoBar = createVideoBar({
+  root: $('#videoBar'),
+  onToggle: toggleVideo,
+  onSeek: (t) => { if (isFiniteVideo()) video.currentTime = t; },
+  onLoop: (on) => { if (video) video.loop = on; },
+  onRecord: toggleRecord,
+});
 const topbar = createTopbar({ root: $('#topbar'), actions });
 createStylesPanel({ root: $('#stylesPanel'), store, shaders: SHADERS, thumbs, actions, generative: createGenerativePanel({ actions }) });
 createControlsPanel({ root: $('#controlsPanel'), store, actions });
@@ -211,7 +359,8 @@ addEventListener('keydown', (e) => {
   if (mod && k === 'z') { e.preventDefault(); e.shiftKey ? store.redo() : store.undo(); return; }
   if (mod && k === 'y') { e.preventDefault(); store.redo(); return; }
   if (mod || e.altKey) return;
-  if (k === 'c' && !e.repeat) actions.setCompare(true);
+  if (k === ' ' && video) { e.preventDefault(); toggleVideo(); }
+  else if (k === 'c' && !e.repeat) actions.setCompare(true);
   else if (k === 'r') actions.restyle();
   else if (k === 's') actions.shuffle();
   else if (k === '0') stage.fit();
@@ -232,7 +381,7 @@ addEventListener('drop', (e) => {
   e.preventDefault();
   dragDepth = 0;
   dropOverlay.hidden = true;
-  const f = [...(e.dataTransfer?.files || [])].find((x) => x.type.startsWith('image/'));
+  const f = [...(e.dataTransfer?.files || [])].find((x) => x.type.startsWith('image/') || isVideoFile(x));
   if (f) loadFile(f);
 });
 addEventListener('paste', (e) => {
