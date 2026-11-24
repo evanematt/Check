@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>3D Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500&display=block" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<style>
+  :root { --accent: #7aa2ff; --accent2: #ff8a5b; --ink: #f4f6ff; --muted: #9aa3c7; }
+  #overlay { font-family: Inter, system-ui, sans-serif; color: var(--ink); }
+  .kicker { font: 500 22px 'JetBrains Mono', monospace; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); }
+  .title  { font-weight: 800; font-size: 96px; line-height: 1.02; letter-spacing: -0.03em; }
+  .sub    { font-weight: 400; font-size: 34px; color: var(--muted); }
+  .label  { transform: translate(-50%, -50%); font-weight: 600; font-size: 28px; padding: 10px 18px; border-radius: 999px;
+            background: rgba(14,17,34,.72); border: 1px solid rgba(122,162,255,.45); backdrop-filter: blur(6px); white-space: nowrap; }
+  .label b { color: var(--accent); font-family: 'JetBrains Mono', monospace; margin-right: 10px; }
+  .stat   { font-weight: 800; font-size: 160px; letter-spacing: -0.04em;
+            background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; color: transparent; }
+  .cta    { font-weight: 800; font-size: 72px; padding: 22px 48px; border-radius: 28px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #0b0d17; }
+  .vignette { position: fixed; inset: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55)); }
+  body.vertical .title { font-size: 84px; } body.vertical .stat { font-size: 140px; }
+</style>
+</head>
+<body>
+<script type="module">
+import * as D from '/__skill/lib/director.js';
+const { THREE } = D;
+
+// ----------------------------------------------------------------- CONTENT (edit me)
+const COPY = {
+  kicker: 'Explained in 3D',
+  title: 'Ideas become motion',
+  sub: 'Prompt → Scene → Render',
+  layers: [['01', 'Prompt'], ['02', 'Scene'], ['03', 'Render']],
+  chart: [32, 48, 61, 87, 112],
+  stat: '+240%', statLabel: 'more watch time',
+  cta: 'Try it today',
+};
+const PALETTE = { bg: '#0b0d17', layers: ['#5b7cff', '#7ad7ff', '#ff8a5b'] };
+
+// ----------------------------------------------------------------- STAGE
+const size = D.frameSize(1920, 1080);
+const V = D.isVertical(size);
+if (V) document.body.classList.add('vertical');
+const stage = D.createStage({ ...size, background: PALETTE.bg });
+const { scene, camera } = stage;
+D.studioLights(scene);
+D.floor(scene, { y: -1.6, color: PALETTE.bg });
+const dust = D.particles(scene, { count: 350 });
+D.overlay();
+D.el('', 'vignette');
+
+// ----------------------------------------------------------------- OBJECTS
+// Hero: three slabs that start stacked as one block and explode into layers.
+const stack = new THREE.Group(); scene.add(stack);
+const slabs = PALETTE.layers.map((c, i) => {
+  const s = D.roundedBox(3.2, 0.42, 3.2, 0.14, D.mat.plastic(c));
+  s.position.y = (1 - i) * 0.44; stack.add(s); return s;
+});
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.35, 1), D.mat.glow('#ffffff', { flatShading: true }));
+stack.add(core);
+
+const chart = D.barChart(COPY.chart, { maxH: 3 });
+chart.group.position.set(V ? 0 : 2.2, -1.6, 0); scene.add(chart.group);
+
+// ----------------------------------------------------------------- OVERLAY TEXT
+const pad = V ? 80 : 120;
+const kicker = D.el(COPY.kicker, 'kicker', { left: pad + 'px', top: (V ? 200 : 150) + 'px' });
+const title = D.el('', 'title', { left: pad + 'px', top: (V ? 245 : 195) + 'px', width: (V ? size.width - 2 * pad : 1100) + 'px' });
+const titleIn = D.wordReveal(title, COPY.title);
+const sub = D.el(COPY.sub, 'sub', { left: pad + 'px', top: (V ? 460 : 330) + 'px' });
+const labels = COPY.layers.map(([n, t]) => D.el(`<b>${n}</b>${t}`, 'label'));
+const stat = D.el(COPY.stat, 'stat', V ? { left: pad + 'px', top: '230px' } : { left: pad + 'px', top: '330px' });
+const statLabel = D.el(COPY.statLabel, 'sub', V ? { left: pad + 'px', top: '420px' } : { left: (pad + 8) + 'px', top: '520px' });
+const cta = D.el(COPY.cta, 'cta', { left: '50%', top: V ? '72%' : '74%', '--tx': '-50%' });
+
+// ----------------------------------------------------------------- TIMELINE (seconds)
+// 0–3.5 title · 3.5–7.5 exploded layers · 7.5–11 chart · 11–14 outro
+const DURATION = 14;
+const camAngle = D.track([[0, -0.5], [3.5, 0.15], [7.5, 0.9], [11, 0.2], [14, -0.15]]);
+const camRadius = D.track([[0, V ? 17 : 12], [3.5, V ? 16 : 10.5], [7.5, V ? 17 : 11.5], [11, V ? 18 : 12.5], [14, V ? 15 : 10]]);
+const camTargetX = D.track([[0, V ? 0 : -1.8], [3.5, 0], [7.5, V ? 0 : 0.8], [11, 0], [14, 0]]);
+const camTargetY = D.track([[0, V ? -1.2 : 0], [3.5, 0], [7.5, V ? -1 : 0], [11, V ? -1.2 : 0.2], [14, V ? -1.4 : -0.3]]);
+const stackX = D.track([[0, V ? 0 : 2.4], [3.5, 0]]);
+
+function update(t) {
+  // camera
+  D.orbit(camera, { target: [camTargetX(t), camTargetY(t), 0], radius: camRadius(t), angle: camAngle(t), elevation: 0.32 });
+  D.handheld(camera, t);
+  dust.update(t);
+
+  // hero entrance + idle spin
+  const enter = D.prog(t, 0.2, 1.4, D.ease.outBack);
+  const away = D.prog(t, 7.4, 0.6, D.ease.inCubic) - D.prog(t, 10.7, 0.8, D.ease.outBack); // hide during chart
+  stack.scale.setScalar(Math.max(0.001, enter * (1 - away)));
+  stack.rotation.y = t * 0.35 - (1 - enter) * 1.5;
+  stack.position.x = stackX(t);
+  stack.position.y = Math.sin(t * 1.2) * 0.08;
+
+  // explode layers (3.5–5) and re-assemble (10.5–12)
+  const ex = D.prog(t, 3.8, 1.4, D.ease.outQuart) - D.prog(t, 10.6, 1.2, D.ease.inOutCubic);
+  slabs.forEach((s, i) => { s.position.y = (1 - i) * (0.44 + ex * 1.15); s.rotation.y = (i - 1) * ex * 0.35; });
+  core.scale.setScalar(0.6 + ex * 0.8 + Math.sin(t * 3) * 0.05);
+  core.rotation.set(t * 0.8, t * 1.1, 0);
+
+  // chart in scene 3
+  chart.update(D.prog(t, 7.6, 1.8, D.ease.linear) * (1 - D.prog(t, 10.7, 0.6)));
+  chart.group.visible = t > 7.4 && t < 11.4;
+
+  // overlay: title
+  const titleEnv = D.envelope(t, 0.3, 3.3, 0.6, 0.5);
+  D.reveal(kicker, D.prog(t, 0.3, 0.6) * D.envelope(t, 0.3, 3.3, 0.6, 0.5));
+  titleIn(D.prog(t, 0.5, 1.4, D.ease.linear)); title.style.opacity = titleEnv > 0 ? Math.min(1, titleEnv * 2) : 0;
+  title.style.visibility = titleEnv > 0.001 ? 'visible' : 'hidden';
+  D.reveal(sub, D.envelope(t, 1.4, 2.2, 0.6, 0.5));
+
+  // overlay: layer labels pinned in 3D
+  stack.updateMatrixWorld();
+  labels.forEach((l, i) => {
+    const s = slabs[i], p = new THREE.Vector3(1.9, 0, 1.2).applyMatrix4(s.matrixWorld);
+    D.pinTo(l, p, camera, size, [V ? 0 : 70, 0]);
+    D.reveal(l, D.envelope(t, 4.4 + i * 0.25, 3.0 - i * 0.25, 0.5, 0.4), { y: 20 });
+  });
+
+  // overlay: stat
+  const st = D.envelope(t, 8.2, 2.6, 0.6, 0.4);
+  D.reveal(stat, st); D.reveal(statLabel, D.envelope(t, 8.5, 2.3, 0.6, 0.4));
+  const n = Math.round(parseInt(COPY.stat.replace(/\D/g, '')) * D.prog(t, 8.2, 1.8, D.ease.outCubic));
+  stat.textContent = COPY.stat.replace(/\d+/, n);
+
+  // overlay: CTA
+  D.reveal(cta, D.prog(t, 12, 0.7, D.ease.outBack), { y: 60, scale: 0.85 });
+}
+
+D.mountScene({ stage, duration: DURATION, fps: 30, update });
+</script>
+</body>
+</html>
