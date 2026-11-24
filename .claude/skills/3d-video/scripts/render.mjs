@@ -20,7 +20,8 @@
 //
 // The scene directory is served at "/", the skill directory at "/__skill/".
 // Remote requests (CDN scripts, Google Fonts) are fetched with curl (proxy-aware)
-// and cached in ~/.cache/claude-3d-video so re-renders are offline and fast.
+// and cached in ~/.cache/claude-3d-video so re-renders are offline and fast. If a jsDelivr/unpkg
+// URL is blocked, the same package version is pulled from the npm registry instead.
 
 import http from 'node:http';
 import fs from 'node:fs';
@@ -103,6 +104,25 @@ function fetchCached(url) {
   return { body: fs.readFileSync(body), contentType: fs.readFileSync(meta, 'utf8') };
 }
 
+// Fallback for npm CDNs (jsDelivr / unpkg) that a sandbox or proxy blocks: fetch the same
+// package version from the npm registry with `npm pack` and serve the file from the tarball.
+function fetchFromNpm(url) {
+  const m = url.split('?')[0].match(/^https?:\/\/(?:cdn\.jsdelivr\.net\/npm|unpkg\.com)\/((?:@[^/]+\/)?[^/@]+)@([^/]+)\/(.+)$/);
+  if (!m) return null;
+  const [, name, ver, file] = m;
+  const dir = path.join(CACHE_DIR, 'npm', `${name.replace('/', '__')}@${ver}`);
+  if (!fs.existsSync(path.join(dir, 'package.json'))) {
+    fs.mkdirSync(dir, { recursive: true });
+    const tgz = execFileSync('npm', ['pack', `${name}@${ver}`, '--silent', '--pack-destination', dir], { stdio: ['ignore', 'pipe', 'pipe'] })
+      .toString().trim().split('\n').pop();
+    execFileSync('tar', ['-xzf', path.join(dir, tgz), '-C', dir, '--strip-components=1']);
+    fs.rmSync(path.join(dir, tgz), { force: true });
+  }
+  const f = path.normalize(path.join(dir, file));
+  if (!f.startsWith(dir) || !fs.existsSync(f)) return null;
+  return { body: fs.readFileSync(f), contentType: MIME[path.extname(f).toLowerCase()] || 'application/octet-stream' };
+}
+
 // ---------- browser ----------
 let chromium;
 try { ({ chromium } = require('playwright')); }
@@ -114,9 +134,12 @@ if (process.env.PW_EXECUTABLE) launchOpts.executablePath = process.env.PW_EXECUT
 const browser = await chromium.launch(launchOpts);
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
 await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, async route => {
-  try { const { body, contentType } = fetchCached(route.request().url());
-    await route.fulfill({ status: 200, body, headers: { 'content-type': contentType, 'access-control-allow-origin': '*' } }); }
-  catch (e) { console.warn(`! failed to fetch ${route.request().url()}: ${e.message.split('\n')[0]}`); await route.abort(); }
+  const url = route.request().url();
+  let res = null, err;
+  try { res = fetchCached(url); } catch (e) { err = e; }
+  if (!res) { try { res = fetchFromNpm(url); } catch (e) { err = e; } }
+  if (res) await route.fulfill({ status: 200, body: res.body, headers: { 'content-type': res.contentType, 'access-control-allow-origin': '*' } });
+  else { console.warn(`! failed to fetch ${url}: ${(err ? err.message : 'not found').split('\n')[0]}`); await route.abort(); }
 });
 const page = await ctx.newPage();
 const errors = [];

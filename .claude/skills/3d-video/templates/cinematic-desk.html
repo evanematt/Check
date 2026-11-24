@@ -14,6 +14,7 @@
   #overlay { font-family: 'Inter Tight', system-ui, sans-serif; color: #fff; }
   .cap { left: 50%; width: 78%; transform: translateX(-50%); text-align: center; font-weight: 800; font-size: 66px; line-height: 1.08;
          letter-spacing: -0.02em; text-shadow: 0 4px 24px rgba(0,0,0,.65), 0 1px 2px rgba(0,0,0,.8); }
+  .cap.scrim { padding: 14px 26px 18px; border-radius: 22px; background: rgba(12,9,7,.62); box-shadow: 0 10px 40px rgba(0,0,0,.45); width: auto; max-width: 78%; }
   .cap .hl { color: #ff4a2e; text-shadow: 0 0 22px rgba(255,74,46,.55), 0 2px 6px rgba(0,0,0,.7); }
   .bubble { transform-origin: 0 100%; display: flex; gap: 14px; align-items: center; padding: 14px 22px 14px 14px; border-radius: 26px;
             background: rgba(255,255,255,.92); color: #1a1a1f; box-shadow: 0 18px 40px rgba(0,0,0,.45); font-weight: 600; font-size: 25px; white-space: nowrap; }
@@ -29,6 +30,7 @@
   .vig { position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(0,0,0,.6) 100%); }
   .fade { position: fixed; inset: 0; background: #000; }
   body.vertical .cap { font-size: 74px; width: 88%; }
+  body.vertical .cap.scrim { max-width: 88%; }
   body.vertical .chrome { font-size: 84px; }
   body.vertical .endwrap .chrome { font-size: 220px; }
 </style>
@@ -280,7 +282,7 @@ function drawScreen(t) {
         sg.textAlign = 'center'; sg.fillText(c, x + ((W - 260) / 4 - 16) / 2, 545); sg.textAlign = 'left'; });
       sg.globalAlpha = 1; }
     // level up banner
-    const lv = D.prog(t, 18.0, 0.5, D.ease.outBack) * (1 - D.prog(t, 20.2, 0.3));
+    const lv = D.prog(t, 18.5, 0.5, D.ease.outBack) * (1 - D.prog(t, 20.2, 0.3));
     if (lv > 0.01) { sg.save(); sg.translate(W / 2, 470); sg.scale(lv, lv); rr(-250, -70, 500, 140, 22, '#ffd84a'); sg.strokeStyle = '#1a1a1a'; sg.lineWidth = 6; sg.stroke();
       sg.fillStyle = '#1a1a1a'; sg.font = font(900, 72); sg.textAlign = 'center'; sg.textBaseline = 'middle'; sg.fillText('LEVEL UP', 0, 4); sg.restore(); }
     // render progress
@@ -294,7 +296,8 @@ function drawScreen(t) {
       sg.fillStyle = '#4b5568'; sg.fillText(String(i + 1).padStart(2, ' '), 40, y);
       sg.fillStyle = ['#7cc4ff', '#ffb86b', '#b6f09c', '#ff8bd1'][i % 4]; sg.fillText(line, 110, y); }
   } else {                                         // F: end card on screen
-    desktopBg(); sg.fillStyle = 'rgba(255,255,255,.9)'; sg.font = font(700, 40, 'JetBrains Mono'); sg.fillText('> render complete', 90, 130);
+    desktopBg(); sg.globalAlpha = 1 - D.prog(t, 25.0, 0.4);
+    sg.fillStyle = 'rgba(255,255,255,.9)'; sg.font = font(700, 40, 'JetBrains Mono'); sg.fillText('> render complete', 90, 130);
     sg.fillStyle = '#7cc4ff'; sg.fillText('> 870 frames · 0 keyframes by hand', 90, 190);
     if (Math.floor(t * 2) % 2) { sg.fillStyle = '#fff'; sg.fillRect(90, 225, 22, 40); }
   }
@@ -335,13 +338,14 @@ function placeCamera(t) {
 D.overlay();
 D.el('', 'vig');
 const capEls = CAPTIONS.map(([s, e, text, hl, pos]) => {
-  const el = D.el('', 'cap', pos === 'top' ? { top: V ? '13%' : '9%' } : { bottom: V ? '22%' : '9%' });
+  const el = D.el('', pos === 'top' ? 'cap' : 'cap scrim', pos === 'top' ? { top: V ? '13%' : '9%' } : { bottom: V ? '22%' : '9%' });
   el.innerHTML = text.split(' ').map(w => `<span class="${hl.includes(w) ? 'hl' : ''}" style="display:inline-block;white-space:pre">${w} </span>`).join('');
   return { s, e, el, spans: [...el.children] };
 });
 const SCREEN_C = new THREE.Vector3();
 const bubbleEls = BUBBLES.map(([l, c, u, txt]) => D.el(`<div class="av" style="background:${c}">${l}</div><div><small>${u}</small>${txt}</div><span class="heart">♥</span>`, 'bubble'));
-const BUB_OFF = [[-0.95, 0.2, 0.45], [0.42, 0.42, 0.45], [-1.0, -0.22, 0.5], [0.5, -0.08, 0.55], [-0.3, 0.45, 0.4]];
+const BUB_OFF = (V ? [[-0.48, 0.3, 0.45], [0.05, 0.12, 0.5], [-0.5, -0.2, 0.5], [-0.3, -0.45, 0.55], [-0.25, -0.02, 0.4]]
+                   : [[-0.95, 0.2, 0.45], [0.55, 0.18, 0.45], [-1.0, -0.22, 0.5], [0.28, -0.12, 0.55], [0.05, -0.38, 0.4]]);
 const floatEls = FLOAT_WORDS.map(([w]) => D.el(w, 'chrome'));
 const endEl = D.el(`<div class="small">${END.above}</div><div class="chrome">${END.word}</div><div class="small">${END.below}</div>`, 'endwrap');
 const grain = D.filmGrain({ opacity: 0.09 });
@@ -375,7 +379,7 @@ function update(t) {
   mon.localToWorld(SCREEN_C.set(0, 0.08, 0.55));
   bubbleEls.forEach((b, i) => {
     const k = D.prog(t, 3.9 + i * 0.42, 0.45, D.ease.outBack) * (1 - D.prog(t, 6.9, 0.3));
-    const o = BUB_OFF[i], drift = Math.max(0, t - 3.9 - i * 0.42) * 0.05;
+    const o = BUB_OFF[i], drift = Math.max(0, t - 3.9 - i * 0.42) * 0.02;
     D.pinTo(b, [SCREEN_C.x + o[0] * k, SCREEN_C.y + o[1] * k + drift, SCREEN_C.z + o[2]], camera, size);
     b.style.opacity = D.clamp(k * 1.5); b.style.visibility = k > 0.01 ? 'visible' : 'hidden';
     b.style.transform = `translate(-10%, -100%) scale(${Math.max(0, k)}) rotate(${(i % 2 ? 1 : -1) * 3}deg)`;
@@ -384,7 +388,8 @@ function update(t) {
   // floating chrome words (19.0 – 22.1)
   floatEls.forEach((f, i) => {
     const k = D.prog(t, 19.0 + i * 0.45, 0.5, D.ease.outBack) * (1 - D.prog(t, 21.9, 0.3));
-    const [x, y, z] = FLOAT_WORDS[i][1];
+    const [x0, y0, z] = FLOAT_WORDS[i][1];
+    const x = V ? x0 * 0.32 : x0, y = V ? [2.5, 2.0, 0.1, 0.55][i % 4] : y0;
     D.pinTo(f, [x, y + Math.sin(t * 1.5 + i) * 0.04, z], camera, size);
     f.style.opacity = D.clamp(k); f.style.visibility = k > 0.01 ? 'visible' : 'hidden';
     f.style.transform = `translate(-50%, -50%) skewX(-8deg) scale(${0.6 + 0.4 * k}) translateY(${(1 - k) * 30}px)`;

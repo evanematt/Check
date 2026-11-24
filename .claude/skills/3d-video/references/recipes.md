@@ -118,4 +118,6 @@ Environment lighting (nicer reflections): `RoomEnvironment` from `three/addons/e
 | Stripes on surfaces | Shadow acne: raise `light.shadow.normalBias` |
 | Fonts fall back | Add `&display=block` to the Google Fonts URL; the renderer waits on `document.fonts.ready` |
 | Slow render | Lower `--fps 24`, reduce shadow map to 1024, fewer particles, render slices in parallel with `--from/--to` then `ffmpeg -f concat` |
-| Remote asset fails | The renderer fetches CDN/fonts with curl and caches in `~/.cache/claude-3d-video`; check network or vendor the file next to the scene |
+| Remote asset fails | The renderer fetches CDN/fonts with curl and caches in `~/.cache/claude-3d-video`; if jsDelivr/unpkg is blocked it pulls the same package version from the npm registry (`npm pack`). Otherwise check network or vendor the file next to the scene |
+| Overlay text collides in 9:16 | 3D-pinned overlays (`D.pinTo`) keep their 16:9 world offsets and fall off the sides of a vertical frame. Give pinned items separate `V ? [...] : [...]` offsets that hug the centre line, and check a still per shot in both sizes |
+| Caption unreadable over a bright screen | Put captions that sit over UI/screens on a dark pill (`.cap.scrim` in `cinematic-desk.html`) and don't time on-screen pop-ups (banners, bubbles) to overlap the caption's area |
