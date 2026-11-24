@@ -12,20 +12,22 @@ function preview(canvas) {
   return c;
 }
 
-export function openLibrary({ samples, uploads, onPick, onUpload }) {
+export function openLibrary({ samples, uploads, onPick, onUpload, onDemo }) {
   let modal;
   const item = (name, canvas) =>
     h('button', { class: 'lib-item', type: 'button', onClick: () => { onPick(canvas, name); modal.close(); } },
       preview(canvas), h('span', {}, name));
   const body = h('div', {},
     h('div', { class: 'lib-grid' },
-      h('button', { class: 'lib-item add', type: 'button', onClick: () => { modal.close(); onUpload(); } }, icon('upload', 22), h('span', {}, 'Upload image')),
+      h('button', { class: 'lib-item add', type: 'button', onClick: () => { modal.close(); onUpload(); } }, icon('upload', 22), h('span', {}, 'Upload image or video')),
     ),
     h('h4', { class: 'lib-h' }, 'Samples'),
     h('div', { class: 'lib-grid' }, samples.map((s) => item(s.name, s.canvas))),
+    onDemo ? [h('h4', { class: 'lib-h' }, 'Video'), h('div', { class: 'lib-grid' },
+      h('button', { class: 'lib-item add', type: 'button', onClick: () => { modal.close(); onDemo(); } }, icon('play', 22), h('span', {}, 'Animated demo')))] : null,
     uploads.length ? [h('h4', { class: 'lib-h' }, 'This session'), h('div', { class: 'lib-grid' }, uploads.map((u) => item(u.name, u.canvas)))] : null,
   );
-  modal = openModal({ title: 'Image library', body, width: 640 });
+  modal = openModal({ title: 'Library', body, width: 640 });
 }
 
 export function openHelp() {
@@ -40,7 +42,8 @@ export function openHelp() {
     ['Scroll / pinch', 'Zoom at cursor'],
     ['Drag', 'Pan'],
     ['Double-click slider', 'Reset that slider'],
-    ['Drop / paste an image', 'Load it'],
+    ['Drop / paste an image or video', 'Load it'],
+    ['Space', 'Play / pause the video'],
   ];
   openModal({
     title: 'Help & shortcuts',

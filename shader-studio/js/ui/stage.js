@@ -61,7 +61,7 @@ export function createStage({ stage, wrap, canvas, onZoom, onPointer }) {
   const ptrs = new Map();
   let pinchDist = 0;
   stage.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.dock, .badge, .popover, button, a, input, select')) return;
+    if (e.target.closest('.dock, .vbar, .badge, .popover, button, a, input, select')) return;
     stage.setPointerCapture(e.pointerId);
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
     stage.classList.add('grabbing');
@@ -95,7 +95,7 @@ export function createStage({ stage, wrap, canvas, onZoom, onPointer }) {
   stage.addEventListener('pointerup', end);
   stage.addEventListener('pointercancel', end);
   stage.addEventListener('dblclick', (e) => {
-    if (!e.target.closest('.dock, .badge, .popover')) fit();
+    if (!e.target.closest('.dock, .vbar, .badge, .popover')) fit();
   });
 
   new ResizeObserver(apply).observe(stage);

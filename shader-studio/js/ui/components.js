@@ -55,15 +55,61 @@ export function toggle({ label, value, onChange }) {
   return h('div', { class: 'ctl ctl-inline' }, h('span', { class: 'ctl-label' }, label), btn);
 }
 
+const HEX_RE = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+/** '#f80', 'ff8800', ' #FF8800 ' -> '#ff8800'; anything else -> null. */
+export function normalizeHex(text) {
+  const m = HEX_RE.exec(String(text).trim());
+  if (!m) return null;
+  const hex = m[1].length === 3 ? [...m[1]].map((c) => c + c).join('') : m[1];
+  return `#${hex.toLowerCase()}`;
+}
+
 export function color({ label, value, onInput, onChange }) {
-  const input = h('input', { type: 'color', 'aria-label': label, value });
-  const hex = h('span', { class: 'val' }, value);
-  input.addEventListener('input', () => {
-    hex.textContent = input.value;
-    onInput?.(input.value);
+  const picker = h('input', { type: 'color', 'aria-label': `${label} picker`, value });
+  const text = h('input', {
+    type: 'text', class: 'hex-input', 'aria-label': `${label} hex code`, value,
+    maxlength: '9', spellcheck: 'false', autocomplete: 'off', placeholder: '#rrggbb',
   });
-  input.addEventListener('change', () => onChange?.(input.value));
-  return h('div', { class: 'ctl ctl-inline' }, h('span', { class: 'ctl-label' }, label), h('div', { class: 'color' }, hex, input));
+  const setInvalid = (bad) => text.classList.toggle('invalid', bad);
+
+  picker.addEventListener('input', () => {
+    text.value = picker.value;
+    setInvalid(false);
+    onInput?.(picker.value);
+  });
+  picker.addEventListener('change', () => onChange?.(picker.value));
+
+  // typing: apply live as soon as the code is valid
+  text.addEventListener('input', () => {
+    const hex = normalizeHex(text.value);
+    setInvalid(!hex && text.value.trim() !== '');
+    if (hex) {
+      picker.value = hex;
+      onInput?.(hex);
+    }
+  });
+  // leaving the field or pressing Enter: commit, or put the last good color back
+  const finish = () => {
+    const hex = normalizeHex(text.value);
+    if (hex) {
+      const changed = hex !== text.dataset.committed;
+      text.value = hex;
+      picker.value = hex;
+      text.dataset.committed = hex;
+      if (changed) onChange?.(hex);
+    } else {
+      text.value = picker.value;
+    }
+    setInvalid(false);
+  };
+  text.dataset.committed = value;
+  text.addEventListener('change', finish);
+  text.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); finish(); text.blur(); } });
+  text.addEventListener('focus', () => text.select());
+  picker.addEventListener('change', () => { text.dataset.committed = picker.value; });
+
+  return h('div', { class: 'ctl ctl-inline' }, h('span', { class: 'ctl-label' }, label), h('div', { class: 'color' }, text, picker));
 }
 
 export const sectionTitle = (text) => h('h3', { class: 'section-title' }, `/ ${text}`);

@@ -235,7 +235,18 @@ export class Renderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    this.image = { tex, w: source.width, h: source.height };
+    this.image = { tex, w: source.videoWidth || source.width, h: source.videoHeight || source.height };
+  }
+
+  /** Re-upload the current frame of a video (or animated canvas) into the existing texture. */
+  updateImage(source) {
+    const gl = this.gl;
+    if (!this.image) return;
+    gl.bindTexture(gl.TEXTURE_2D, this.image.tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.generateMipmap(gl.TEXTURE_2D);
   }
 
   /** Compile (once) and return the program entry for a style. entry.error is set on failure. */

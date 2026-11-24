@@ -20,13 +20,14 @@
       <div class="badge compare" id="compareBadge" hidden>Original</div>
       <div class="busy" id="busy" hidden><i></i><span></span></div>
       <div class="drop-overlay" id="dropOverlay" hidden><span>Drop an image to load it</span></div>
+      <div class="vbar" id="videoBar" hidden></div>
       <nav class="dock" id="dock" aria-label="Actions"></nav>
     </main>
 
     <aside class="controls-panel" id="controlsPanel" aria-label="Controls"></aside>
   </div>
 
-  <input type="file" id="fileInput" accept="image/*" hidden />
+  <input type="file" id="fileInput" accept="image/*,video/*" hidden />
   <noscript><p class="fatal">Shader Studio needs JavaScript and WebGL2.</p></noscript>
   <script type="module" src="js/main.js"></script>
 </body>
