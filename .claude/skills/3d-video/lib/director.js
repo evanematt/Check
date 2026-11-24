@@ -223,6 +223,34 @@ export function pinTo(e, vec3, camera, { width, height }, offset = [0, 0]) {
   e.style.top = ((1 - v.y) / 2 * height + offset[1]) + 'px';
 }
 
+// ---------------------------------------------------------------- post-processing
+/**
+ * Cinematic bloom (glowing screens, lamps, highlights). Use top-level await in the scene module:
+ *   const fx = await D.postFX(stage, { strength: 0.7 });
+ *   D.mountScene({ stage, duration, update, render: fx.render });
+ * Emissive / MeshBasicMaterial surfaces brighter than `threshold` glow.
+ */
+export async function postFX(stage, { strength = 0.6, radius = 0.5, threshold = 0.85 } = {}) {
+  const [{ EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+    import('three/addons/postprocessing/EffectComposer.js'), import('three/addons/postprocessing/RenderPass.js'),
+    import('three/addons/postprocessing/UnrealBloomPass.js'), import('three/addons/postprocessing/OutputPass.js')]);
+  const { renderer, scene, camera, width, height } = stage;
+  const composer = new EffectComposer(renderer);
+  composer.setPixelRatio(1); composer.setSize(width, height);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(width, height), strength, radius, threshold);
+  composer.addPass(bloom); composer.addPass(new OutputPass());
+  return { composer, bloom, render: () => composer.render() };
+}
+
+/** Deterministic film grain overlay (canvas). Call grain.update(frameIndex) each frame. */
+export function filmGrain({ opacity = 0.07, scale = 3 } = {}) {
+  const c = document.createElement('canvas'); const w = Math.ceil(innerWidth / scale), h = Math.ceil(innerHeight / scale);
+  c.width = w; c.height = h; Object.assign(c.style, { position: 'fixed', inset: 0, width: '100%', height: '100%', opacity, mixBlendMode: 'overlay', pointerEvents: 'none', imageRendering: 'pixelated' });
+  overlay().appendChild(c); const g = c.getContext('2d'); const img = g.createImageData(w, h);
+  return { el: c, update(frame) { const r = rng(frame * 7919 + 1); for (let i = 0; i < img.data.length; i += 4) { const v = r() * 255; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; } g.putImageData(img, 0, 0); } };
+}
+
 // ---------------------------------------------------------------- mount
 /**
  * Register the scene with the renderer.
@@ -230,9 +258,10 @@ export function pinTo(e, vec3, camera, { width, height }, offset = [0, 0]) {
  * update(t) sets all object state for time t; director renders afterwards.
  * Preview in a browser: ?t=2.5 freezes at 2.5 s, ?play=1 plays in real time.
  */
-export function mountScene({ stage, duration, fps = 30, update, assets = [] }) {
+export function mountScene({ stage, duration, fps = 30, update, assets = [], render }) {
   const { renderer, scene, camera, width, height } = stage;
-  const seek = t => { update(t); renderer.render(scene, camera); };
+  const draw = render || (() => renderer.render(scene, camera));
+  const seek = t => { update(t); draw(t); };
   const ready = Promise.all([document.fonts ? document.fonts.ready : null, ...assets]).then(() => { seek(0); });
   window.SCENE = { width, height, fps, duration, ready, seek, resize() { renderer.setSize(width, height); } };
   const q = new URLSearchParams(location.search);

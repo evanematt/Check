@@ -14,8 +14,9 @@ Everything lives in this skill folder:
 | Path | What it is |
 |---|---|
 | `scripts/render.mjs` | Renderer: serves the scene, seeks every frame, screenshots, pipes into ffmpeg (H.264, yuv420p, faststart). Also `--stills` and `--serve` |
-| `lib/director.js` | Toolkit: easing, `prog`/`tween`/`track`/`envelope`, seeded `rng`, `createStage`, `studioLights`, `floor`, materials, `roundedBox`, `barChart`, `particles`, `connector`, camera `orbit`/`handheld`, overlay `el`/`reveal`/`wordReveal`/`pinTo`, `mountScene` |
+| `lib/director.js` | Toolkit: `postFX` (bloom), `filmGrain`, easing, `prog`/`tween`/`track`/`envelope`, seeded `rng`, `createStage`, `studioLights`, `floor`, materials, `roundedBox`, `barChart`, `particles`, `connector`, camera `orbit`/`handheld`, overlay `el`/`reveal`/`wordReveal`/`pinTo`, `mountScene` |
 | `templates/explainer.html` | Complete working 14s explainer (title → exploded layers with pinned labels → 3D bar chart + counter → CTA). Responsive to vertical. **Start from this.** |
+| `templates/cinematic-desk.html` | 29s cinematic "storytelling reel": a lamp-lit room with a retro computer, sunset light through blinds, bloom, film grain, hard cuts between 8 camera shots, an animated canvas UI on the CRT screen, word-by-word captions, chat bubbles popping from the screen, floating chrome words and a "Comment SKILL" end card. Start from this for moody, cinematic, social-first videos. |
 | `references/recipes.md` | Shot recipes, camera moves, pacing, styles, palettes, GLTF models, audio, troubleshooting |
 
 Requirements: Node 18+, Playwright with Chromium, ffmpeg. (Check: `node -v; ffmpeg -version | head -1; node -e "require('playwright')"`.)
@@ -51,6 +52,8 @@ Other rules:
 - Lay out for both orientations with `D.isVertical(size)`; in vertical, stack text above/below the object and pull the camera back.
 - Keep text inside a safe area: ≥ 6% from edges; for 9:16 keep the bottom ~18% and right ~12% clear (platform UI).
 - Load assets (GLTF, textures, fonts) as promises and pass them to `mountScene({ assets })` so rendering waits.
+
+**Cinematic look** (see `cinematic-desk.html`): one strong warm key light through a patterned blocker (window blinds) for striped shadows, a dim cool or warm fill, practical lights (lamp bulb, glowing screen) as `MeshBasicMaterial` with `toneMapped:false` so bloom picks them up, `D.postFX` bloom, `D.filmGrain`, a CSS vignette, fog, and a shot list with hard cuts (brief blur pop on each cut). Screens and UIs are a 2D canvas redrawn from `t` and used as a `CanvasTexture`.
 
 ### 4. Check stills before rendering (fast, ~3s)
 ```bash
