@@ -12,6 +12,7 @@
 //   --stills <t1,t2,...>    Write PNG stills at these times (seconds) instead of a video
 //   --audio <file>          Mux an audio track (trimmed to video length, faded out)
 //   --crf <n>               x264 quality (default 18, lower = better)
+//   --query <a=1&b=2>       Extra URL params for the scene (debug cameras, variants)
 //   --serve                 Just serve the scene and print a URL for live preview
 //
 // Scene contract (see lib/director.js -> mountScene):
@@ -81,6 +82,7 @@ await new Promise(r => server.listen(0, '127.0.0.1', r));
 const port = server.address().port;
 const qs = new URLSearchParams();
 if (opts.size) { const [w, h] = opts.size.split('x').map(Number); qs.set('w', w); qs.set('h', h); }
+if (opts.query) for (const [k, v] of new URLSearchParams(opts.query)) qs.set(k, v);
 const pageUrl = `http://127.0.0.1:${port}/${sceneFile}${qs.toString() ? '?' + qs : ''}`;
 
 if (opts.serve) {

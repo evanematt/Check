@@ -17,6 +17,7 @@ Everything lives in this skill folder:
 | `lib/director.js` | Toolkit: `postFX` (bloom), `filmGrain`, easing, `prog`/`tween`/`track`/`envelope`, seeded `rng`, `createStage`, `studioLights`, `floor`, materials, `roundedBox`, `barChart`, `particles`, `connector`, camera `orbit`/`handheld`, overlay `el`/`reveal`/`wordReveal`/`pinTo`, `mountScene` |
 | `templates/explainer.html` | Complete working 14s explainer (title → exploded layers with pinned labels → 3D bar chart + counter → CTA). Responsive to vertical. **Start from this.** |
 | `templates/cinematic-desk.html` | 29s cinematic "storytelling reel": a lamp-lit room with a retro computer, sunset light through blinds, bloom, film grain, hard cuts between 8 camera shots, an animated canvas UI on the CRT screen, word-by-word captions, chat bubbles popping from the screen, floating chrome words and a "Comment SKILL" end card. Start from this for moody, cinematic, social-first videos. |
+| `templates/character-orbit.html` | 30s stylized **character** piece: a procedurally modelled person (curly hair, glasses, hoodie, plaid pants, sneakers, cigarette with deterministic smoke) at a retro PC, the camera orbiting around them twice while a time-lapse day → night → morning cycle repeats (moving sun/moon through a window with blinds, sky + skyline, lamp turning on at dusk, DAY/clock HUD). Start from this for character turnarounds, orbits and time-lapse lighting. Character colours live in `LOOK`. |
 | `references/recipes.md` | Shot recipes, camera moves, pacing, styles, palettes, GLTF models, audio, troubleshooting |
 
 Requirements: Node 18+, Playwright with Chromium, ffmpeg. (Check: `node -v; ffmpeg -version | head -1; node -e "require('playwright')"`.)
@@ -69,7 +70,7 @@ Fix and repeat until every beat reads well. This is where quality comes from.
 node .claude/skills/3d-video/scripts/render.mjs ./my-video/scene.html --out ./my-video/video-16x9.mp4
 node .claude/skills/3d-video/scripts/render.mjs ./my-video/scene.html --size 1080x1920 --out ./my-video/video-9x16.mp4
 ```
-Options: `--fps 60`, `--from 3 --to 7` (render a slice), `--audio music.mp3` (trimmed + faded), `--crf 16` (higher quality). Software WebGL renders ~4–5 fps at 1080p, so 15s ≈ 1.5–2 min.
+Options: `--fps 60`, `--query "ang=3.14&r=4&bright=1"` (extra URL params for debug cameras/variants), `--from 3 --to 7` (render a slice), `--audio music.mp3` (trimmed + faded), `--crf 16` (higher quality). Software WebGL renders ~4–5 fps at 1080p, so 15s ≈ 1.5–2 min.
 
 Live preview in a browser: `--serve`, then open the URL with `?play=1` (loop) or `?t=4.2` (freeze).
 
