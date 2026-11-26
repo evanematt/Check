@@ -13,14 +13,16 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
    The book is anchored to a point *on the painting* (fractions of the 1344×896 image),
    so it stays on the same snow ridge whatever the screen shape. */
 const PLACE = {
-  wide:   { fx: 0.585, fy: 0.735, height: 0.34 },  // height = visible book height / viewport height
-  narrow: { fx: 0.34,  fy: 0.80,  height: 0.30 },
+  wide:   { fx: 0.70, fy: 0.80, height: 0.38 },  // height = book size relative to viewport height
+  narrow: { fx: 0.30, fy: 0.88,  height: 0.36 },
 };
 const IMG_RATIO = 1344 / 896;
 
 const BOOK_SCALE = 4;        // model is ~0.31 m tall → ~1.23 units
-const BURY = 0.26;           // how far the base sits below the snow line
-const HOP = 0.2;             // how high it jumps on hover
+const BURY = 0.2;            // how far the base sits below the snow line
+const HOP = 0.64;            // on hover it flies all the way out of the drift
+const LEAN = -0.22;          // leaning back
+const SLOT_Z = Math.tan(LEAN) * 0.42;   // where the leaning book meets the drift surface
 const SNOW_Y = 0.02;         // anything of the book below this is clipped (it's "in the snow")
 
 /* ───────── Renderer / scene ───────── */
@@ -33,7 +35,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 50);
-camera.position.set(0, 2.1, 6.7);
+camera.position.set(0, 2.7, 6.5);
 camera.lookAt(0, 0, 0);
 const CAM_DIST = camera.position.length();
 
@@ -109,27 +111,33 @@ const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a
 const BOOK_YAW = 0.22;
 const snowTex = strokeTexture();
 
+// height of the snow drift at (x, z) — shared by the drift and the slot left behind
+function driftHeight(x, z) {
+  const cs = Math.cos(BOOK_YAW), sn = Math.sin(BOOK_YAW);
+  const zz = z - SLOT_Z;
+  const u = x * cs - zz * sn, v = x * sn + zz * cs;
+  const du = Math.max(Math.abs(u) - 0.42, 0);
+  const dv = Math.max(Math.abs(v) - 0.03, 0) * (v > 0 ? 0.8 : 1.2);    // snow piled more in front
+  const d2 = du * du + dv * dv;
+  const lump = 0.75 + 0.5 * noise(x * 2.6 + 3, z * 2.6);
+  let h = 0.17 * lump * Math.exp(-d2 / 0.05);                           // drift hugging the book
+  h += 0.07 * Math.exp(-(x * x) / 1.1 - (z * z) / 0.5);                  // gentle wide mound
+  h += (noise(x * 5 + 7, z * 5) - 0.5) * 0.04 * Math.exp(-d2 / 0.3);     // lumps
+  h += (noise(x * 14, z * 14) - 0.5) * 0.01;
+  h += (noise(u * 7 + 11, 1.3) - 0.35) * 0.06 * Math.exp(-d2 / 0.012);  // clumps along the slot
+  return h;
+}
+
 function buildDrift() {
-  const geo = new THREE.PlaneGeometry(3.6, 2.6, 180, 130);
+  const geo = new THREE.PlaneGeometry(3.8, 2.6, 190, 130);
   geo.rotateX(-Math.PI / 2);
   const pos = geo.attributes.position;
   const colors = new Float32Array(pos.count * 4);
   const lo = new THREE.Color('#2443c4'), hi = new THREE.Color('#b9c3ff'), tmp = new THREE.Color();
-  const cs = Math.cos(BOOK_YAW), sn = Math.sin(BOOK_YAW);
 
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
-    // distance to the book's footprint (rotated with the book)
-    const u = x * cs - z * sn, v = x * sn + z * cs;
-    const du = Math.max(Math.abs(u) - 0.4, 0);
-    const dv = Math.max(Math.abs(v) - 0.04, 0) * (v > 0 ? 0.8 : 1.2);    // snow piled more in front
-    const d2 = du * du + dv * dv;
-    const lump = 0.75 + 0.5 * noise(x * 2.6 + 3, z * 2.6);
-    let h = 0.17 * lump * Math.exp(-d2 / 0.045);                          // drift hugging the book
-    h += 0.06 * Math.exp(-(x * x) / 0.9 - (z * z) / 0.45);                 // gentle wide mound
-    h += (noise(x * 5 + 7, z * 5) - 0.5) * 0.04 * Math.exp(-d2 / 0.3);     // lumps
-    h += (noise(x * 14, z * 14) - 0.5) * 0.01;
-    h += (noise(u * 7 + 11, 1.3) - 0.35) * 0.07 * Math.exp(-d2 / 0.012); // clumps right against the cover
+    const h = driftHeight(x, z);
     pos.setY(i, h);
 
     // organic, noisy footprint that melts into the painted snow
@@ -158,6 +166,51 @@ function buildDrift() {
 }
 scene.add(buildDrift());
 
+/* ───────── The slot the book leaves in the drift ───────── */
+function slotTexture() {
+  const w = 512, h = 96;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.filter = 'blur(5px)';
+  // soft trodden rim
+  g.fillStyle = 'rgba(20, 34, 140, 0.6)';
+  g.beginPath(); g.roundRect(10, 8, w - 20, h - 16, 36); g.fill();
+  // the dark opening: lit back wall at the top, deep shadow below
+  const grad = g.createLinearGradient(0, 24, 0, h - 24);
+  grad.addColorStop(0, '#7d8ff5');
+  grad.addColorStop(0.35, '#2a3fb8');
+  grad.addColorStop(0.6, '#0a1352');
+  grad.addColorStop(1, '#050a2e');
+  g.fillStyle = grad;
+  g.beginPath(); g.roundRect(26, 24, w - 52, h - 48, 22); g.fill();
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function buildSlot() {
+  const W = 1.1, D = 0.34;
+  const geo = new THREE.PlaneGeometry(W, D, 64, 8);
+  geo.rotateX(-Math.PI / 2);
+  const cs = Math.cos(BOOK_YAW), sn = Math.sin(BOOK_YAW);
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const u = p.getX(i), v = p.getZ(i);
+    const x = u * cs + v * sn, z = -u * sn + v * cs + SLOT_Z;
+    p.setXYZ(i, x, driftHeight(x, z) + 0.006, z);
+  }
+  const mat = new THREE.MeshBasicMaterial({
+    map: slotTexture(), transparent: true, opacity: 0, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -2,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.renderOrder = 3;
+  return mesh;
+}
+const slot = buildSlot();
+scene.add(slot);
+
 /* ───────── Snow puff (on hop) ───────── */
 const PUFF = 70;
 const puffGeo = new THREE.BufferGeometry();
@@ -182,17 +235,18 @@ const puffMat = new THREE.ShaderMaterial({
       gl_FragColor = vec4(vec3(.82,.86,1.), vA * .75 * smoothstep(.5,.0,d)); }`,
 });
 const puff = new THREE.Points(puffGeo, puffMat);
-puff.renderOrder = 3;
+puff.renderOrder = 4;
 scene.add(puff);
 
 function burst(strength = 1) {
   const cs = Math.cos(BOOK_YAW), sn = Math.sin(BOOK_YAW);
   for (let i = 0; i < PUFF; i++) {
     if (Math.random() > strength) continue;
-    const u = (Math.random() - 0.5) * 1.1, v = 0.08 + Math.random() * 0.12;
-    puffPos[i * 3] = u * cs + v * sn;
-    puffPos[i * 3 + 1] = 0.2 + Math.random() * 0.1;
-    puffPos[i * 3 + 2] = -u * sn + v * cs;
+    const u = (Math.random() - 0.5) * 1.0, v = (Math.random() - 0.3) * 0.12;
+    const x = u * cs + v * sn, z = -u * sn + v * cs + SLOT_Z;
+    puffPos[i * 3] = x;
+    puffPos[i * 3 + 1] = driftHeight(x, z) + 0.02;
+    puffPos[i * 3 + 2] = z;
     puffVel[i * 3] = (Math.random() - 0.5) * 0.9 + Math.sign(u) * 0.3;
     puffVel[i * 3 + 1] = 0.8 + Math.random() * 1.2;
     puffVel[i * 3 + 2] = 0.2 + Math.random() * 0.6;
@@ -214,7 +268,7 @@ function stepPuff(dt) {
 
 /* ───────── The book ───────── */
 const pivot = new THREE.Group();          // animated: hop + wobble
-const base = { y: -BURY, rx: -0.3, ry: BOOK_YAW, rz: -0.07 };
+const base = { y: -BURY, rx: LEAN, ry: BOOK_YAW, rz: -0.07 };
 pivot.position.y = base.y;
 pivot.rotation.set(base.rx, base.ry, base.rz);
 scene.add(pivot);
@@ -245,32 +299,9 @@ new GLTFLoader().load('assets/book.glb', (gltf) => {
     bookMeshes.push(o);
   });
 
-  pivot.add(snowCap(BOOK_SCALE * (box.max.x - box.min.x), BOOK_SCALE * (box.max.y - box.min.y)));
-
   layout();
   canvas.classList.add('is-ready');
 });
-
-// a lumpy line of snow resting on the book's top edge
-function snowCap(width, height) {
-  const geo = new THREE.SphereGeometry(1, 64, 20);
-  const p = geo.attributes.position;
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-    const t = Math.min(1, Math.abs(x));
-    const profile = Math.pow(1 - t * t, 0.35) * (0.45 + 0.9 * noise(x * 5 + 2, 0.5));
-    const bump = 1 + 0.25 * (noise(x * 18, y * 4 + z * 4) - 0.5);
-    p.setXYZ(i,
-      x * width * 0.48,
-      (y > 0 ? y * 0.085 * profile * bump : y * 0.015),
-      z * (0.035 + 0.035 * profile) * bump);
-  }
-  geo.computeVertexNormals();
-  const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xc4ccff, map: snowTex, roughness: 1 }));
-  mesh.position.y = height + 0.004;
-  mesh.castShadow = true;
-  return mesh;
-}
 
 /* ───────── Layout: size + lens-shift so the drift sits on the painted ridge ───────── */
 let vw = 1, vh = 1;
@@ -290,7 +321,7 @@ function layout() {
   anchor.y = (vh - sh) / 2 + p.fy * sh;
 
   // visible book ≈ 0.95 units tall; cap by width on narrow screens
-  const targetPx = Math.min(p.height * vh, vw * 0.62);
+  const targetPx = Math.min(p.height * vh, vw * 0.55);
   const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   camera.zoom = (2 * targetPx / vh) * CAM_DIST * halfTan / 0.95;
   camera.updateProjectionMatrix();
@@ -330,7 +361,7 @@ function setOpen(v) {
     positionCard();
     requestAnimationFrame(() => card.classList.add('is-open'));
     hop.target = HOP;
-    hop.vel += reduceMotion ? 0 : 2.6;
+    hop.vel += reduceMotion ? 0 : 1.2;
     if (!reduceMotion) burst(1);
   } else {
     card.classList.remove('is-open');
@@ -446,8 +477,9 @@ function tick(now) {
   }
 
   const lift = hop.y / HOP;                         // 0 … ~1
-  pivot.position.y = base.y + hop.y;
-  pivot.rotation.x = base.rx + lift * 0.12;         // straightens up towards the viewer
+  pivot.position.y = base.y + hop.y + Math.sin(now / 650) * 0.025 * Math.min(1, Math.max(0, lift));
+  slot.material.opacity = smooth(0.45, 0.85, lift);
+  pivot.rotation.x = base.rx + lift * 0.18;         // straightens up towards the viewer
   pivot.rotation.z = base.rz + Math.sin(now / 160) * hop.vel * 0.012;
   pivot.rotation.y = base.ry - lift * 0.08;
   glow.intensity += ((open ? 2.2 : 0) - glow.intensity) * Math.min(1, dt * 6);
