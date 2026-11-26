@@ -74,11 +74,15 @@
     return e;
   };
   let n = 0;
+  const lamps = [];   // every bulb, in the painting's 1274×1517 space — the light maps below are drawn from these
   for (const id in STRANDS) {
     const svg = document.getElementById(id);
     if (!svg) continue;
     const f = el('filter', { id: id + 'Glow', x: '-200%', y: '-200%', width: '500%', height: '500%' }, el('defs', {}, svg));
-    el('feGaussianBlur', { stdDeviation: 7 }, f);
+    el('feGaussianBlur', { stdDeviation: 9 }, f);
+    const bf = el('filter', { id: id + 'Bloom', x: '-300%', y: '-300%', width: '700%', height: '700%' }, svg.querySelector('defs'));
+    el('feGaussianBlur', { stdDeviation: 22 }, bf);
+    const blooms = el('g', { filter: `url(#${id}Bloom)` }, svg);
     const halos = el('g', { filter: `url(#${id}Glow)` }, svg);
     const wires = el('g', {}, svg);
     const bulbs = el('g', {}, svg);
@@ -94,12 +98,82 @@
       for (let L = 17; L < len; L += 34) {
         const p = path.getPointAtLength(L);
         const delay = `${(-(n * 0.21) % 1.8).toFixed(2)}s`;
-        el('circle', { cx: p.x, cy: p.y + 6, r: 19, class: 'halo', style: `animation-delay:${delay}` }, halos);
+        el('circle', { cx: p.x, cy: p.y + 8, r: 30, class: 'bloom' }, blooms);
+        el('circle', { cx: p.x, cy: p.y + 7, r: 26, class: 'halo', style: `animation-delay:${delay}` }, halos);
+        lamps.push([p.x, p.y + 8]);
         el('rect', { x: p.x - 3, y: p.y - 1.5, width: 6, height: 5, rx: 1, class: 'cap' }, bulbs);
         el('ellipse', { cx: p.x, cy: p.y + 8, rx: 5.2, ry: 7.2, class: 'bulb', style: `animation-delay:${delay}` }, bulbs);
         n++;
       }
     }
+  }
+
+  /* ───────── Garland light maps ─────────
+     The bulbs throw warm light: strongly onto the robot (canvas masked to the painted robot),
+     and broadly onto the snow and painting around it (a large canvas screened over the scene). */
+  const nrk = document.querySelector('.nrk');
+  const bodyLight = document.querySelector('.nrk-light');
+  const spill = document.querySelector('.nrk-spill canvas');
+  const PW = 1274, PH = 1517;
+
+  function sizeCanvas(c) {
+    const r = c.getBoundingClientRect();
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    c.width = Math.max(1, Math.round(r.width * dpr));
+    c.height = Math.max(1, Math.round(r.height * dpr));
+    return c.getContext('2d');
+  }
+  function glowAt(ctx, x, y, r, rgba) {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, rgba);
+    g.addColorStop(1, 'rgba(255, 150, 40, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+
+  function paintLight() {
+    if (bodyLight) {
+      const ctx = sizeCanvas(bodyLight);
+      const sx = bodyLight.width / PW, sy = bodyLight.height / PH;
+      ctx.globalCompositeOperation = 'lighter';
+      for (const [x, y] of lamps) glowAt(ctx, x * sx, y * sy, 170 * sx, 'rgba(255, 160, 55, 0.075)');
+      for (const [x, y] of lamps) glowAt(ctx, x * sx, y * sy, 60 * sx, 'rgba(255, 190, 100, 0.1)');
+    }
+    if (spill) {
+      // spill canvas spans -70%…170% horizontally and -45%…145% vertically of the robot box
+      const ctx = sizeCanvas(spill);
+      const W = spill.width, H = spill.height;
+      const map = (x, y) => [((x / PW) + 0.7) / 2.4 * W, ((y / PH) + 0.45) / 1.9 * H];
+      ctx.globalCompositeOperation = 'lighter';
+      const unit = W / 2.4 / PW;   // canvas px per painting px
+      for (const [x, y] of lamps) {
+        const [cx, cy] = map(x, y);
+        glowAt(ctx, cx, cy, 460 * unit, 'rgba(255, 150, 50, 0.045)');
+      }
+      // a warm pool on the snow beneath the robot
+      ctx.save();
+      const [px, py] = map(PW * 0.5, PH * 0.98);
+      ctx.translate(px, py);
+      ctx.scale(1, 0.32);
+      glowAt(ctx, 0, 0, 950 * unit, 'rgba(255, 150, 50, 0.55)');
+      ctx.restore();
+    }
+  }
+  if (nrk) new ResizeObserver(() => requestAnimationFrame(paintLight)).observe(nrk);
+
+  /* ───────── Heat-haze distortion over the scene ───────── */
+  const warp = document.getElementById('warpNoise');
+  if (warp && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let lastWarp = 0;
+    const drift = (now) => {
+      if (now - lastWarp > 50) {   // ~20 fps is plenty for a slow shimmer
+        lastWarp = now;
+        const t = now / 1000;
+        warp.setAttribute('baseFrequency', `${(0.006 + 0.0014 * Math.sin(t * 0.37)).toFixed(5)} ${(0.018 + 0.004 * Math.sin(t * 0.29 + 1)).toFixed(5)}`);
+      }
+      requestAnimationFrame(drift);
+    };
+    requestAnimationFrame(drift);
   }
 
   /* ───────── Snow drift in front of the wheels ───────── */
@@ -179,6 +253,17 @@
       ctx.globalAlpha = 1;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
+    // garland light falling on the drift's top
+    ctx.globalCompositeOperation = 'screen';
+    for (const [lx] of lamps) {
+      const x = ((lx / PW) + 0.14) / 1.28 * w;
+      const g = ctx.createRadialGradient(x, h * 0.25, 0, x, h * 0.25, w * 0.22);
+      g.addColorStop(0, 'rgba(255, 160, 60, 0.016)');
+      g.addColorStop(1, 'rgba(255, 160, 60, 0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+    }
+    ctx.globalCompositeOperation = 'source-over';
     ctx.restore();
 
     // fade the drift's ends and bottom into the painted snow
