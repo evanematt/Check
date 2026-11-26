@@ -105,11 +105,15 @@
   // value noise for a lumpy top edge
   const hash = (x) => { const n = Math.sin(x * 127.1) * 43758.5453; return n - Math.floor(n); };
   const noise = (x) => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return hash(i) + (hash(i + 1) - hash(i)) * u; };
-  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  // textures cut from the background painting: brushy snow body + glittering crest
+  const load = (src) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+  let tex = null;
 
   function paint() {
     const w = snow.clientWidth, h = snow.clientHeight;
-    if (!w || !h) return;
+    if (!w || !h || !tex) return;
+    const [body, crest] = tex;
     const dpr = Math.min(devicePixelRatio || 1, 2);
     snow.width = Math.round(w * dpr);
     snow.height = Math.round(h * dpr);
@@ -124,48 +128,54 @@
       const wheels = Math.exp(-(((u - 0.24) / 0.09) ** 2)) * 0.35 + Math.exp(-(((u - 0.76) / 0.1) ** 2)) * 0.25;
       return h * (1 - (0.55 * mound + wheels * mound + (noise(u * 9) - 0.5) * 0.14 * mound));
     };
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(0, h);
-    for (let x = 0; x <= w; x += 2) ctx.lineTo(x, top(x));
-    ctx.lineTo(w, h);
-    ctx.closePath();
-    const fill = ctx.createLinearGradient(0, h * 0.2, 0, h);
-    fill.addColorStop(0, '#6074e6');
-    fill.addColorStop(0.45, '#2e48c6');
-    fill.addColorStop(1, '#152a8c');
-    ctx.fillStyle = fill;
-    ctx.fill();
-    ctx.clip();
+    const outline = () => {
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+      for (let x = 0; x <= w; x += 2) ctx.lineTo(x, top(x));
+      ctx.lineTo(w, h);
+      ctx.closePath();
+    };
 
-    // brush strokes, mostly horizontal, like the painting
-    const tones = ['#8796f5', '#4d66e0', '#aeb8ff', '#2c45c4', '#6c80ee'];
-    ctx.lineCap = 'round';
-    for (let i = 0; i < 520; i++) {
-      const x = rnd(-20, w), y = rnd(0, h);
-      const len = rnd(14, 60), a = rnd(-0.18, 0.12);
-      ctx.strokeStyle = tones[(Math.random() * tones.length) | 0];
-      ctx.globalAlpha = rnd(0.15, 0.45) * (1 - y / h * 0.6);
-      ctx.lineWidth = rnd(1.5, 4.5);
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x + len / 2, y - 3, x + Math.cos(a) * len, y + Math.sin(a) * len);
-      ctx.stroke();
-    }
-    // bright crest along the top edge
-    ctx.globalAlpha = 0.45;
-    ctx.strokeStyle = '#c9d0ff';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    for (let x = 0; x <= w; x += 3) ctx[x ? 'lineTo' : 'moveTo'](x, top(x) + 1.5);
-    ctx.stroke();
-    // glitter
-    for (let i = 0; i < 260; i++) {
-      ctx.globalAlpha = rnd(0.4, 1);
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(rnd(0, w), rnd(0, h), rnd(0.4, 1.4), 0, Math.PI * 2);
-      ctx.fill();
+    // body: the painting's own dark brushwork
+    ctx.save();
+    outline();
+    ctx.clip();
+    if (body) ctx.drawImage(body, 0, 0, body.width, body.height, -w * 0.05, h * 0.05, w * 1.1, h * 1.1);
+    // the side away from the star sinks into shadow
+    const shade = ctx.createLinearGradient(0, 0, w, 0);
+    shade.addColorStop(0, 'rgba(10, 20, 80, 0)');
+    shade.addColorStop(1, 'rgba(10, 20, 80, 0.35)');
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, w, h);
+
+    // crest: glittering lavender snow along the top edge, soft towards the body, like the painted ridges
+    if (crest) {
+      const band = document.createElement('canvas');
+      band.width = snow.width; band.height = snow.height;
+      const b = band.getContext('2d');
+      b.setTransform(dpr, 0, 0, dpr, 0, 0);
+      b.fillStyle = b.createPattern(crest, 'repeat');
+      b.beginPath();
+      b.moveTo(0, h);
+      for (let x = 0; x <= w; x += 2) b.lineTo(x, top(x));
+      b.lineTo(w, h);
+      b.closePath();
+      b.fill();
+      // carve away everything below a lumpy line under the top edge, with a blurred edge
+      b.globalCompositeOperation = 'destination-out';
+      b.filter = `blur(${Math.max(3, h * 0.05)}px)`;
+      b.fillStyle = '#000';
+      b.beginPath();
+      b.moveTo(-20, h + 40);
+      for (let x = -20; x <= w + 20; x += 3) b.lineTo(x, top(Math.min(w, Math.max(0, x))) + h * (0.1 + 0.16 * noise(x / w * 7 + 3)));
+      b.lineTo(w + 20, h + 40);
+      b.closePath();
+      b.fill();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = 0.85;
+      ctx.drawImage(band, 0, 0);
+      ctx.globalAlpha = 1;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     ctx.restore();
 
@@ -173,20 +183,21 @@
     ctx.globalCompositeOperation = 'destination-in';
     const fadeX = ctx.createLinearGradient(0, 0, w, 0);
     fadeX.addColorStop(0, 'rgba(0,0,0,0)');
-    fadeX.addColorStop(0.14, 'rgba(0,0,0,1)');
-    fadeX.addColorStop(0.86, 'rgba(0,0,0,1)');
+    fadeX.addColorStop(0.16, 'rgba(0,0,0,1)');
+    fadeX.addColorStop(0.84, 'rgba(0,0,0,1)');
     fadeX.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.globalAlpha = 1;
     ctx.fillStyle = fadeX;
     ctx.fillRect(0, 0, w, h);
     const fadeY = ctx.createLinearGradient(0, 0, 0, h);
     fadeY.addColorStop(0, 'rgba(0,0,0,1)');
     fadeY.addColorStop(0.75, 'rgba(0,0,0,1)');
-    fadeY.addColorStop(1, 'rgba(0,0,0,0.2)');
+    fadeY.addColorStop(1, 'rgba(0,0,0,0.3)');
     ctx.fillStyle = fadeY;
     ctx.fillRect(0, 0, w, h);
     ctx.globalCompositeOperation = 'source-over';
   }
+
+  Promise.all([load('assets/snow-body.webp'), load('assets/snow-crest.webp')]).then((t) => { tex = t; paint(); });
 
   let raf = 0;
   new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(paint); }).observe(snow);

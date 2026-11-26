@@ -63,41 +63,6 @@ glow.position.set(0, 0.6, 0.9);
 scene.add(glow);
 
 /* ───────── Snow drift ───────── */
-function strokeTexture() {
-  const s = 1024;
-  const c = document.createElement('canvas');
-  c.width = c.height = s;
-  const g = c.getContext('2d');
-  g.fillStyle = '#c3cbff';
-  g.fillRect(0, 0, s, s);
-  const tones = ['#a6b1ff', '#d9deff', '#8c99f5', '#eef0ff', '#b4bdff'];
-  g.lineCap = 'round';
-  for (let i = 0; i < 2600; i++) {
-    const x = Math.random() * s, y = Math.random() * s;
-    const len = 20 + Math.random() * 70;
-    const a = -0.25 + Math.random() * 0.35;          // mostly horizontal, like the painting
-    g.strokeStyle = tones[(Math.random() * tones.length) | 0];
-    g.globalAlpha = 0.25 + Math.random() * 0.35;
-    g.lineWidth = 2 + Math.random() * 6;
-    g.beginPath();
-    g.moveTo(x, y);
-    g.quadraticCurveTo(x + len * 0.5, y + Math.sin(a) * len * 0.5 - 6, x + Math.cos(a) * len, y + Math.sin(a) * len);
-    g.stroke();
-  }
-  g.globalAlpha = 1;
-  for (let i = 0; i < 1400; i++) {                    // glitter specks
-    g.fillStyle = Math.random() < 0.7 ? '#ffffff' : '#dfe4ff';
-    const r = Math.random() * 1.8 + 0.4;
-    g.beginPath();
-    g.arc(Math.random() * s, Math.random() * s, r, 0, Math.PI * 2);
-    g.fill();
-  }
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  return tex;
-}
-
 // cheap value noise for lumpy snow
 function hash(x, y) { const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); }
 function noise(x, y) {
@@ -109,7 +74,6 @@ function noise(x, y) {
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 const BOOK_YAW = 0.22;
-const snowTex = strokeTexture();
 
 // height of the snow drift at (x, z) — shared by the drift and the slot left behind
 function driftHeight(x, z) {
@@ -128,41 +92,82 @@ function driftHeight(x, z) {
   return h;
 }
 
+// Textures cut from the background painting itself, so the drift shares its brushwork:
+// a dark brushy snow body, and the glittering lavender crest the painted ridges have.
+const texLoader = new THREE.TextureLoader();
+function paintTexture(url) {
+  const t = texLoader.load(url);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping;
+  t.anisotropy = 4;
+  return t;
+}
+const bodyTex = paintTexture('assets/snow-body.webp');
+const crestTex = paintTexture('assets/snow-crest.webp');
+
 function buildDrift() {
   const geo = new THREE.PlaneGeometry(3.8, 2.6, 190, 130);
   geo.rotateX(-Math.PI / 2);
   const pos = geo.attributes.position;
-  const colors = new Float32Array(pos.count * 4);
-  const lo = new THREE.Color('#2443c4'), hi = new THREE.Color('#b9c3ff'), tmp = new THREE.Color();
+  const uv = geo.attributes.uv;
+  const fade = new Float32Array(pos.count);
 
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
-    const h = driftHeight(x, z);
-    pos.setY(i, h);
-
+    pos.setY(i, driftHeight(x, z));
+    // strokes run mostly horizontally, as in the painting
+    uv.setXY(i, x / 1.7 + 0.3, z / 0.65 + 0.2);
     // organic, noisy footprint that melts into the painted snow
     const ang = Math.atan2(z, x);
     const edge = 0.8 + 0.35 * noise(Math.cos(ang) * 2 + 5, Math.sin(ang) * 2 + 5);
     const r = Math.hypot(x / 1.5, z / 0.95) / edge;
-    const alpha = 1 - smooth(0.5, 0.98, r);
-    tmp.copy(lo).lerp(hi, Math.min(1, 0.12 + h * 3.2));
-    colors.set([tmp.r, tmp.g, tmp.b, alpha], i * 4);
+    fade[i] = 1 - smooth(0.5, 0.98, r);
   }
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 4));
   geo.computeVertexNormals();
 
-  const mat = new THREE.MeshStandardMaterial({
-    map: snowTex,
-    vertexColors: true,
-    transparent: true,
-    roughness: 1,
-    metalness: 0,
-    depthWrite: true,
-  });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.receiveShadow = true;
-  mesh.renderOrder = 2;
-  return mesh;
+  // flat, painterly light from the star (upper left): no specular, just light and shadow sides
+  const L = new THREE.Vector3(-0.55, 0.75, 0.45).normalize();
+  const COLS = 191, ROWS = 131;   // PlaneGeometry(…, 190, 130) vertices per row / column
+  const nrm = geo.attributes.normal, n = new THREE.Vector3();
+  const body = new Float32Array(pos.count * 4);
+  const crest = new Float32Array(pos.count * 4);
+  for (let i = 0; i < pos.count; i++) {
+    n.fromBufferAttribute(nrm, i);
+    const lit = Math.max(0, n.dot(L));
+    const shade = 0.55 + 0.6 * lit;
+    body.set([shade, shade, shade * 1.03, fade[i]], i * 4);
+    const h = pos.getY(i);
+    // ridges = where the surface bulges above its neighbours (positive curvature)
+    const col = i % COLS, row = (i / COLS) | 0;
+    let ridge = 0;
+    if (col > 2 && col < COLS - 3 && row > 2 && row < ROWS - 3) {
+      const avg = (pos.getY(i - 3) + pos.getY(i + 3) + pos.getY(i - 3 * COLS) + pos.getY(i + 3 * COLS)) / 4;
+      ridge = smooth(0.002, 0.014, h - avg);
+    }
+    const c = Math.max(ridge * (0.4 + 0.6 * lit), smooth(0.8, 0.97, lit) * smooth(0.1, 0.2, h) * 0.6)
+      * (0.65 + 0.5 * noise(pos.getX(i) * 7, pos.getZ(i) * 7));
+    crest.set([1, 1, 1, Math.min(1, c) * fade[i]], i * 4);
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(body, 4));
+
+  const group = new THREE.Group();
+  const bodyMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+    map: bodyTex, vertexColors: true, transparent: true, depthWrite: true,
+  }));
+  bodyMesh.renderOrder = 2;
+  group.add(bodyMesh);
+
+  const crestGeo = geo.clone();
+  crestGeo.setAttribute('color', new THREE.BufferAttribute(crest, 4));
+  const cuv = crestGeo.attributes.uv;
+  for (let i = 0; i < cuv.count; i++) cuv.setXY(i, pos.getX(i) / 0.35, pos.getZ(i) / 0.2);
+  const crestMesh = new THREE.Mesh(crestGeo, new THREE.MeshBasicMaterial({
+    map: crestTex, vertexColors: true, transparent: true, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -1,
+  }));
+  crestMesh.renderOrder = 2.5;
+  group.add(crestMesh);
+  return group;
 }
 scene.add(buildDrift());
 
