@@ -18,7 +18,9 @@
   function show(col, row) {
     if (col === g.col && row === g.row) return;
     g.col = col; g.row = row;
-    lynx.style.backgroundPosition = `${(col * 100) / (COLS - 1)}% ${(row * 100) / (ROWS - 1)}%`;
+    const p = `${(col * 100) / (COLS - 1)}% ${(row * 100) / (ROWS - 1)}%`;
+    lynx.style.backgroundPosition = p;
+    lynx.style.setProperty('--frame', p);   // the light layers are masked by the same frame
   }
 
   let prev = performance.now();

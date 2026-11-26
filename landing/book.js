@@ -30,7 +30,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true 
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.localClippingEnabled = true;
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = false;   // the drift is painted flat; volume comes from the lights and baked shading
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
@@ -39,26 +39,27 @@ camera.position.set(0, 2.7, 6.5);
 camera.lookAt(0, 0, 0);
 const CAM_DIST = camera.position.length();
 
-// Night light: cool sky fill, a soft key from the viewer's side, a rim from the star (upper left, behind).
-scene.add(new THREE.HemisphereLight(0xb4bfff, 0x1d2a9a, 1.15));
+// Night light, built for volume rather than flat fill:
+//  - a low cool sky fill, so the shadow side really falls off
+//  - a soft spot "key" from the star side (upper left, in front) that grades across the cover
+//  - a strong cold rim from the star behind, catching the book's top and left edges
+//  - a faint bounce from the snow below
+scene.add(new THREE.HemisphereLight(0x9aa8ff, 0x24339e, 0.55));
 
-const key = new THREE.DirectionalLight(0xdfe3ff, 1.35);
-key.position.set(-1.6, 2.6, 4);
-key.castShadow = true;
-key.shadow.mapSize.set(1024, 1024);
-key.shadow.camera.left = -1.6;
-key.shadow.camera.right = 1.6;
-key.shadow.camera.top = 1.6;
-key.shadow.camera.bottom = -1.6;
-key.shadow.radius = 6;
-key.shadow.bias = -0.0015;
-scene.add(key);
+const key = new THREE.SpotLight(0xe8ebff, 4.2, 0, 0.42, 1, 0);
+key.position.set(-2.4, 3.4, 3.2);
+key.target.position.set(0, 0.55, 0);
+scene.add(key, key.target);
 
-const rim = new THREE.DirectionalLight(0x9fb0ff, 2.2);
-rim.position.set(-3, 3, -3);
+const rim = new THREE.DirectionalLight(0xb7c3ff, 3.6);
+rim.position.set(-3.2, 2.6, -3);
 scene.add(rim);
 
-const glow = new THREE.PointLight(0x7f8cff, 0, 3, 1.5);   // brightens while hovered
+const bounce = new THREE.DirectionalLight(0x5f74ff, 0.6);
+bounce.position.set(0.5, -1, 2);
+scene.add(bounce);
+
+const glow = new THREE.PointLight(0x9aa6ff, 0, 3, 1.5);   // brightens while hovered
 glow.position.set(0, 0.6, 0.9);
 scene.add(glow);
 
@@ -134,7 +135,12 @@ function buildDrift() {
   for (let i = 0; i < pos.count; i++) {
     n.fromBufferAttribute(nrm, i);
     const lit = Math.max(0, n.dot(L));
-    const shade = 0.55 + 0.6 * lit;
+    const px = pos.getX(i), pz = pos.getZ(i) - SLOT_Z;
+    const u = px * Math.cos(BOOK_YAW) - pz * Math.sin(BOOK_YAW), v = px * Math.sin(BOOK_YAW) + pz * Math.cos(BOOK_YAW);
+    const du = Math.max(Math.abs(u) - 0.44, 0);
+    const crease = Math.exp(-(du * du + v * v) / 0.012);          // snow packed against the book
+    const cast = v < 0 ? Math.exp(-(du * du) / 0.02) * Math.exp(-(v * v) / 0.09) : 0;   // book's shadow falls back, away from the key
+    const shade = (0.4 + 0.85 * lit) * (1 - 0.35 * crease) * (1 - 0.3 * cast);
     body.set([shade, shade, shade * 1.03, fade[i]], i * 4);
     const h = pos.getY(i);
     // ridges = where the surface bulges above its neighbours (positive curvature)
@@ -271,6 +277,29 @@ function stepPuff(dt) {
   puffGeo.attributes.alpha.needsUpdate = true;
 }
 
+/* ───────── Back glow: a soft lavender halo that lifts the book off the painting ───────── */
+function haloTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  grad.addColorStop(0, 'rgba(205, 212, 255, 0.75)');
+  grad.addColorStop(0.55, 'rgba(180, 190, 255, 0.6)');
+  grad.addColorStop(0.75, 'rgba(140, 155, 255, 0.22)');
+  grad.addColorStop(1, 'rgba(120, 130, 255, 0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 256, 256);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const backGlow = new THREE.Mesh(
+  new THREE.PlaneGeometry(1.55, 1.95),   // hugs the book's outline
+  new THREE.MeshBasicMaterial({ map: haloTexture(), transparent: true, depthWrite: false }),
+);
+backGlow.position.set(-0.03, 0.66, -0.12);
+backGlow.renderOrder = 1;
+
 /* ───────── The book ───────── */
 const pivot = new THREE.Group();          // animated: hop + wobble
 const base = { y: -BURY, rx: LEAN, ry: BOOK_YAW, rz: -0.07 };
@@ -280,6 +309,7 @@ scene.add(pivot);
 
 const clip = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -SNOW_Y)];
 const bookMeshes = [];
+let bookHolder = null;   // the book itself, without the halo — used to place the card
 
 new GLTFLoader().load('assets/book.glb', (gltf) => {
   const model = gltf.scene;
@@ -290,6 +320,8 @@ new GLTFLoader().load('assets/book.glb', (gltf) => {
   holder.scale.setScalar(BOOK_SCALE);
   holder.add(model);
   pivot.add(holder);
+  pivot.add(backGlow);
+  bookHolder = holder;
 
   model.traverse((o) => {
     if (!o.isMesh) return;
@@ -299,7 +331,7 @@ new GLTFLoader().load('assets/book.glb', (gltf) => {
     m.side = THREE.DoubleSide;
     m.clippingPlanes = clip;
     m.clipShadows = true;
-    m.roughness = 0.7;
+    m.roughness = 0.62;
     o.castShadow = true;
     bookMeshes.push(o);
   });
@@ -418,7 +450,7 @@ const corners = Array.from({ length: 8 }, () => new THREE.Vector3());
 const rect = { l: 0, t: 0, r: 0, b: 0 };
 
 function bookScreenRect() {
-  tmpBox.setFromObject(pivot);
+  tmpBox.setFromObject(bookHolder || pivot);
   tmpBox.min.y = Math.max(tmpBox.min.y, 0.18);
   const { min, max } = tmpBox;
   let i = 0;
@@ -488,6 +520,7 @@ function tick(now) {
   pivot.rotation.z = base.rz + Math.sin(now / 160) * hop.vel * 0.012;
   pivot.rotation.y = base.ry - lift * 0.08;
   glow.intensity += ((open ? 2.2 : 0) - glow.intensity) * Math.min(1, dt * 6);
+  backGlow.material.opacity = 0.75 + 0.25 * Math.min(1, Math.max(0, lift));
 
   stepPuff(dt);
   renderer.render(scene, camera);
