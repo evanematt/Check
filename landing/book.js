@@ -14,7 +14,7 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
    so it stays on the same snow ridge whatever the screen shape. */
 const PLACE = {
   wide:   { fx: 0.70, fy: 0.80, height: 0.38 },  // height = book size relative to viewport height
-  narrow: { fx: 0.30, fy: 0.88,  height: 0.36 },
+  narrow: { fx: 0.37, fy: 0.88,  height: 0.36 },
 };
 const IMG_RATIO = 1344 / 896;
 
@@ -321,7 +321,7 @@ function layout() {
   anchor.y = (vh - sh) / 2 + p.fy * sh;
 
   // visible book ≈ 0.95 units tall; cap by width on narrow screens
-  const targetPx = Math.min(p.height * vh, vw * 0.55);
+  const targetPx = Math.min(p.height * vh, vw * (narrow ? 0.46 : 0.55));
   const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   camera.zoom = (2 * targetPx / vh) * CAM_DIST * halfTan / 0.95;
   camera.updateProjectionMatrix();
