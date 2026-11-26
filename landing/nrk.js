@@ -49,6 +49,57 @@
   }
   requestAnimationFrame(tick);
 
+  /* ───────── Garland: wire swagged over the robot with warm bulbs ─────────
+     Coordinates are in the painting's 1274×1517 space. Back strands sit behind the lynx, front ones over it. */
+  const NS = 'http://www.w3.org/2000/svg';
+  const STRANDS = {
+    nrkGarlandBack: [
+      { pts: [[168, 352], [338, 372], [508, 366]], sag: 34 },               // under the sensor head
+      { pts: [[160, 380], [162, 520], [166, 680]], sag: 10, side: true },   // left mast post
+      { pts: [[514, 384], [518, 530], [522, 680]], sag: -10, side: true },  // right mast post
+      { pts: [[158, 676], [368, 668], [574, 660]], sag: 16 },               // rail by the mast
+      { pts: [[576, 656], [840, 704], [1100, 752], [1240, 806]], sag: 18 }, // far side rail
+    ],
+    nrkGarlandFront: [
+      { pts: [[160, 680], [415, 778], [600, 796], [735, 902]], sag: 16 },   // near side rail
+      { pts: [[760, 864], [1000, 838], [1244, 812]], sag: 26 },             // tailgate
+    ],
+  };
+  const el = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    parent.appendChild(e);
+    return e;
+  };
+  let n = 0;
+  for (const id in STRANDS) {
+    const svg = document.getElementById(id);
+    if (!svg) continue;
+    const f = el('filter', { id: id + 'Glow', x: '-200%', y: '-200%', width: '500%', height: '500%' }, el('defs', {}, svg));
+    el('feGaussianBlur', { stdDeviation: 7 }, f);
+    const halos = el('g', { filter: `url(#${id}Glow)` }, svg);
+    const wires = el('g', {}, svg);
+    const bulbs = el('g', {}, svg);
+    for (const st of STRANDS[id]) {
+      let d = `M${st.pts[0][0]} ${st.pts[0][1]}`;
+      for (let i = 1; i < st.pts.length; i++) {
+        const [x0, y0] = st.pts[i - 1], [x1, y1] = st.pts[i];
+        const cx = (x0 + x1) / 2 + (st.side ? st.sag : 0), cy = (y0 + y1) / 2 + (st.side ? 0 : st.sag * 2);
+        d += ` Q${cx} ${cy} ${x1} ${y1}`;
+      }
+      const path = el('path', { d, class: 'wire' }, wires);
+      const len = path.getTotalLength();
+      for (let L = 17; L < len; L += 34) {
+        const p = path.getPointAtLength(L);
+        const delay = `${(-(n * 0.21) % 1.8).toFixed(2)}s`;
+        el('circle', { cx: p.x, cy: p.y + 6, r: 19, class: 'halo', style: `animation-delay:${delay}` }, halos);
+        el('rect', { x: p.x - 3, y: p.y - 1.5, width: 6, height: 5, rx: 1, class: 'cap' }, bulbs);
+        el('ellipse', { cx: p.x, cy: p.y + 8, rx: 5.2, ry: 7.2, class: 'bulb', style: `animation-delay:${delay}` }, bulbs);
+        n++;
+      }
+    }
+  }
+
   /* ───────── Snow drift in front of the wheels ───────── */
   if (!snow) return;
   // value noise for a lumpy top edge
