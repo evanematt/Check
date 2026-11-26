@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Northlight</title>
+  <meta name="description" content="Northlight — a guiding star for the long night." />
+  <meta name="theme-color" content="#060a1f" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preload" as="image" href="assets/hero-bg.webp" imagesrcset="assets/hero-bg-768.webp 768w, assets/hero-bg.webp 1344w" imagesizes="100vw" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <header class="nav">
+    <a class="brand" href="#">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.5 13.4 10.6 22.5 12 13.4 13.4 12 22.5 10.6 13.4 1.5 12 10.6 10.6Z"/></svg>
+      Northlight
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <a class="btn btn-glass nav-cta" href="#start">Get started</a>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <picture class="hero-bg" aria-hidden="true">
+        <source media="(max-width: 768px)" srcset="assets/hero-bg-768.webp" />
+        <img src="assets/hero-bg.webp" alt="" width="1344" height="896" fetchpriority="high" />
+      </picture>
+
+      <!-- living layers on top of the painting -->
+      <div class="hero-star" aria-hidden="true"></div>
+      <div class="hero-aurora" aria-hidden="true"></div>
+      <canvas class="hero-sparkles" aria-hidden="true"></canvas>
+      <div class="hero-shade" aria-hidden="true"></div>
+
+      <div class="hero-content">
+        <p class="eyebrow"><span class="dot"></span> Now in early access</p>
+        <h1 id="hero-title">Follow the light<br /><em>through the long night.</em></h1>
+        <p class="lede">A calm, steady guide for the work that matters. Set your direction once — Northlight keeps you on course.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#start">Start for free
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-glass" href="#how">See how it works</a>
+        </div>
+      </div>
+
+      <a class="scroll-cue" href="#features" aria-label="Scroll to features"><span></span></a>
+    </section>
+
+    <section id="features" class="placeholder">Next section goes here</section>
+  </main>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
