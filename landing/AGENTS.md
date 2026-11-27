@@ -53,7 +53,7 @@ There are no automated tests. "Done" means the screenshots look right at both si
 | `book.js` (ES module) | three.js: book, lights, halo, snow puff, colour grading, placement against the right drift, hover/tap/keyboard interaction, card positioning, animation loop |
 | `nrk.js` (classic script, deferred) | Lynx gaze, garland SVG construction, garland light maps (`paintLight`), `#warp` animation, robot hover/tap hop |
 | `main.js` (classic script, deferred) | Canvas sparkles and snowfall |
-| `boil.js` (classic script, deferred) | Hand-drawn "boiling" lines around the robot and the book: strokes in object space, redrawn every frame to follow the hops, re-jittered at 8 fps across 3 drawings |
+| `boil.js` (classic script, deferred) | Hand-drawn "boiling" pencil lines that follow the outline of the robot (a traced silhouette, `NRK`) and of the book (its projected cover outline, `window.__bookOutline` from `book.js`). Drawn with grainy soft-pencil dabs every frame so they follow the hops, re-jittered at 8 fps across 3 drawings. Two canvases, `.boil-nrk` and `.boil-book`, each sits just behind its drift so the lines sink into the snow with the object |
 | `tools/screenshot.mjs` | Verification screenshots (Playwright) |
 
 ## 4. Layer and stacking order
@@ -62,10 +62,10 @@ Everything visual is inside `.scene` (`position:absolute; inset:0; z-index:0; fi
 
 ```
 .sky  →  .hero-sparkles  →  .ground [ img.dunes → .dunes-light ]
-      →  .ground.ground-left [ .nrk-spill → .nrk → img.drift-left → .drift-left-light ]
-      →  canvas.book-scene
+      →  .ground.ground-left [ .nrk-spill → .nrk → canvas.boil-nrk → img.drift-left → .drift-left-light ]
+      →  canvas.book-scene  →  canvas.boil-book
       →  .ground [ img.drift-right → .drift-right-light → svg#driftGarland ]
-      →  canvas.boil  →  canvas.snowfall
+      →  canvas.snowfall
 ```
 
 Outside `.scene`, so not distorted:
@@ -86,7 +86,7 @@ Outside `.scene`, so not distorted:
 2. **Robot box:** `.nrk` is placed *relative to the left drift*: `left = --dl-x + --nrk-dx`, `top = --dl-y + --nrk-dy`, `width = --nrk-w`. Move the drift and the robot follows it.
 3. **Robot space:** 1274×1517 px, the native size of the НРК images.
    - Garland strands (`STRANDS` in `nrk.js`) and the lamp list for the light maps are in this space.
-   - The lynx box is `left 32.564%, top 9.965%, 32.547% × 50%` of the robot box.
+   - The lynx box is `left 32.564%, top 16%, 32.547% × 50%` of the robot box.
    - The spill canvas spans −70 %…170 % × −45 %…145 % of the robot box.
 4. **three.js world:**
    - The book's pivot is at the origin, which is the book's "snow line"; Y is up.
@@ -147,7 +147,7 @@ Outside `.scene`, so not distorted:
 | Garland light on the robot | `nrk.js` → `paintLight()` |
 | Garland light on the snow (both garlands) | `styles.css` → `.dunes-light`, `.drift-left-light`, `.drift-right-light` |
 | Book's garland on the drift (path, size) | `nrk.js` → `buildGarland('driftGarland', …, 1.4)` points and size factor; its light on the book: `book.js` → `garlandLight` |
-| Boiling lines (colour, speed, jitter, stroke layout) | `boil.js` → `COLOR`, `FPS`, `DRAWINGS`, `JITTER`, `strokesFor()`; which objects and their visible box: `TARGETS` |
+| Pencil lines (colour, speed, thickness, dash layout) | `boil.js` → `INK`, `FPS`, `DRAWINGS`, thickness `T` in `frame()`, `layout(seed, closed, dash, gap)` per target. If the robot/lynx art or the lynx box changes, re-trace `NRK` (alpha of base + front + a middle lynx frame, closed with a large kernel) |
 | Snowfall (density, speeds, sizes, wind) | `main.js` → the snowfall block: `LAYERS`, the density cap in `seed()`, `wind` in `loop()` |
 | Haze strength and speed | `index.html` → `#warp feDisplacementMap scale`; `nrk.js` → the `baseFrequency` animation |
 

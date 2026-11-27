@@ -159,10 +159,12 @@ scene.add(pivot);
 
 const bookMeshes = [];
 let bookHolder = null;   // the book model itself — used to place the card
+const bookSize = new THREE.Vector3();
 
 new GLTFLoader().load('assets/book.glb', (gltf) => {
   const model = gltf.scene;
   const box = new THREE.Box3().setFromObject(model);
+  box.getSize(bookSize);
   const c = box.getCenter(new THREE.Vector3());
   model.position.set(-c.x, -box.min.y, -c.z);       // centred, base on y = 0
   const holder = new THREE.Group();
@@ -332,6 +334,19 @@ function positionCard() {
   card.style.setProperty('--origin', origin);
 }
 
+// The cover's outline on screen (client px), for the hand-drawn lines in boil.js:
+// [bottom-left, top-left, top-right, bottom-right] of the front face.
+function publishOutline() {
+  if (!bookHolder) return;
+  const r = canvas.getBoundingClientRect();
+  const hx = bookSize.x / 2, hz = bookSize.z / 2;
+  // holder space: the model is centred, base on y = 0, cover facing +z
+  window.__bookOutline = [[-hx, 0], [-hx, bookSize.y], [hx, bookSize.y], [hx, 0]].map(([x, y]) => {
+    const v = bookHolder.localToWorld(new THREE.Vector3(x, y, hz)).project(camera);
+    return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height];
+  });
+}
+
 function positionHit() {
   const b = bookScreenRect();
   Object.assign(hit.style, { left: `${b.l}px`, top: `${b.t}px`, width: `${b.r - b.l}px`, height: `${b.b - b.t}px` });
@@ -374,6 +389,7 @@ function tick(now) {
 
   if (bookMeshes.length) {
     positionHit();
+    publishOutline();
     if (open) positionCard();
   }
   requestAnimationFrame(tick);

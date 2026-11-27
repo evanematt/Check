@@ -1,114 +1,162 @@
-// "Boiling" line art around the robot and the book, like old hand-drawn animation:
-// short pale strokes (rising lines above, contour dashes on the side, speed dashes, little swooshes)
-// that are redrawn with a slight jitter at ~8 fps, cycling through a few "drawings".
+// Hand-drawn "boiling" pencil lines around the robot and the book, like old cel animation.
+// The strokes follow each object's outline (a little outside it), are drawn with a soft, grainy pencil brush,
+// move with the object every frame, and re-jitter at ~8 fps through a few slightly different "drawings".
 (() => {
-  const canvas = document.querySelector('.boil');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const FPS = 8;          // the hand-drawn boil rate
+  const DRAWINGS = 3;     // how many drawings it cycles through
+  const INK = [255, 236, 168];
 
-  const COLOR = 'rgba(255, 240, 160, 0.85)';
-  const FPS = 8;            // the "on twos/threes" feel of hand-drawn boil
-  const DRAWINGS = 3;       // how many slightly different drawings it cycles through
-  const JITTER = 0.012;     // jitter per point, as a share of the object's height
+  // Robot + lynx silhouette, traced from nrk-base/nrk-front + a middle lynx frame (lynx box top 16%), smoothed so thin antennas read as one shape (fractions of the .nrk-body box).
+  const NRK = [[0.2634,0.1549],[0.2573,0.1548],[0.2511,0.1555],[0.2445,0.1572],[0.2373,0.16],[0.2299,0.1634],[0.2223,0.1665],[0.2142,0.1688],[0.2059,0.1704],[0.1975,0.1719],[0.1899,0.1741],[0.1834,0.177],[0.1776,0.1804],[0.1723,0.1842],[0.1672,0.1884],[0.1623,0.1929],[0.1574,0.1976],[0.1525,0.2026],[0.1475,0.2074],[0.1422,0.2121],[0.137,0.2167],[0.1323,0.2212],[0.1282,0.2258],[0.1247,0.2306],[0.1216,0.2358],[0.1195,0.2416],[0.1184,0.2482],[0.1183,0.2554],[0.1186,0.2629],[0.1188,0.2705],[0.1185,0.2782],[0.118,0.2859],[0.1176,0.2937],[0.1175,0.3016],[0.1174,0.3094],[0.1172,0.3173],[0.117,0.3251],[0.1167,0.3329],[0.1165,0.3407],[0.1161,0.3485],[0.1156,0.3562],[0.1148,0.3639],[0.1136,0.3714],[0.1127,0.3788],[0.1121,0.3861],[0.1116,0.3934],[0.1112,0.4008],[0.1109,0.4081],[0.1107,0.4154],[0.1108,0.4228],[0.1112,0.4302],[0.1119,0.4379],[0.1124,0.4456],[0.1127,0.4534],[0.1127,0.4612],[0.1126,0.469],[0.1125,0.4768],[0.1122,0.4847],[0.1119,0.4924],[0.1111,0.5001],[0.1097,0.5075],[0.1074,0.5144],[0.1041,0.5206],[0.1,0.526],[0.0952,0.5311],[0.0895,0.5357],[0.083,0.5398],[0.0757,0.5433],[0.068,0.5465],[0.06,0.5493],[0.0521,0.5521],[0.0442,0.5552],[0.0366,0.5587],[0.0301,0.5625],[0.0253,0.566],[0.0224,0.5693],[0.0213,0.5726],[0.0219,0.5761],[0.0238,0.5799],[0.0269,0.5841],[0.031,0.5888],[0.0356,0.5938],[0.0394,0.5988],[0.0415,0.6042],[0.042,0.6101],[0.0415,0.6165],[0.04,0.6232],[0.0374,0.6299],[0.0338,0.6365],[0.0293,0.6426],[0.024,0.648],[0.0192,0.6536],[0.0151,0.6594],[0.0117,0.6656],[0.0084,0.6717],[0.0053,0.678],[0.0028,0.6844],[0.001,0.6911],[0.0,0.6983],[0.0,0.7062],[0.0,0.7141],[0.0,0.722],[0.0,0.7299],[0.0,0.7378],[0.0,0.7457],[0.0009,0.753],[0.0027,0.7596],[0.0053,0.766],[0.0083,0.7722],[0.0117,0.7783],[0.0153,0.7843],[0.0188,0.7903],[0.0223,0.7963],[0.0262,0.8022],[0.0299,0.8083],[0.0336,0.8147],[0.0371,0.8212],[0.0403,0.8277],[0.0433,0.8344],[0.0469,0.8408],[0.0514,0.8466],[0.0568,0.8518],[0.0627,0.8568],[0.0684,0.862],[0.0741,0.8671],[0.0802,0.8716],[0.087,0.8752],[0.0947,0.8779],[0.1026,0.88],[0.1106,0.8819],[0.1186,0.8834],[0.1268,0.8841],[0.1353,0.8839],[0.1439,0.8829],[0.1524,0.8815],[0.1608,0.8799],[0.169,0.8777],[0.1771,0.875],[0.185,0.8721],[0.1929,0.8692],[0.2009,0.8666],[0.2087,0.8647],[0.2164,0.8639],[0.2236,0.8641],[0.2302,0.8654],[0.2367,0.8679],[0.2432,0.8714],[0.2494,0.8758],[0.255,0.881],[0.26,0.8868],[0.2642,0.8931],[0.2677,0.8996],[0.2709,0.9061],[0.2745,0.9125],[0.2783,0.9187],[0.2821,0.9248],[0.2862,0.9308],[0.2904,0.9366],[0.2946,0.9425],[0.2991,0.9483],[0.3044,0.9538],[0.3103,0.9589],[0.3165,0.9638],[0.3223,0.9691],[0.3274,0.9748],[0.3327,0.9802],[0.3384,0.9849],[0.3448,0.9887],[0.352,0.9919],[0.3594,0.9944],[0.367,0.9967],[0.3749,0.9983],[0.3834,0.9992],[0.3927,0.9993],[0.4021,0.9993],[0.4115,0.9993],[0.4201,0.9986],[0.428,0.9971],[0.4357,0.9949],[0.4431,0.9924],[0.4504,0.9894],[0.4572,0.9857],[0.4637,0.9815],[0.4699,0.9765],[0.4759,0.9712],[0.4824,0.9661],[0.4888,0.9609],[0.4945,0.9556],[0.4991,0.9498],[0.5029,0.9437],[0.5063,0.9374],[0.5095,0.9311],[0.5126,0.9247],[0.5156,0.9182],[0.5181,0.9114],[0.5203,0.9046],[0.5221,0.8978],[0.5239,0.8911],[0.5257,0.8843],[0.5277,0.8776],[0.53,0.871],[0.5323,0.8646],[0.5349,0.8586],[0.5383,0.8531],[0.5424,0.8483],[0.5479,0.844],[0.5547,0.8404],[0.5623,0.8374],[0.5704,0.8348],[0.5788,0.8328],[0.5873,0.831],[0.5959,0.8292],[0.6044,0.8275],[0.613,0.8258],[0.6216,0.8241],[0.6301,0.8222],[0.6386,0.8204],[0.6472,0.8187],[0.6557,0.8169],[0.6644,0.8153],[0.6729,0.8136],[0.6816,0.812],[0.6902,0.8106],[0.6987,0.8097],[0.7071,0.8097],[0.7151,0.8107],[0.7223,0.8126],[0.7286,0.8155],[0.7343,0.8193],[0.7398,0.8239],[0.7452,0.8289],[0.7506,0.834],[0.756,0.8393],[0.7612,0.8446],[0.7666,0.8499],[0.7723,0.8549],[0.779,0.8593],[0.7862,0.863],[0.7937,0.8663],[0.8012,0.8696],[0.8088,0.8728],[0.8164,0.8758],[0.8243,0.8783],[0.8326,0.8801],[0.8412,0.881],[0.8498,0.8817],[0.8584,0.882],[0.867,0.882],[0.8754,0.8814],[0.8839,0.8803],[0.8923,0.8786],[0.9004,0.8763],[0.9084,0.8733],[0.9162,0.8701],[0.9239,0.8665],[0.9313,0.8624],[0.9386,0.8581],[0.9455,0.8535],[0.9515,0.8483],[0.9565,0.8426],[0.961,0.8367],[0.9652,0.8307],[0.9695,0.8246],[0.9738,0.8188],[0.9782,0.8133],[0.9818,0.8073],[0.9849,0.8012],[0.9881,0.795],[0.9913,0.7888],[0.9943,0.7826],[0.9967,0.7761],[0.9984,0.7694],[0.9992,0.762],[0.9992,0.7541],[0.9992,0.7462],[0.9992,0.7383],[0.9992,0.7304],[0.9992,0.7225],[0.9992,0.7146],[0.9992,0.7067],[0.9992,0.6988],[0.9992,0.6908],[0.9992,0.6829],[0.9992,0.675],[0.9992,0.6671],[0.9992,0.6592],[0.9992,0.6513],[0.9992,0.6434],[0.9992,0.6355],[0.9992,0.6276],[0.9992,0.6196],[0.9992,0.6117],[0.9992,0.6038],[0.9992,0.5959],[0.9992,0.588],[0.9992,0.5801],[0.9989,0.5724],[0.9976,0.5654],[0.9956,0.5588],[0.9927,0.5525],[0.989,0.5467],[0.9844,0.5415],[0.9789,0.537],[0.9724,0.5331],[0.9649,0.53],[0.9568,0.5273],[0.9487,0.5246],[0.9406,0.522],[0.9323,0.5197],[0.9241,0.5173],[0.9159,0.5147],[0.9079,0.512],[0.8999,0.5091],[0.892,0.506],[0.8843,0.5025],[0.8766,0.4991],[0.8688,0.4961],[0.8608,0.4934],[0.8528,0.4912],[0.8446,0.4892],[0.8362,0.4878],[0.8277,0.4866],[0.8191,0.4856],[0.8103,0.4853],[0.8013,0.485],[0.7923,0.4846],[0.7834,0.4843],[0.7744,0.4839],[0.7654,0.4836],[0.7565,0.4829],[0.7476,0.4821],[0.7388,0.4812],[0.73,0.4802],[0.7212,0.4792],[0.7124,0.478],[0.7038,0.4767],[0.6951,0.4751],[0.6865,0.4734],[0.6779,0.4718],[0.6692,0.4703],[0.6606,0.4687],[0.6519,0.4672],[0.6433,0.4655],[0.6348,0.4637],[0.6265,0.4614],[0.6187,0.4586],[0.6117,0.4553],[0.6057,0.4512],[0.6009,0.4465],[0.5971,0.4412],[0.5939,0.4353],[0.5914,0.4288],[0.5898,0.4218],[0.5894,0.4147],[0.5892,0.4074],[0.5886,0.4003],[0.5878,0.3933],[0.5866,0.3861],[0.5856,0.3789],[0.5852,0.3717],[0.5852,0.3645],[0.5845,0.3573],[0.5827,0.3504],[0.5806,0.3436],[0.5787,0.3367],[0.5768,0.3298],[0.5747,0.3229],[0.5729,0.3161],[0.571,0.3093],[0.5687,0.3025],[0.5667,0.2958],[0.5653,0.2887],[0.5645,0.2814],[0.5639,0.2741],[0.5637,0.2667],[0.5633,0.2594],[0.5627,0.2519],[0.5618,0.2444],[0.5613,0.2367],[0.5603,0.2294],[0.5584,0.2232],[0.5559,0.2184],[0.5525,0.2149],[0.5483,0.2127],[0.5433,0.2116],[0.5373,0.2114],[0.5303,0.2121],[0.5223,0.2136],[0.5141,0.2155],[0.5058,0.2167],[0.4975,0.2169],[0.4893,0.2161],[0.481,0.2144],[0.4728,0.2125],[0.4649,0.2113],[0.4574,0.2107],[0.45,0.2105],[0.4427,0.2105],[0.4352,0.2108],[0.4277,0.2112],[0.4203,0.2115],[0.4132,0.2115],[0.4065,0.2108],[0.3997,0.2088],[0.3932,0.2054],[0.3874,0.2008],[0.3825,0.1952],[0.3783,0.189],[0.3746,0.1824],[0.3707,0.1762],[0.3667,0.1712],[0.3624,0.1677],[0.3582,0.1652],[0.3534,0.1638],[0.3478,0.1632],[0.3413,0.1633],[0.3342,0.1642],[0.3264,0.1657],[0.3186,0.1671],[0.3108,0.1673],[0.303,0.1662],[0.2958,0.1638],[0.2887,0.1608],[0.2818,0.1582],[0.2755,0.1565],[0.2693,0.1554]];
 
-  // Where the visible object is inside each element's box (fractions of that box).
-  const TARGETS = [
-    { el: () => document.querySelector('.nrk-body'), box: { x0: 0.05, y0: 0.06, x1: 0.97, y1: 0.86 }, seed: 11 },
-    { el: () => document.querySelector('.book-hit'), box: { x0: 0, y0: 0, x1: 1, y1: 1 }, seed: 29 },
-  ];
-
-  // small deterministic RNG so each object always gets the same layout of strokes
-  function rng(seed) {
-    let s = seed >>> 0;
-    return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
-  }
-
-  // Strokes in object space: u across (0 = left edge, 1 = right edge), v down (0 = top, 1 = bottom).
-  function strokesFor(seed) {
-    const r = rng(seed);
-    const out = [];
-    const line = (pts) => out.push(pts);
-    // rising lines above the top
-    for (let i = 0; i < 7; i++) {
-      const u = 0.12 + r() * 0.76, v0 = -0.04 - r() * 0.06, len = 0.08 + r() * 0.12;
-      line([[u, v0], [u + (r() - 0.5) * 0.02, v0 - len / 2], [u + (r() - 0.5) * 0.02, v0 - len]]);
+  /* ───────── soft pencil brush: a few grainy dab sprites ───────── */
+  const brushes = Array.from({ length: 5 }, (_, k) => {
+    const S = 48, c = document.createElement('canvas');
+    c.width = c.height = S;
+    const g = c.getContext('2d'), img = g.createImageData(S, S);
+    let seed = 97 + k * 131;
+    const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const d = Math.hypot(x - S / 2 + 0.5, y - S / 2 + 0.5) / (S / 2);
+      const edge = Math.max(0, 1 - d * d);                 // soft round falloff
+      const grain = Math.pow(rnd(), 1.6);                  // graphite grain: mostly light, some dense specks
+      const i = (y * S + x) * 4;
+      img.data[i] = INK[0]; img.data[i + 1] = INK[1]; img.data[i + 2] = INK[2];
+      img.data[i + 3] = Math.round(255 * edge * (0.35 + 0.65 * grain));
     }
-    // contour dashes down the left side, a little outside the edge
-    for (let i = 0; i < 5; i++) {
-      const v0 = 0.08 + i * 0.17 + r() * 0.05, len = 0.07 + r() * 0.07, u = -0.035 - r() * 0.035;
-      line([[u, v0], [u - 0.012, v0 + len / 2], [u - 0.004, v0 + len]]);
-    }
-    // a couple of dashes along the top-left corner
-    line([[0.02, 0.02], [0.08, -0.03], [0.16, -0.05]]);
-    line([[0.22, -0.02], [0.3, -0.035]]);
-    // speed dashes on the right
-    for (let i = 0; i < 4; i++) {
-      const v = 0.32 + i * 0.07 + r() * 0.03, u0 = 0.9 + r() * 0.08, len = 0.1 + r() * 0.12;
-      line([[u0, v], [u0 + len, v + (r() - 0.5) * 0.015]]);
-    }
-    // little swooshes at the top-right
-    line([[0.6, -0.02], [0.68, -0.07], [0.78, -0.04], [0.86, -0.06]]);
-    line([[0.9, 0.04], [0.93, 0.0], [0.97, 0.03]]);
-    // short ground dashes under the right side
-    line([[0.6, 1.03], [0.7, 1.02]]);
-    line([[0.64, 1.06], [0.73, 1.055]]);
-    return out;
-  }
-  for (const t of TARGETS) t.strokes = strokesFor(t.seed);
-
-  // per-drawing jitter, fixed for each of the DRAWINGS so the boil cycles rather than shakes randomly
-  const jitter = Array.from({ length: DRAWINGS }, (_, d) => {
-    const r = rng(1000 + d * 77);
-    return Array.from({ length: 400 }, () => [r() - 0.5, r() - 0.5]);
+    g.putImageData(img, 0, 0);
+    return c;
   });
 
-  let w = 0, h = 0, dpr = 1;
-  function resize() {
-    dpr = Math.min(devicePixelRatio || 1, 2);
-    w = canvas.clientWidth; h = canvas.clientHeight;
-    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
-  }
-  new ResizeObserver(resize).observe(canvas);
-  resize();
+  const rng = (seed) => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
+  const hash = (n) => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
 
-  function draw(drawing) {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-    const cr = canvas.getBoundingClientRect();
-    ctx.strokeStyle = COLOR;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    for (const t of TARGETS) {
-      const el = t.el();
-      if (!el) continue;
-      const r = el.getBoundingClientRect();
-      if (!r.width || !r.height) continue;
-      const x0 = r.left - cr.left + t.box.x0 * r.width, y0 = r.top - cr.top + t.box.y0 * r.height;
-      const bw = (t.box.x1 - t.box.x0) * r.width, bh = (t.box.y1 - t.box.y0) * r.height;
-      const j = jitter[drawing];
-      ctx.lineWidth = Math.max(1.5, bh * 0.006);
-      let k = 0;
-      for (const pts of t.strokes) {
-        ctx.beginPath();
-        pts.forEach(([u, v], i) => {
-          const [jx, jy] = j[k++ % j.length];
-          const x = x0 + u * bw + jx * JITTER * bh * 2, y = y0 + v * bh + jy * JITTER * bh * 2;
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
-        ctx.stroke();
+  // Broken strokes along the outline: [from, to] as fractions of the outline length, plus an outer echo for some.
+  function layout(seed, closed, dash, gap) {
+    const r = rng(seed), out = [];
+    let f = closed ? r() * gap[1] : 0.02;
+    const end = closed ? 1 : 0.98;
+    while (f < end) {
+      const len = dash[0] + r() * (dash[1] - dash[0]);
+      const t0 = f, t1 = Math.min(end, f + len);
+      out.push({ t0, t1, ring: 0, seed: r() * 1000 });
+      if (r() < 0.38) out.push({ t0: t0 + (t1 - t0) * 0.25, t1: t0 + (t1 - t0) * 0.8, ring: 1, seed: r() * 1000 });
+      f = t1 + gap[0] + r() * (gap[1] - gap[0]);
+    }
+    return out;
+  }
+
+  // polyline → evenly spaced samples with cumulative length
+  function resample(pts, closed, step) {
+    const P = closed ? [...pts, pts[0]] : pts, out = [];
+    let carry = 0, total = 0;
+    for (let i = 1; i < P.length; i++) {
+      const [x0, y0] = P[i - 1], [x1, y1] = P[i];
+      const L = Math.hypot(x1 - x0, y1 - y0);
+      for (let d = carry; d < L; d += step) {
+        const t = d / L;
+        out.push([x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, total + d]);
       }
+      carry = (carry - L) % step; if (carry < 0) carry += step;
+      total += L;
+    }
+    return { pts: out, total };
+  }
+
+  function drawStroke(ctx, path, s, normalSign, T, drawing) {
+    const { pts, total } = path, n = pts.length;
+    if (n < 3) return;
+    const i0 = Math.floor(s.t0 * total / (total / n)), i1 = Math.min(n - 1, Math.floor(s.t1 * total / (total / n)));
+    const span = Math.max(1, i1 - i0);
+    const ph = s.seed + drawing * 2.31;
+    const gap = T * (1.0 + s.ring * 1.4);
+    for (let i = i0; i <= i1; i++) {
+      const a = pts[Math.max(0, i - 2)], b = pts[Math.min(n - 1, i + 2)];
+      let tx = b[0] - a[0], ty = b[1] - a[1];
+      const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+      const nx = ty * normalSign, ny = -tx * normalSign;
+      const u = (i - i0) / span;
+      // hand wobble: slow drift off the outline, different in every drawing
+      const wob = T * 0.35 * Math.sin(u * 2.3 + ph) + T * 0.12 * Math.sin(u * 7.1 + ph * 1.7);
+      const off = gap + wob;
+      const taper = Math.pow(Math.sin(Math.PI * Math.min(1, Math.max(0, u))), 0.45);
+      const size = T * (0.7 + 0.6 * taper) * (s.ring ? 0.75 : 1);
+      const jx = (hash(i * 3.1 + ph) - 0.5) * T * 0.35, jy = (hash(i * 7.3 + ph) - 0.5) * T * 0.35;
+      ctx.globalAlpha = (0.5 + 0.35 * hash(i + ph * 5)) * (0.4 + 0.6 * taper);
+      const br = brushes[Math.floor(hash(i * 1.7 + drawing * 13) * brushes.length)];
+      ctx.drawImage(br, pts[i][0] + nx * off + jx - size / 2, pts[i][1] + ny * off + jy - size / 2, size, size);
     }
   }
 
-  if (reduce) {
-    setTimeout(() => draw(0), 1500);
-    return;
+  /* ───────── targets ───────── */
+  const targets = [
+    {
+      canvas: document.querySelector('.boil-nrk'),
+      closed: true,
+      strokes: layout(11, true, [0.035, 0.075], [0.008, 0.025]),
+      outline() {
+        const b = document.querySelector('.nrk-body');
+        if (!b) return null;
+        const r = b.getBoundingClientRect();
+        return { pts: NRK.map(([u, v]) => [r.left + u * r.width, r.top + v * r.height]), height: r.height * 0.8 };
+      },
+    },
+    {
+      canvas: document.querySelector('.boil-book'),
+      closed: false,
+      strokes: layout(29, false, [0.07, 0.16], [0.025, 0.07]),
+      outline() {
+        const q = window.__bookOutline;
+        if (!q) return null;
+        return { pts: q, height: Math.hypot(q[1][0] - q[0][0], q[1][1] - q[0][1]) };
+      },
+    },
+  ].filter((t) => t.canvas);
+
+  // which side is "outside": for each outline, the normal must point away from its centroid
+  function outsideSign(pts, closed) {
+    let cx = 0, cy = 0;
+    for (const p of pts) { cx += p[0]; cy += p[1]; }
+    cx /= pts.length; cy /= pts.length;
+    let vote = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const tx = pts[i][0] - pts[i - 1][0], ty = pts[i][1] - pts[i - 1][1];
+      vote += Math.sign(ty * (pts[i][0] - cx) + -tx * (pts[i][1] - cy));
+    }
+    return vote >= 0 ? 1 : -1;
   }
-  // redraw every frame so the strokes follow the hops; the drawing itself only changes at FPS
-  function loop(now) {
-    draw(Math.floor(now / (1000 / FPS)) % DRAWINGS);
-    requestAnimationFrame(loop);
+
+  function fit(t) {
+    const dpr = Math.min(devicePixelRatio || 1, 1.5);
+    const w = t.canvas.clientWidth, h = t.canvas.clientHeight;
+    if (t.canvas.width !== Math.round(w * dpr) || t.canvas.height !== Math.round(h * dpr)) {
+      t.canvas.width = Math.round(w * dpr); t.canvas.height = Math.round(h * dpr);
+    }
+    return dpr;
   }
+
+  function frame(drawing) {
+    for (const t of targets) {
+      const ctx = t.canvas.getContext('2d');
+      const dpr = fit(t);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, t.canvas.width, t.canvas.height);
+      const o = t.outline();
+      if (!o || o.height < 10) continue;
+      const cr = t.canvas.getBoundingClientRect();
+      const local = o.pts.map(([x, y]) => [x - cr.left, y - cr.top]);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const T = Math.max(6, Math.min(15, o.height * 0.032));   // stroke thickness — a fat, soft pencil
+      if (t.sign == null) t.sign = outsideSign(local, t.closed);
+      const path = resample(local, t.closed, Math.max(1, T * 0.22));
+      for (const s of t.strokes) drawStroke(ctx, path, s, t.sign, T, drawing);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  if (reduce) { setTimeout(() => frame(0), 1500); return; }
+  // redraw every frame so the lines follow the hops; the drawing itself changes at FPS
+  const loop = (now) => { frame(Math.floor(now / (1000 / FPS)) % DRAWINGS); requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
 })();

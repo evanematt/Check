@@ -76,6 +76,8 @@
               <svg class="nrk-garland garland" id="nrkGarlandFront" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
             </div>
           </div>
+          <!-- hand-drawn pencil lines around the robot (boil.js) — behind the drift, so they sink into the snow with it -->
+          <canvas class="boil boil-nrk" aria-hidden="true"></canvas>
           <!-- the drift the robot sits behind, plus the garland's warm light on it -->
           <img class="drift drift-left" src="assets/drift-left.webp" alt="" width="1903" height="1196" aria-hidden="true" />
           <div class="drift drift-left drift-left-light" aria-hidden="true"></div>
@@ -83,6 +85,8 @@
 
         <!-- the colouring book (WebGL); it stands behind the right drift and flies out of it -->
         <canvas class="book-scene" aria-hidden="true"></canvas>
+        <!-- hand-drawn pencil lines around the book (boil.js), also behind its drift -->
+        <canvas class="boil boil-book" aria-hidden="true"></canvas>
 
         <div class="ground" aria-hidden="true">
           <img class="drift drift-right" src="assets/drift-right.webp" alt="" width="1660" height="580" />
@@ -90,9 +94,6 @@
           <!-- the book's garland, lying along the drift's crest (built by nrk.js) -->
           <svg class="drift drift-right garland" id="driftGarland" viewBox="0 0 1660 580" preserveAspectRatio="none" aria-hidden="true"></svg>
         </div>
-
-        <!-- hand-drawn "boiling" lines around the robot and the book (boil.js) -->
-        <canvas class="boil" aria-hidden="true"></canvas>
 
         <!-- constant snowfall in front of everything -->
         <canvas class="snowfall" aria-hidden="true"></canvas>
