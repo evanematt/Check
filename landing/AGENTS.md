@@ -118,7 +118,7 @@ Outside `.scene`, so not distorted:
 - **Warm light on white snow must be a multiply tint**, not `screen`: screen over white stays white, and over the dark sky it paints an orange halo. The snow-light layers' gradient centres are computed in CSS from the layout variables (`--dl-*`, `--nrk-*`, `--dr-*`), so they follow the robot and the book on every breakpoint. Keep them in sync if you change how the book is placed (`PLACE.fx`).
 - **Grading is injected** with `onBeforeCompile`, replacing `#include <dithering_fragment>`, which runs after the sRGB conversion. So the maths is in display sRGB, the same as CSS filters.
 - **Garland light maps are additive canvases** with ~45 lamps. Per-lamp alphas look tiny (0.02–0.1) on purpose: higher values saturate to yellow-white or paint a large orange halo on the sky.
-- **The lynx sprite** was repaired. The original cut-out had holes, so its mask was closed and filled, and the holes inpainted. Check any replacement sheet for holes, because they show as flicker when the head turns.
+- **The lynx sprite** was repaired. The original cut-out had holes and ragged edges, so its mask was closed, filled, smoothed and feathered (~2 px inward), and the edge colours were inpainted from the interior to remove the old background fringe. Check any replacement sheet for holes, because they show as flicker when the head turns.
 - **Accessibility:**
   - Respect `prefers-reduced-motion`. The CSS turns off animations, transitions and the warp; the JS skips the book's spring, idle nudges and the warp animation.
   - Keep the card reachable by keyboard: Tab to `.book-hit` opens it, Esc closes it.
