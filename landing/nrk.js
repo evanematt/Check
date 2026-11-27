@@ -112,11 +112,12 @@
   for (const id in STRANDS) buildGarland(id, STRANDS[id], 1, lamps);
 
   // The book's garland lies on the right front drift (drift-right.webp, 1660×580), just under its crest,
-  // so it never covers the book's cover. Points follow the measured crest line + ~30 px.
-  // The drift is drawn ~2.4× larger per unit than the robot, so k = 0.415 keeps the bulbs the same size on screen.
+  // so it never covers the book's cover. Points follow the measured crest line + ~40 px.
+  // Perspective: this drift is in the foreground, so its bulbs are ~3.4× the robot's on screen.
+  // (One drift unit ≈ 2.4 robot units on screen, so k = 1.4 → ~3.4× bigger.)
   buildGarland('driftGarland', [
-    { pts: [[240, 467], [360, 413], [480, 360], [600, 320], [720, 269], [840, 207], [960, 132], [1080, 95], [1170, 92], [1260, 186], [1380, 253]], sag: 9 },
-  ], 0.415);
+    { pts: [[240, 480], [360, 425], [480, 372], [600, 332], [720, 281], [840, 219], [960, 145], [1080, 108], [1170, 104], [1260, 198], [1380, 265]], sag: 12 },
+  ], 1.4);
 
   /* ───────── Garland light maps ─────────
      The bulbs throw warm light: strongly onto the robot (canvas masked to the painted robot),

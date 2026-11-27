@@ -114,7 +114,7 @@ Outside `.scene`, so not distorted:
 - **The book hides behind an image, not 3D snow.** Book materials are clipped at `y > SNOW_Y`. The drift image in front must cover that cut. The puff starts below the crest, so it rises over it.
 - **Additive blending does not show on the transparent WebGL canvas.** Use normal alpha blending for any glow drawn there.
 - **The book's hit area and the card position use `bookHolder`** (the model only), never `pivot`.
-- **Garlands are built by one function,** `buildGarland(id, strands, k)` in `nrk.js`. Strand points are in the SVG's own units: 1274×1517 for the robot, 1660×580 for the drift. `k` scales bulbs, glows and spacing so both garlands look the same size on screen; the drift uses 0.415. The drift strand follows the measured crest of `drift-right.webp` plus about 30 units. Re-measure it if that image changes.
+- **Garlands are built by one function,** `buildGarland(id, strands, k)` in `nrk.js`. Strand points are in the SVG's own units: 1274×1517 for the robot, 1660×580 for the drift. `k` scales bulbs, glows and spacing so both garlands keep the right perspective: the drift is in the foreground, so it uses 1.4 (bulbs about 3.4× the robot's on screen). The drift strand follows the measured crest of `drift-right.webp` plus about 40 units. Re-measure it if that image changes.
 - **Warm light on white snow must be a multiply tint**, not `screen`: screen over white stays white, and over the dark sky it paints an orange halo. The snow-light layers' gradient centres are computed in CSS from the layout variables (`--dl-*`, `--nrk-*`, `--dr-*`), so they follow the robot and the book on every breakpoint. Keep them in sync if you change how the book is placed (`PLACE.fx`).
 - **Grading is injected** with `onBeforeCompile`, replacing `#include <dithering_fragment>`, which runs after the sRGB conversion. So the maths is in display sRGB, the same as CSS filters.
 - **Garland light maps are additive canvases** with ~45 lamps. Per-lamp alphas look tiny (0.02–0.1) on purpose: higher values saturate to yellow-white or paint a large orange halo on the sky.
@@ -145,7 +145,7 @@ Outside `.scene`, so not distorted:
 | Garland brightness and flicker | `styles.css` → `.nrk-garland .bulb/.halo/.bloom`, `@keyframes twinkle`, `garland-flicker` |
 | Garland light on the robot | `nrk.js` → `paintLight()` |
 | Garland light on the snow (both garlands) | `styles.css` → `.dunes-light`, `.drift-left-light`, `.drift-right-light` |
-| Book's garland on the drift (path, size) | `nrk.js` → `buildGarland('driftGarland', …, 0.415)` points; its light on the book: `book.js` → `garlandLight` |
+| Book's garland on the drift (path, size) | `nrk.js` → `buildGarland('driftGarland', …, 1.4)` points and size factor; its light on the book: `book.js` → `garlandLight` |
 | Snowfall (density, speeds, sizes, wind) | `main.js` → the snowfall block: `LAYERS`, the density cap in `seed()`, `wind` in `loop()` |
 | Haze strength and speed | `index.html` → `#warp feDisplacementMap scale`; `nrk.js` → the `baseFrequency` animation |
 
