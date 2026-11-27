@@ -52,7 +52,8 @@ There are no automated tests. "Done" means the screenshots look right at both si
 | `styles.css` | All styling. The composition frame and drift/robot placement variables live on `.hero`. The portrait override is `@media (max-aspect-ratio: 4/5)`; the header collapses at 720 px |
 | `book.js` (ES module) | three.js: book, lights, halo, snow puff, colour grading, placement against the right drift, hover/tap/keyboard interaction, card positioning, animation loop |
 | `nrk.js` (classic script, deferred) | Lynx gaze, garland SVG construction, garland light maps (`paintLight`), `#warp` animation, robot hover/tap hop |
-| `main.js` (classic script, deferred) | Canvas sparkles |
+| `main.js` (classic script, deferred) | Canvas sparkles and snowfall |
+| `boil.js` (classic script, deferred) | Hand-drawn "boiling" lines around the robot and the book: strokes in object space, redrawn every frame to follow the hops, re-jittered at 8 fps across 3 drawings |
 | `tools/screenshot.mjs` | Verification screenshots (Playwright) |
 
 ## 4. Layer and stacking order
@@ -64,7 +65,7 @@ Everything visual is inside `.scene` (`position:absolute; inset:0; z-index:0; fi
       →  .ground.ground-left [ .nrk-spill → .nrk → img.drift-left → .drift-left-light ]
       →  canvas.book-scene
       →  .ground [ img.drift-right → .drift-right-light → svg#driftGarland ]
-      →  canvas.snowfall
+      →  canvas.boil  →  canvas.snowfall
 ```
 
 Outside `.scene`, so not distorted:
@@ -146,6 +147,7 @@ Outside `.scene`, so not distorted:
 | Garland light on the robot | `nrk.js` → `paintLight()` |
 | Garland light on the snow (both garlands) | `styles.css` → `.dunes-light`, `.drift-left-light`, `.drift-right-light` |
 | Book's garland on the drift (path, size) | `nrk.js` → `buildGarland('driftGarland', …, 1.4)` points and size factor; its light on the book: `book.js` → `garlandLight` |
+| Boiling lines (colour, speed, jitter, stroke layout) | `boil.js` → `COLOR`, `FPS`, `DRAWINGS`, `JITTER`, `strokesFor()`; which objects and their visible box: `TARGETS` |
 | Snowfall (density, speeds, sizes, wind) | `main.js` → the snowfall block: `LAYERS`, the density cap in `seed()`, `wind` in `loop()` |
 | Haze strength and speed | `index.html` → `#warp feDisplacementMap scale`; `nrk.js` → the `baseFrequency` animation |
 
