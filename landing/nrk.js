@@ -73,39 +73,50 @@
     return e;
   };
   let n = 0;
-  const lamps = [];   // every bulb, in the painting's 1274×1517 space — the light maps below are drawn from these
-  for (const id in STRANDS) {
+  const lamps = [];   // the robot's bulbs, in the 1274×1517 robot space — the light maps below are drawn from these
+
+  // k scales bulbs, glows and spacing so they look the same size on screen whatever the SVG's own units are
+  function buildGarland(id, strands, k = 1, collect = null) {
     const svg = document.getElementById(id);
-    if (!svg) continue;
-    const f = el('filter', { id: id + 'Glow', x: '-200%', y: '-200%', width: '500%', height: '500%' }, el('defs', {}, svg));
-    el('feGaussianBlur', { stdDeviation: 9 }, f);
-    const bf = el('filter', { id: id + 'Bloom', x: '-300%', y: '-300%', width: '700%', height: '700%' }, svg.querySelector('defs'));
-    el('feGaussianBlur', { stdDeviation: 22 }, bf);
+    if (!svg) return;
+    const defs = el('defs', {}, svg);
+    const f = el('filter', { id: id + 'Glow', x: '-200%', y: '-200%', width: '500%', height: '500%' }, defs);
+    el('feGaussianBlur', { stdDeviation: 9 * k }, f);
+    const bf = el('filter', { id: id + 'Bloom', x: '-300%', y: '-300%', width: '700%', height: '700%' }, defs);
+    el('feGaussianBlur', { stdDeviation: 22 * k }, bf);
     const blooms = el('g', { filter: `url(#${id}Bloom)` }, svg);
     const halos = el('g', { filter: `url(#${id}Glow)` }, svg);
     const wires = el('g', {}, svg);
     const bulbs = el('g', {}, svg);
-    for (const st of STRANDS[id]) {
+    for (const st of strands) {
       let d = `M${st.pts[0][0]} ${st.pts[0][1]}`;
       for (let i = 1; i < st.pts.length; i++) {
         const [x0, y0] = st.pts[i - 1], [x1, y1] = st.pts[i];
         const cx = (x0 + x1) / 2 + (st.side ? st.sag : 0), cy = (y0 + y1) / 2 + (st.side ? 0 : st.sag * 2);
         d += ` Q${cx} ${cy} ${x1} ${y1}`;
       }
-      const path = el('path', { d, class: 'wire' }, wires);
+      const path = el('path', { d, class: 'wire', 'stroke-width': 2.2 * k }, wires);
       const len = path.getTotalLength();
-      for (let L = 17; L < len; L += 34) {
+      for (let L = 17 * k; L < len; L += 34 * k) {
         const p = path.getPointAtLength(L);
         const delay = `${(-(n * 0.21) % 1.8).toFixed(2)}s`;
-        el('circle', { cx: p.x, cy: p.y + 8, r: 30, class: 'bloom' }, blooms);
-        el('circle', { cx: p.x, cy: p.y + 7, r: 26, class: 'halo', style: `animation-delay:${delay}` }, halos);
-        lamps.push([p.x, p.y + 8]);
-        el('rect', { x: p.x - 3, y: p.y - 1.5, width: 6, height: 5, rx: 1, class: 'cap' }, bulbs);
-        el('ellipse', { cx: p.x, cy: p.y + 8, rx: 5.2, ry: 7.2, class: 'bulb', style: `animation-delay:${delay}` }, bulbs);
+        el('circle', { cx: p.x, cy: p.y + 8 * k, r: 30 * k, class: 'bloom' }, blooms);
+        el('circle', { cx: p.x, cy: p.y + 7 * k, r: 26 * k, class: 'halo', style: `animation-delay:${delay}` }, halos);
+        if (collect) collect.push([p.x, p.y + 8 * k]);
+        el('rect', { x: p.x - 3 * k, y: p.y - 1.5 * k, width: 6 * k, height: 5 * k, rx: k, class: 'cap' }, bulbs);
+        el('ellipse', { cx: p.x, cy: p.y + 8 * k, rx: 5.2 * k, ry: 7.2 * k, class: 'bulb', style: `animation-delay:${delay}` }, bulbs);
         n++;
       }
     }
   }
+  for (const id in STRANDS) buildGarland(id, STRANDS[id], 1, lamps);
+
+  // The book's garland lies on the right front drift (drift-right.webp, 1660×580), just under its crest,
+  // so it never covers the book's cover. Points follow the measured crest line + ~30 px.
+  // The drift is drawn ~2.4× larger per unit than the robot, so k = 0.415 keeps the bulbs the same size on screen.
+  buildGarland('driftGarland', [
+    { pts: [[240, 467], [360, 413], [480, 360], [600, 320], [720, 269], [840, 207], [960, 132], [1080, 95], [1170, 92], [1260, 186], [1380, 253]], sag: 9 },
+  ], 0.415);
 
   /* ───────── Garland light maps ─────────
      The bulbs throw warm light: strongly onto the robot (canvas masked to the painted robot),

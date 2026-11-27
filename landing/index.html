@@ -69,11 +69,11 @@
           <div class="nrk" role="img" aria-label="Наземний роботизований комплекс у снігу, у кузові сидить рись і стежить за курсором">
             <div class="nrk-body">
               <img src="assets/nrk-base.webp" alt="" width="1274" height="1517" />
-              <svg class="nrk-garland" id="nrkGarlandBack" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <svg class="nrk-garland garland" id="nrkGarlandBack" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
               <div class="nrk-lynx" id="nrkLynx"></div>
               <img src="assets/nrk-front.webp" alt="" width="1274" height="1517" />
               <canvas class="nrk-light" aria-hidden="true"></canvas>
-              <svg class="nrk-garland" id="nrkGarlandFront" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <svg class="nrk-garland garland" id="nrkGarlandFront" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
             </div>
           </div>
           <!-- the drift the robot sits behind, plus the garland's warm light on it -->
@@ -87,6 +87,8 @@
         <div class="ground" aria-hidden="true">
           <img class="drift drift-right" src="assets/drift-right.webp" alt="" width="1660" height="580" />
           <div class="drift drift-right drift-right-light"></div>
+          <!-- the book's garland, lying along the drift's crest (built by nrk.js) -->
+          <svg class="drift drift-right garland" id="driftGarland" viewBox="0 0 1660 580" preserveAspectRatio="none" aria-hidden="true"></svg>
         </div>
 
         <!-- constant snowfall in front of everything -->

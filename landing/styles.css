@@ -305,13 +305,14 @@ a { color: inherit; text-decoration: none; }
 
 @keyframes lynx-breathe { 50% { transform: scaleY(1.008) scaleX(0.997); } }
 
-/* Christmas lights strung over the robot (built by nrk.js) */
-.nrk-garland { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.nrk-garland .wire { fill: none; stroke: #141b3a; stroke-width: 2.2; stroke-linecap: round; opacity: 0.9; }
-.nrk-garland .cap { fill: #1d2540; }
-.nrk-garland .bulb { fill: #fff0a8; stroke: #ffb300; stroke-width: 0.8; animation: twinkle 1.8s ease-in-out infinite; }
-.nrk-garland .halo { fill: #ffb030; animation: twinkle 1.8s ease-in-out infinite; }
-.nrk-garland .bloom { fill: #ff9a1f; opacity: 0.4; }
+/* Christmas lights: strung over the robot, and laid along the right drift's crest (all built by nrk.js) */
+.nrk-garland { position: absolute; inset: 0; width: 100%; height: 100%; }
+.garland { overflow: visible; }
+.garland .wire { fill: none; stroke: #141b3a; stroke-linecap: round; opacity: 0.9; }
+.garland .cap { fill: #1d2540; }
+.garland .bulb { fill: #fff0a8; stroke: #ffb300; stroke-width: 0.8; animation: twinkle 1.8s ease-in-out infinite; }
+.garland .halo { fill: #ffb030; animation: twinkle 1.8s ease-in-out infinite; }
+.garland .bloom { fill: #ff9a1f; opacity: 0.4; }
 @keyframes twinkle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
 /* Phones and tall screens: a narrower frame, with both drifts pulled towards the middle

@@ -142,76 +142,13 @@ function stepPuff(dt) {
   puffGeo.attributes.alpha.needsUpdate = true;
 }
 
-// everything of the book (and its garland) below the snow line is clipped — it's behind the drift image anyway
+// everything of the book below the snow line is clipped — it is behind the drift image anyway
 const clip = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -SNOW_Y)];
 
-/* ───────── Garland on the book (same lights as the robot's), plus the warm light it throws ─────────
-   Built in the book's own space (pivot-local: x across the cover −0.43…0.43, y up from the base 0…1.23,
-   cover face at z ≈ +0.022), so it hops together with the book. */
-function glowTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 128;
-  const g = c.getContext('2d');
-  const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  grad.addColorStop(0, 'rgba(255, 236, 170, 1)');
-  grad.addColorStop(0.16, 'rgba(255, 185, 70, 0.85)');
-  grad.addColorStop(0.45, 'rgba(255, 150, 35, 0.3)');
-  grad.addColorStop(1, 'rgba(255, 140, 30, 0)');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 128, 128);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
-
-const garland = new THREE.Group();
-const lamps = [];   // { sprite, phase }
-(function buildGarland() {
-  const Z = 0.05;
-  // swags: [start, end, sag] in cover space; the sides bow outwards a little
-  const swags = [
-    [[-0.47, 1.19], [-0.16, 1.2], 0.09],
-    [[-0.16, 1.2], [0.16, 1.21], 0.1],
-    [[0.16, 1.21], [0.47, 1.18], 0.09],
-    [[0.47, 1.18], [0.49, 0.7], -0.05],
-    [[0.49, 0.7], [0.48, 0.15], -0.05],
-    [[-0.47, 1.19], [-0.49, 0.72], 0.05],
-    [[-0.49, 0.72], [-0.48, 0.15], 0.05],
-  ];
-  const wireMat = new THREE.MeshBasicMaterial({ color: 0x141b3a, clippingPlanes: clip });
-  const bulbMat = new THREE.MeshBasicMaterial({ color: 0xfff0a8, clippingPlanes: clip });
-  const glowMap = glowTexture();
-  const bulbGeo = new THREE.SphereGeometry(0.014, 10, 8);
-  let n = 0;
-  for (const [[x0, y0], [x1, y1], sag] of swags) {
-    const vertical = Math.abs(x1 - x0) < 0.1;
-    const mid = vertical
-      ? new THREE.Vector3((x0 + x1) / 2 + sag, (y0 + y1) / 2, Z)
-      : new THREE.Vector3((x0 + x1) / 2, (y0 + y1) / 2 - sag, Z);
-    const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(x0, y0, Z), mid, new THREE.Vector3(x1, y1, Z));
-    garland.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.005, 5, false), wireMat));
-    const count = Math.max(3, Math.round(curve.getLength() / 0.075));
-    for (let i = 0; i < count; i++) {
-      const p = curve.getPoint((i + 0.5) / count);
-      const bulb = new THREE.Mesh(bulbGeo, bulbMat);
-      bulb.position.set(p.x, p.y - 0.02, p.z + 0.004);
-      garland.add(bulb);
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: glowMap, transparent: true, depthWrite: false, clippingPlanes: clip,
-      }));
-      sprite.position.copy(bulb.position);
-      sprite.scale.setScalar(0.15);
-      sprite.renderOrder = 3;
-      garland.add(sprite);
-      lamps.push({ sprite, phase: n * 0.73 });
-      n++;
-    }
-  }
-})();
-
-// the garland's warm light on the cover
-const garlandLight = new THREE.PointLight(0xffa040, 0.9, 2.2, 1.2);
-garlandLight.position.set(0, 0.85, 0.45);
+// warm light from the garland lying on the drift in front of the book
+const garlandLight = new THREE.PointLight(0xffa040, 0.9, 2.4, 1.2);
+garlandLight.position.set(0, 0.15, 0.7);
+scene.add(garlandLight);
 
 /* ───────── The book ───────── */
 const pivot = new THREE.Group();          // animated: hop + wobble
@@ -219,10 +156,9 @@ const base = { y: -BURY, rx: LEAN, ry: BOOK_YAW, rz: -0.07 };
 pivot.position.y = base.y;
 pivot.rotation.set(base.rx, base.ry, base.rz);
 scene.add(pivot);
-pivot.add(garland, garlandLight);
 
 const bookMeshes = [];
-let bookHolder = null;   // the book itself, without the garland — used to place the card
+let bookHolder = null;   // the book model itself — used to place the card
 
 new GLTFLoader().load('assets/book.glb', (gltf) => {
   const model = gltf.scene;
@@ -431,13 +367,6 @@ function tick(now) {
   pivot.rotation.z = base.rz + Math.sin(now / 160) * hop.vel * 0.012;
   pivot.rotation.y = base.ry - lift * 0.08;
   glow.intensity += ((open ? 2.2 : 0) - glow.intensity) * Math.min(1, dt * 6);
-  // garland twinkle (same 1.8 s rhythm as the robot's bulbs) and its flickering warm light
-  const tw = now / 1000 * (Math.PI * 2 / 1.8);
-  for (const l of lamps) {
-    const k = 0.55 + 0.45 * (0.5 + 0.5 * Math.sin(tw + l.phase));
-    l.sprite.material.opacity = k;
-    l.sprite.scale.setScalar(0.19 + 0.07 * k);
-  }
   garlandLight.intensity = 0.85 + 0.2 * Math.sin(now / 230) * Math.sin(now / 410);
 
   stepPuff(dt);
