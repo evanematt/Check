@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Unbounded:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="preload" as="image" href="assets/hero-bg.webp" imagesrcset="assets/hero-bg-768.webp 768w, assets/hero-bg.webp 1344w" imagesizes="100vw" />
+  <link rel="preload" as="image" href="assets/sky.webp" />
   <link rel="preload" as="fetch" href="assets/book.glb" crossorigin />
   <link rel="stylesheet" href="styles.css" />
   <script type="importmap">
@@ -37,47 +37,54 @@
 
   <main>
     <section class="hero" aria-label="Намалюй мені рись">
-      <!-- everything visual lives in .scene, which gets the gentle distortion; the card and its focus target stay crisp -->
+      <!-- everything visual lives in .scene, which gets the gentle distortion; the card and its focus target stay crisp.
+           Back to front: sky → far dunes → [garland spill · robot · left drift] → book (WebGL) → right drift -->
       <div class="scene">
-      <picture class="hero-bg" aria-hidden="true">
-        <source media="(max-width: 768px)" srcset="assets/hero-bg-768.webp" />
-        <img src="assets/hero-bg.webp" alt="" width="1344" height="896" fetchpriority="high" />
-      </picture>
+        <svg class="defs" width="0" height="0" aria-hidden="true">
+          <!-- slow, subtle heat-haze over the whole scene (animated by nrk.js) -->
+          <filter id="warp" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence id="warpNoise" type="fractalNoise" baseFrequency="0.006 0.018" numOctaves="2" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+          <!-- night tint for the robot and the lynx (the book gets the same matrix in book.js) -->
+          <filter id="moonlit" color-interpolation-filters="sRGB">
+            <feColorMatrix type="matrix" values="0.40 0.05 0.03 0 0  0.03 0.48 0.08 0 0  0.07 0.12 0.80 0 0.035  0 0 0 1 0" />
+          </filter>
+        </svg>
 
-      <!-- living layers on top of the painting -->
-      <div class="hero-star" aria-hidden="true"></div>
-      <div class="hero-aurora" aria-hidden="true"></div>
-      <canvas class="hero-sparkles" aria-hidden="true"></canvas>
-      <div class="hero-shade" aria-hidden="true"></div>
+        <img class="sky" src="assets/sky.webp" alt="" width="2000" height="1126" fetchpriority="high" aria-hidden="true" />
+        <canvas class="hero-sparkles" aria-hidden="true"></canvas>
 
-      <!-- ground robot with the lynx riding in the back; the lynx's gaze follows the cursor -->
-      <svg class="defs" width="0" height="0" aria-hidden="true">
-        <!-- slow, subtle heat-haze over the whole scene (animated by nrk.js) -->
-        <filter id="warp" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-          <feTurbulence id="warpNoise" type="fractalNoise" baseFrequency="0.006 0.018" numOctaves="2" seed="7" result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-        <filter id="moonlit" color-interpolation-filters="sRGB">
-          <feColorMatrix type="matrix" values="0.40 0.05 0.03 0 0  0.03 0.48 0.08 0 0  0.07 0.12 0.80 0 0.035  0 0 0 1 0" />
-        </filter>
-      </svg>
-      <!-- warm light the garland throws onto the snow and painting around the robot -->
-      <div class="nrk-spill" aria-hidden="true"><canvas></canvas></div>
-      <div class="nrk" role="img" aria-label="Наземний роботизований комплекс у снігу, у кузові сидить рись і стежить за курсором">
-        <div class="nrk-shadow"></div>
-        <div class="nrk-body">
-          <img src="assets/nrk-base.webp" alt="" width="1274" height="1517" />
-          <svg class="nrk-garland" id="nrkGarlandBack" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
-          <div class="nrk-lynx" id="nrkLynx"></div>
-          <img src="assets/nrk-front.webp" alt="" width="1274" height="1517" />
-          <canvas class="nrk-light" aria-hidden="true"></canvas>
-          <svg class="nrk-garland" id="nrkGarlandFront" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <!-- .ground boxes all share the composition's frame (2000×1306), bottom-aligned and cover-sized -->
+        <div class="ground" aria-hidden="true">
+          <img class="dunes" src="assets/snow-dunes.webp" alt="" width="2000" height="1121" />
         </div>
-        <canvas class="nrk-snow"></canvas>
-      </div>
 
-      <!-- the colouring book, half buried in the snow -->
-      <canvas class="book-scene" aria-hidden="true"></canvas>
+        <div class="ground ground-left">
+          <!-- warm light the garland throws onto the dunes around the robot -->
+          <div class="nrk-spill" aria-hidden="true"><canvas></canvas></div>
+          <!-- ground robot with the lynx riding in the back; the lynx's gaze follows the cursor, the robot hops on hover -->
+          <div class="nrk" role="img" aria-label="Наземний роботизований комплекс у снігу, у кузові сидить рись і стежить за курсором">
+            <div class="nrk-body">
+              <img src="assets/nrk-base.webp" alt="" width="1274" height="1517" />
+              <svg class="nrk-garland" id="nrkGarlandBack" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
+              <div class="nrk-lynx" id="nrkLynx"></div>
+              <img src="assets/nrk-front.webp" alt="" width="1274" height="1517" />
+              <canvas class="nrk-light" aria-hidden="true"></canvas>
+              <svg class="nrk-garland" id="nrkGarlandFront" viewBox="0 0 1274 1517" preserveAspectRatio="none" aria-hidden="true"></svg>
+            </div>
+          </div>
+          <!-- the drift the robot sits behind, plus the garland's warm light on it -->
+          <img class="drift drift-left" src="assets/drift-left.webp" alt="" width="1903" height="1196" aria-hidden="true" />
+          <div class="drift drift-left drift-left-light" aria-hidden="true"></div>
+        </div>
+
+        <!-- the colouring book (WebGL); it stands behind the right drift and flies out of it -->
+        <canvas class="book-scene" aria-hidden="true"></canvas>
+
+        <div class="ground" aria-hidden="true">
+          <img class="drift drift-right" src="assets/drift-right.webp" alt="" width="1660" height="580" />
+        </div>
       </div>
 
       <!-- keyboard / screen-reader access to the same info -->

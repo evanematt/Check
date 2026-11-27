@@ -1,4 +1,4 @@
-// The colouring book, half buried in the snow drift.
+// The colouring book, standing behind the right snow drift (an image in the DOM, in front of this canvas).
 // Hover (or tap / keyboard focus) → it hops out of the snow and an info card opens beside it.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -10,20 +10,20 @@ const hit = document.querySelector('.book-hit');
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ───────── Placement ─────────
-   The book is anchored to a point *on the painting* (fractions of the 1344×896 image),
-   so it stays on the same snow ridge whatever the screen shape. */
+   The book is anchored to a point inside the right drift image (.drift-right), as fractions of that image,
+   so it always stands behind the same part of the drift whatever the screen shape.
+   fx/fy = where the book's snow line sits; size = visible book height relative to the drift's width. */
 const PLACE = {
-  wide:   { fx: 0.70, fy: 0.80, height: 0.38 },  // height = book size relative to viewport height
-  narrow: { fx: 0.37, fy: 0.88,  height: 0.36 },
+  wide:   { fx: 0.66, fy: 0.42, size: 0.27 },
+  narrow: { fx: 0.66, fy: 0.42, size: 0.22 },
 };
-const IMG_RATIO = 1344 / 896;
+const drift = document.querySelector('.drift-right');
 
 const BOOK_SCALE = 4;        // model is ~0.31 m tall → ~1.23 units
 const BURY = 0.2;            // how far the base sits below the snow line
 const HOP = 0.64;            // on hover it flies all the way out of the drift
 const LEAN = -0.22;          // leaning back
-const SLOT_Z = Math.tan(LEAN) * 0.42;   // where the leaning book meets the drift surface
-const SNOW_Y = 0.02;         // anything of the book below this is clipped (it's "in the snow")
+const SNOW_Y = 0.02;         // anything of the book below this is clipped — it's hidden behind the drift image anyway
 
 /* ───────── Renderer / scene ───────── */
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -63,41 +63,12 @@ const glow = new THREE.PointLight(0x9aa6ff, 0, 3, 1.5);   // brightens while hov
 glow.position.set(0, 0.6, 0.9);
 scene.add(glow);
 
-/* ───────── Snow drift ───────── */
-// cheap value noise for lumpy snow
-function hash(x, y) { const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return n - Math.floor(n); }
-function noise(x, y) {
-  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
-  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
-  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
-  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-}
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-
 const BOOK_YAW = 0.22;
 
-// height of the snow drift at (x, z) — shared by the drift and the slot left behind
-function driftHeight(x, z) {
-  const cs = Math.cos(BOOK_YAW), sn = Math.sin(BOOK_YAW);
-  const zz = z - SLOT_Z;
-  const u = x * cs - zz * sn, v = x * sn + zz * cs;
-  const du = Math.max(Math.abs(u) - 0.42, 0);
-  const dv = Math.max(Math.abs(v) - 0.03, 0) * (v > 0 ? 0.8 : 1.2);    // snow piled more in front
-  const d2 = du * du + dv * dv;
-  const lump = 0.75 + 0.5 * noise(x * 2.6 + 3, z * 2.6);
-  let h = 0.17 * lump * Math.exp(-d2 / 0.05);                           // drift hugging the book
-  h += 0.07 * Math.exp(-(x * x) / 1.1 - (z * z) / 0.5);                  // gentle wide mound
-  h += (noise(x * 5 + 7, z * 5) - 0.5) * 0.04 * Math.exp(-d2 / 0.3);     // lumps
-  h += (noise(x * 14, z * 14) - 0.5) * 0.01;
-  h += (noise(u * 7 + 11, 1.3) - 0.35) * 0.06 * Math.exp(-d2 / 0.012);  // clumps along the slot
-  return h;
-}
-
 /* ───────── Colour grading, applied to the final (sRGB) pixel ─────────
-   BOOK: the same moonlit colour matrix the robot and the lynx get (#moonlit in index.html),
-         plus a fine painted grain, so the book reads as part of the same illustration.
-   BACKDROP: the same quieting the background painting gets in CSS (brightness · saturate · contrast),
-         so the drift stays matched to the dimmed painting. */
+   The same moonlit colour matrix the robot and the lynx get (#moonlit in index.html),
+   plus a fine grain, so the book reads as part of the same night scene. */
 const GRADE = {
   book: `
     vec3 c = gl_FragColor.rgb;
@@ -106,11 +77,7 @@ const GRADE = {
     float n = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
     c *= 0.965 + 0.07 * n;
     gl_FragColor.rgb = c;`,
-  backdrop: `
-    vec3 c = gl_FragColor.rgb * 0.72;
-    float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-    c = mix(vec3(l), c, 0.7);
-    gl_FragColor.rgb = (c - 0.5) * 0.92 + 0.5;`,
+
 };
 function grade(material, kind) {
   material.onBeforeCompile = (sh) => {
@@ -119,135 +86,6 @@ function grade(material, kind) {
   material.customProgramCacheKey = () => 'grade-' + kind;
   return material;
 }
-
-// Textures cut from the background painting itself, so the drift shares its brushwork:
-// a dark brushy snow body, and the glittering lavender crest the painted ridges have.
-const texLoader = new THREE.TextureLoader();
-function paintTexture(url) {
-  const t = texLoader.load(url);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping;
-  t.anisotropy = 4;
-  return t;
-}
-const bodyTex = paintTexture('assets/snow-body.webp');
-const crestTex = paintTexture('assets/snow-crest.webp');
-
-function buildDrift() {
-  const geo = new THREE.PlaneGeometry(3.8, 2.6, 190, 130);
-  geo.rotateX(-Math.PI / 2);
-  const pos = geo.attributes.position;
-  const uv = geo.attributes.uv;
-  const fade = new Float32Array(pos.count);
-
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i), z = pos.getZ(i);
-    pos.setY(i, driftHeight(x, z));
-    // strokes run mostly horizontally, as in the painting
-    uv.setXY(i, x / 1.7 + 0.3, z / 0.65 + 0.2);
-    // organic, noisy footprint that melts into the painted snow
-    const ang = Math.atan2(z, x);
-    const edge = 0.8 + 0.35 * noise(Math.cos(ang) * 2 + 5, Math.sin(ang) * 2 + 5);
-    const r = Math.hypot(x / 1.5, z / 0.95) / edge;
-    fade[i] = 1 - smooth(0.5, 0.98, r);
-  }
-  geo.computeVertexNormals();
-
-  // flat, painterly light from the star (upper left): no specular, just light and shadow sides
-  const L = new THREE.Vector3(-0.55, 0.75, 0.45).normalize();
-  const COLS = 191, ROWS = 131;   // PlaneGeometry(…, 190, 130) vertices per row / column
-  const nrm = geo.attributes.normal, n = new THREE.Vector3();
-  const body = new Float32Array(pos.count * 4);
-  const crest = new Float32Array(pos.count * 4);
-  for (let i = 0; i < pos.count; i++) {
-    n.fromBufferAttribute(nrm, i);
-    const lit = Math.max(0, n.dot(L));
-    const px = pos.getX(i), pz = pos.getZ(i) - SLOT_Z;
-    const u = px * Math.cos(BOOK_YAW) - pz * Math.sin(BOOK_YAW), v = px * Math.sin(BOOK_YAW) + pz * Math.cos(BOOK_YAW);
-    const du = Math.max(Math.abs(u) - 0.44, 0);
-    const crease = Math.exp(-(du * du + v * v) / 0.012);          // snow packed against the book
-    const cast = v < 0 ? Math.exp(-(du * du) / 0.02) * Math.exp(-(v * v) / 0.09) : 0;   // book's shadow falls back, away from the key
-    const shade = (0.4 + 0.85 * lit) * (1 - 0.35 * crease) * (1 - 0.3 * cast);
-    body.set([shade, shade, shade * 1.03, fade[i]], i * 4);
-    const h = pos.getY(i);
-    // ridges = where the surface bulges above its neighbours (positive curvature)
-    const col = i % COLS, row = (i / COLS) | 0;
-    let ridge = 0;
-    if (col > 2 && col < COLS - 3 && row > 2 && row < ROWS - 3) {
-      const avg = (pos.getY(i - 3) + pos.getY(i + 3) + pos.getY(i - 3 * COLS) + pos.getY(i + 3 * COLS)) / 4;
-      ridge = smooth(0.002, 0.014, h - avg);
-    }
-    const c = Math.max(ridge * (0.4 + 0.6 * lit), smooth(0.8, 0.97, lit) * smooth(0.1, 0.2, h) * 0.6)
-      * (0.65 + 0.5 * noise(pos.getX(i) * 7, pos.getZ(i) * 7));
-    crest.set([1, 1, 1, Math.min(1, c) * fade[i]], i * 4);
-  }
-  geo.setAttribute('color', new THREE.BufferAttribute(body, 4));
-
-  const group = new THREE.Group();
-  const bodyMesh = new THREE.Mesh(geo, grade(new THREE.MeshBasicMaterial({
-    map: bodyTex, vertexColors: true, transparent: true, depthWrite: true,
-  }), 'backdrop'));
-  bodyMesh.renderOrder = 2;
-  group.add(bodyMesh);
-
-  const crestGeo = geo.clone();
-  crestGeo.setAttribute('color', new THREE.BufferAttribute(crest, 4));
-  const cuv = crestGeo.attributes.uv;
-  for (let i = 0; i < cuv.count; i++) cuv.setXY(i, pos.getX(i) / 0.35, pos.getZ(i) / 0.2);
-  const crestMesh = new THREE.Mesh(crestGeo, grade(new THREE.MeshBasicMaterial({
-    map: crestTex, vertexColors: true, transparent: true, depthWrite: false,
-    polygonOffset: true, polygonOffsetFactor: -1,
-  }), 'backdrop'));
-  crestMesh.renderOrder = 2.5;
-  group.add(crestMesh);
-  return group;
-}
-scene.add(buildDrift());
-
-/* ───────── The slot the book leaves in the drift ───────── */
-function slotTexture() {
-  const w = 512, h = 96;
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const g = c.getContext('2d');
-  g.filter = 'blur(5px)';
-  // soft trodden rim
-  g.fillStyle = 'rgba(20, 34, 140, 0.6)';
-  g.beginPath(); g.roundRect(10, 8, w - 20, h - 16, 36); g.fill();
-  // the dark opening: lit back wall at the top, deep shadow below
-  const grad = g.createLinearGradient(0, 24, 0, h - 24);
-  grad.addColorStop(0, '#7d8ff5');
-  grad.addColorStop(0.35, '#2a3fb8');
-  grad.addColorStop(0.6, '#0a1352');
-  grad.addColorStop(1, '#050a2e');
-  g.fillStyle = grad;
-  g.beginPath(); g.roundRect(26, 24, w - 52, h - 48, 22); g.fill();
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
-function buildSlot() {
-  const W = 1.1, D = 0.34;
-  const geo = new THREE.PlaneGeometry(W, D, 64, 8);
-  geo.rotateX(-Math.PI / 2);
-  const cs = Math.cos(BOOK_YAW), sn = Math.sin(BOOK_YAW);
-  const p = geo.attributes.position;
-  for (let i = 0; i < p.count; i++) {
-    const u = p.getX(i), v = p.getZ(i);
-    const x = u * cs + v * sn, z = -u * sn + v * cs + SLOT_Z;
-    p.setXYZ(i, x, driftHeight(x, z) + 0.006, z);
-  }
-  const mat = new THREE.MeshBasicMaterial({
-    map: slotTexture(), transparent: true, opacity: 0, depthWrite: false,
-    polygonOffset: true, polygonOffsetFactor: -2,
-  });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.renderOrder = 3;
-  return mesh;
-}
-const slot = buildSlot();
-scene.add(slot);
 
 /* ───────── Snow puff (on hop) ───────── */
 const PUFF = 70;
@@ -280,11 +118,11 @@ function burst(strength = 1) {
   const cs = Math.cos(BOOK_YAW), sn = Math.sin(BOOK_YAW);
   for (let i = 0; i < PUFF; i++) {
     if (Math.random() > strength) continue;
+    // snow kicked up from where the book stood (they start hidden behind the drift and rise over its crest)
     const u = (Math.random() - 0.5) * 1.0, v = (Math.random() - 0.3) * 0.12;
-    const x = u * cs + v * sn, z = -u * sn + v * cs + SLOT_Z;
-    puffPos[i * 3] = x;
-    puffPos[i * 3 + 1] = driftHeight(x, z) + 0.02;
-    puffPos[i * 3 + 2] = z;
+    puffPos[i * 3] = u * cs + v * sn;
+    puffPos[i * 3 + 1] = 0.05 + Math.random() * 0.1;
+    puffPos[i * 3 + 2] = -u * sn + v * cs;
     puffVel[i * 3] = (Math.random() - 0.5) * 0.9 + Math.sign(u) * 0.3;
     puffVel[i * 3 + 1] = 0.8 + Math.random() * 1.2;
     puffVel[i * 3 + 2] = 0.2 + Math.random() * 0.6;
@@ -380,13 +218,12 @@ function layout() {
 
   const narrow = vw / vh < 0.9 || vw <= 768;
   const p = narrow ? PLACE.narrow : PLACE.wide;
-  const focusX = parseFloat(getComputedStyle(hero).getPropertyValue('--focus-x')) || 0.5;
-  const sw = Math.max(vw, vh * IMG_RATIO), sh = Math.max(vh, vw / IMG_RATIO);
-  anchor.x = (vw - sw) * focusX + p.fx * sw;
-  anchor.y = (vh - sh) / 2 + p.fy * sh;
+  const d = drift.getBoundingClientRect();
+  anchor.x = d.left - r.left + p.fx * d.width;
+  anchor.y = d.top - r.top + p.fy * d.height;
 
-  // visible book ≈ 0.95 units tall; cap by width on narrow screens
-  const targetPx = Math.min(p.height * vh, vw * (narrow ? 0.46 : 0.55));
+  // visible book ≈ 0.95 units tall
+  const targetPx = p.size * d.width;
   const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   camera.zoom = (2 * targetPx / vh) * CAM_DIST * halfTan / 0.95;
   camera.updateProjectionMatrix();
@@ -543,7 +380,6 @@ function tick(now) {
 
   const lift = hop.y / HOP;                         // 0 … ~1
   pivot.position.y = base.y + hop.y + Math.sin(now / 650) * 0.025 * Math.min(1, Math.max(0, lift));
-  slot.material.opacity = smooth(0.45, 0.85, lift);
   pivot.rotation.x = base.rx + lift * 0.18;         // straightens up towards the viewer
   pivot.rotation.z = base.rz + Math.sin(now / 160) * hop.vel * 0.012;
   pivot.rotation.y = base.ry - lift * 0.08;

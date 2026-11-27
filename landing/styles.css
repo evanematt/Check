@@ -14,11 +14,6 @@
   --display: "Unbounded", "Inter", system-ui, sans-serif;
   --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* painting is 1344×896 */
-  --img-ratio: 1.5;
-  /* horizontal focus of the painting (0 = left edge, 1 = right edge) */
-  --focus-x: 0.5;
-  --bg-grade: brightness(0.72) saturate(0.7) contrast(0.92);
 }
 
 *,
@@ -123,132 +118,91 @@ a { color: inherit; text-decoration: none; }
   min-height: 520px;
   overflow: hidden;
   isolation: isolate;
-  --stage-w: max(100vw, 100svh * var(--img-ratio));
-  --stage-h: max(100svh, 100vw / var(--img-ratio));
+  background: #050b2a;
+
+  /* The ground layers are laid out in the 2000×1306 composition frame.
+     The frame is cover-sized to the screen and bottom-aligned, so the snow is never cut and only sky is cropped. */
+  --frame-ratio: 1.5314;
+  --gw: max(100vw, 100svh * var(--frame-ratio));
+  --gx: calc((100vw - var(--gw)) / 2);
+
+  /* drift boxes, in % of the frame (measured from the reference composition) */
+  --dl-x: -16.6%;  --dl-y: 55.74%;  --dl-w: 85.9%;    /* left drift: drift-left.webp 1903×1196 */
+  --dr-x: 36.6%;   --dr-y: 68.84%;  --dr-w: 74.95%;   /* right drift: drift-right.webp 1660×580 */
+
+  /* robot, placed relative to the left drift so it always stays tucked behind it */
+  --nrk-dx: 21%;  --nrk-dy: -13%;  --nrk-w: 24%;
 }
 
-/* Everything tied to the painting lives in a "stage" sized exactly like
-   the cover-fitted image, so glows stay pinned to the painted star. */
-.hero-bg,
-.hero-star,
-.hero-aurora,
-.hero-sparkles {
+/* The scene wrapper carries the heat-haze distortion. */
+.scene { position: absolute; inset: 0; z-index: 0; filter: url(#warp); }
+.defs { position: absolute; }
+
+.sky {
   position: absolute;
-  top: calc((100svh - var(--stage-h)) / 2);
-  left: calc((100vw - var(--stage-w)) * var(--focus-x));
-  width: var(--stage-w);
-  height: var(--stage-h);
-  z-index: -3;
-}
-
-.hero-bg img {
-  /* quieted so the book and the robot carry the scene; the drifts get the same grade */
-  filter: var(--bg-grade);
-  display: block;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 62%;
+  user-select: none;
 }
 
-/* Star: soft breathing halo + flaring cross, centred on the painted star */
-.hero-star { z-index: -2; pointer-events: none; opacity: 0.55; }
+.hero-sparkles { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.5; }
 
-.hero-star::before,
-.hero-star::after {
-  content: "";
+.ground {
   position: absolute;
-  left: 26.4%;
-  top: 20.2%;
-  translate: -50% -50%;
-  border-radius: 50%;
-}
-
-.hero-star::before {
-  width: calc(var(--stage-w) * 0.2);
-  aspect-ratio: 1;
-  background: radial-gradient(circle,
-    rgba(230, 235, 255, 0.55) 0%,
-    rgba(160, 175, 255, 0.22) 22%,
-    rgba(120, 130, 255, 0.06) 48%,
-    transparent 70%);
-  mix-blend-mode: screen;
-  animation: breathe 5s ease-in-out infinite;
-}
-
-.hero-star::after {
-  width: calc(var(--stage-w) * 0.12);
-  aspect-ratio: 1;
-  border-radius: 0;
-  background:
-    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%) center / 100% 2px no-repeat,
-    linear-gradient(0deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%) center / 2px 100% no-repeat;
-  filter: blur(0.6px) drop-shadow(0 0 4px #fff);
-  mix-blend-mode: screen;
-  animation: flare 5s ease-in-out infinite;
-}
-
-@keyframes breathe {
-  0%, 100% { opacity: 0.65; scale: 0.92; }
-  50%      { opacity: 1;    scale: 1.08; }
-}
-
-@keyframes flare {
-  0%, 100% { opacity: 0.35; scale: 0.8; rotate: 0deg; }
-  50%      { opacity: 0.85; scale: 1.1; rotate: 4deg; }
-}
-
-/* Aurora: a slow colour shimmer laid over the painted curtain */
-.hero-aurora {
-  z-index: -2;
+  left: var(--gx);
+  bottom: 0;
+  width: var(--gw);
+  aspect-ratio: var(--frame-ratio);
   pointer-events: none;
+}
+
+.ground img { position: absolute; display: block; height: auto; user-select: none; -webkit-user-drag: none; }
+.dunes { left: -10.47%; top: 17.15%; width: 131.5%; }
+
+.drift { position: absolute; }
+.drift-left { left: var(--dl-x); top: var(--dl-y); width: var(--dl-w); aspect-ratio: 1903 / 1196; }
+.drift-right { left: var(--dr-x); top: var(--dr-y); width: var(--dr-w); aspect-ratio: 1660 / 580; }
+
+/* the garland's warm light falling on the left drift, clipped to the drift */
+.drift-left-light {
+  -webkit-mask: url("assets/drift-left.webp") 0 0 / 100% 100% no-repeat;
+  mask: url("assets/drift-left.webp") 0 0 / 100% 100% no-repeat;
   background:
-    radial-gradient(18% 14% at 82% 36%, rgba(93, 224, 207, 0.55), transparent 70%),
-    radial-gradient(12% 12% at 93% 32%, rgba(120, 240, 210, 0.45), transparent 70%),
-    radial-gradient(10% 10% at 88% 34%, rgba(190, 90, 220, 0.4), transparent 70%);
+    radial-gradient(22% 16% at 37% 20%, rgba(255, 160, 60, 0.45), transparent 70%),
+    radial-gradient(40% 26% at 37% 26%, rgba(255, 150, 50, 0.18), transparent 75%);
   mix-blend-mode: screen;
-  filter: blur(18px) brightness(0.6);
-  opacity: 0.55;
-  animation: aurora 9s ease-in-out infinite alternate;
-}
-
-@keyframes aurora {
-  0%   { opacity: 0.3;  transform: translateX(0) scaleY(1); }
-  50%  { opacity: 0.65; transform: translateX(-1.2%) scaleY(1.06); }
-  100% { opacity: 0.4;  transform: translateX(0.8%) scaleY(0.96); }
-}
-
-.hero-sparkles { z-index: -2; pointer-events: none; opacity: 0.55; }
-
-.hero-shade {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(0deg, rgba(6, 10, 31, 0.55) 0%, transparent 18%);
+  animation: garland-flicker 2.6s ease-in-out infinite;
 }
 
 /* ───────── Ground robot + lynx ───────── */
-.defs { position: absolute; }
-
 .nrk,
 .nrk-spill {
   position: absolute;
-  z-index: 0;
-  left: max(4vw, 24px);
-  bottom: 5svh;
-  height: min(54svh, 46vw);
+  left: calc(var(--dl-x) + var(--nrk-dx));
+  top: calc(var(--dl-y) + var(--nrk-dy));
+  width: var(--nrk-w);
   aspect-ratio: 1274 / 1517;
   pointer-events: none;
   opacity: 0;
   animation: nrk-in 1.4s 0.2s ease forwards;
+  /* hop: a springy rise out of the drift, a softer fall back */
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.6, 1);
 }
+
+.hero.nrk-up .nrk,
+.hero.nrk-up .nrk-spill {
+  transform: translateY(-16%);
+  transition: transform 0.6s cubic-bezier(0.25, 1.6, 0.45, 1);
+}
+
+.hero.nrk-hover { cursor: pointer; }
 
 @keyframes nrk-in { to { opacity: 1; } }
 
-/* The scene wrapper carries the heat-haze distortion. */
-.scene { position: absolute; inset: 0; z-index: 0; filter: url(#warp); }
-
-/* garland spill: a big warm light map, screened over the snow and painting around the robot */
+/* garland spill: a big warm light map, screened over the dunes around the robot */
 .nrk-spill { mix-blend-mode: screen; }
 .nrk-spill canvas {
   position: absolute;
@@ -326,21 +280,6 @@ a { color: inherit; text-decoration: none; }
   pointer-events: none;
 }
 
-.nrk-lynx::before {
-  background:
-    radial-gradient(55% 32% at 34% 20%, rgba(225, 232, 255, 0.55), transparent 70%),
-    radial-gradient(45% 55% at 22% 55%, rgba(190, 205, 255, 0.28), transparent 70%),
-    radial-gradient(60% 22% at 55% 88%, rgba(255, 196, 96, 0.38), transparent 70%);
-  mix-blend-mode: screen;
-}
-
-.nrk-lynx::after {
-  background:
-    linear-gradient(100deg, transparent 40%, rgba(8, 14, 60, 0.6) 100%),
-    linear-gradient(180deg, transparent 55%, rgba(8, 14, 60, 0.35) 100%);
-  mix-blend-mode: multiply;
-}
-
 @keyframes lynx-breathe { 50% { transform: scaleY(1.008) scaleX(0.997); } }
 
 /* Christmas lights strung over the robot (built by nrk.js) */
@@ -352,29 +291,16 @@ a { color: inherit; text-decoration: none; }
 .nrk-garland .bloom { fill: #ff9a1f; opacity: 0.4; }
 @keyframes twinkle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
-/* dark ground shadow under the wheels */
-.nrk-shadow {
-  position: absolute;
-  left: -6%;
-  right: -8%;
-  bottom: -3%;
-  height: 16%;
-  background: radial-gradient(closest-side, rgba(3, 8, 40, 0.75), rgba(3, 8, 40, 0));
-  filter: blur(6px);
-}
-
-/* painted snow drift the wheels sink into (drawn by nrk.js) */
-.nrk-snow {
-  filter: var(--bg-grade);
-  position: absolute;
-  left: -14%;
-  width: 128%;
-  bottom: -2%;
-  height: 30%;
-}
-
-@media (max-width: 768px) {
-  .nrk, .nrk-spill { left: 6px; bottom: 5svh; height: min(30svh, 50vw); }
+/* Phones and tall screens: a narrower frame, with both drifts pulled towards the middle
+   so the robot (left) and the book (right) are both on screen. */
+@media (max-aspect-ratio: 4/5) {
+  .hero {
+    --gw: 230vw;
+    --dl-x: 8%;
+    --dr-x: 5%;
+    --nrk-w: 20%;
+    --nrk-dx: 23%;
+  }
 }
 
 /* ───────── Book ───────── */
@@ -383,7 +309,6 @@ a { color: inherit; text-decoration: none; }
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;
   opacity: 0;
   transition: opacity 1.2s ease;
 }
@@ -471,12 +396,6 @@ a { color: inherit; text-decoration: none; }
 .book-card-btn--solid { background: var(--cta); }
 .book-card-btn--solid:hover { background: #5a55ff; }
 .book-card-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
-
-/* ───────── Responsive ───────── */
-@media (max-width: 768px) {
-  /* keep the star in frame on narrow screens */
-  .hero { --focus-x: 0.22; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .scene { filter: none; }

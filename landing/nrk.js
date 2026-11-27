@@ -2,7 +2,6 @@
 // and the wheels sit in a painted snow drift.
 (() => {
   const lynx = document.getElementById('nrkLynx');
-  const snow = document.querySelector('.nrk-snow');
   if (!lynx) return;
 
   /* ───────── Gaze ─────────
@@ -148,7 +147,7 @@
       const unit = W / 2.4 / PW;   // canvas px per painting px
       for (const [x, y] of lamps) {
         const [cx, cy] = map(x, y);
-        glowAt(ctx, cx, cy, 460 * unit, 'rgba(255, 150, 50, 0.045)');
+        glowAt(ctx, cx, cy, 460 * unit, 'rgba(255, 150, 50, 0.022)');
       }
       // a warm pool on the snow beneath the robot
       ctx.save();
@@ -176,116 +175,38 @@
     requestAnimationFrame(drift);
   }
 
-  /* ───────── Snow drift in front of the wheels ───────── */
-  if (!snow) return;
-  // value noise for a lumpy top edge
-  const hash = (x) => { const n = Math.sin(x * 127.1) * 43758.5453; return n - Math.floor(n); };
-  const noise = (x) => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return hash(i) + (hash(i + 1) - hash(i)) * u; };
-
-  // textures cut from the background painting: brushy snow body + glittering crest
-  const load = (src) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
-  let tex = null;
-
-  function paint() {
-    const w = snow.clientWidth, h = snow.clientHeight;
-    if (!w || !h || !tex) return;
-    const [body, crest] = tex;
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    snow.width = Math.round(w * dpr);
-    snow.height = Math.round(h * dpr);
-    const ctx = snow.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-
-    // drift silhouette: a long low mound with lumps where it piles against the wheels
-    const top = (x) => {
-      const u = x / w;
-      const mound = Math.sin(Math.PI * u) ** 0.7;
-      const wheels = Math.exp(-(((u - 0.24) / 0.09) ** 2)) * 0.35 + Math.exp(-(((u - 0.76) / 0.1) ** 2)) * 0.25;
-      return h * (1 - (0.55 * mound + wheels * mound + (noise(u * 9) - 0.5) * 0.14 * mound));
-    };
-    const outline = () => {
-      ctx.beginPath();
-      ctx.moveTo(0, h);
-      for (let x = 0; x <= w; x += 2) ctx.lineTo(x, top(x));
-      ctx.lineTo(w, h);
-      ctx.closePath();
-    };
-
-    // body: the painting's own dark brushwork
-    ctx.save();
-    outline();
-    ctx.clip();
-    if (body) ctx.drawImage(body, 0, 0, body.width, body.height, -w * 0.05, h * 0.05, w * 1.1, h * 1.1);
-    // the side away from the star sinks into shadow
-    const shade = ctx.createLinearGradient(0, 0, w, 0);
-    shade.addColorStop(0, 'rgba(10, 20, 80, 0)');
-    shade.addColorStop(1, 'rgba(10, 20, 80, 0.35)');
-    ctx.fillStyle = shade;
-    ctx.fillRect(0, 0, w, h);
-
-    // crest: glittering lavender snow along the top edge, soft towards the body, like the painted ridges
-    if (crest) {
-      const band = document.createElement('canvas');
-      band.width = snow.width; band.height = snow.height;
-      const b = band.getContext('2d');
-      b.setTransform(dpr, 0, 0, dpr, 0, 0);
-      b.fillStyle = b.createPattern(crest, 'repeat');
-      b.beginPath();
-      b.moveTo(0, h);
-      for (let x = 0; x <= w; x += 2) b.lineTo(x, top(x));
-      b.lineTo(w, h);
-      b.closePath();
-      b.fill();
-      // carve away everything below a lumpy line under the top edge, with a blurred edge
-      b.globalCompositeOperation = 'destination-out';
-      b.filter = `blur(${Math.max(3, h * 0.05)}px)`;
-      b.fillStyle = '#000';
-      b.beginPath();
-      b.moveTo(-20, h + 40);
-      for (let x = -20; x <= w + 20; x += 3) b.lineTo(x, top(Math.min(w, Math.max(0, x))) + h * (0.1 + 0.16 * noise(x / w * 7 + 3)));
-      b.lineTo(w + 20, h + 40);
-      b.closePath();
-      b.fill();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.globalAlpha = 0.85;
-      ctx.drawImage(band, 0, 0);
-      ctx.globalAlpha = 1;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    // garland light falling on the drift's top
-    ctx.globalCompositeOperation = 'screen';
-    for (const [lx] of lamps) {
-      const x = ((lx / PW) + 0.14) / 1.28 * w;
-      const g = ctx.createRadialGradient(x, h * 0.25, 0, x, h * 0.25, w * 0.22);
-      g.addColorStop(0, 'rgba(255, 160, 60, 0.016)');
-      g.addColorStop(1, 'rgba(255, 160, 60, 0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, w, h);
-    }
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.restore();
-
-    // fade the drift's ends and bottom into the painted snow
-    ctx.globalCompositeOperation = 'destination-in';
-    const fadeX = ctx.createLinearGradient(0, 0, w, 0);
-    fadeX.addColorStop(0, 'rgba(0,0,0,0)');
-    fadeX.addColorStop(0.16, 'rgba(0,0,0,1)');
-    fadeX.addColorStop(0.84, 'rgba(0,0,0,1)');
-    fadeX.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = fadeX;
-    ctx.fillRect(0, 0, w, h);
-    const fadeY = ctx.createLinearGradient(0, 0, 0, h);
-    fadeY.addColorStop(0, 'rgba(0,0,0,1)');
-    fadeY.addColorStop(0.75, 'rgba(0,0,0,1)');
-    fadeY.addColorStop(1, 'rgba(0,0,0,0.3)');
-    ctx.fillStyle = fadeY;
-    ctx.fillRect(0, 0, w, h);
-    ctx.globalCompositeOperation = 'source-over';
-  }
-
-  Promise.all([load('assets/snow-body.webp'), load('assets/snow-crest.webp')]).then((t) => { tex = t; paint(); });
-
-  let raf = 0;
-  new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(paint); }).observe(snow);
+  /* ───────── Hop: the robot rises out of the drift on hover (tap on touch screens) ─────────
+     The robot box has pointer-events: none (the book's canvas sits above it), so hit-testing is done here
+     against the painted robot's bounds, ignoring the part hidden behind the drift. */
+  const hero = document.querySelector('.hero');
+  const driftLeft = document.querySelector('img.drift-left');
+  let up = false, downTimer = 0;
+  const overRobot = (x, y) => {
+    const b = document.querySelector('.nrk-body').getBoundingClientRect();
+    const d = driftLeft ? driftLeft.getBoundingClientRect() : null;
+    const inX = x > b.left + b.width * 0.05 && x < b.right - b.width * 0.03;
+    const inY = y > b.top + b.height * 0.18 && y < b.bottom - b.height * 0.1;
+    // below the drift's crest line at the robot's position the robot is hidden; treat that as snow
+    const crest = d ? d.top + d.height * 0.2 : Infinity;
+    return inX && inY && y < Math.max(crest, b.top + b.height * 0.75);
+  };
+  const setUp = (v) => {
+    if (v === up) return;
+    up = v;
+    hero.classList.toggle('nrk-up', v);
+  };
+  addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'touch') return;
+    const on = overRobot(e.clientX, e.clientY);
+    hero.classList.toggle('nrk-hover', on);
+    clearTimeout(downTimer);
+    if (on) setUp(true);
+    else if (up) downTimer = setTimeout(() => setUp(false), 180);
+  }, { passive: true });
+  addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' || !overRobot(e.clientX, e.clientY)) return;
+    setUp(true);
+    clearTimeout(downTimer);
+    downTimer = setTimeout(() => setUp(false), 1400);
+  }, { passive: true });
 })();

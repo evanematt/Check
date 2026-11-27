@@ -6,17 +6,21 @@ Technical brief for an AI coding agent working on this project. The human-facing
 
 A single-screen hero for a charity colouring-book landing page (Roboneers × СЕНС). It is a static site with no build step and no package manager: plain HTML, CSS and JS. three.js 0.160.0 comes in through an import map from jsDelivr, and the fonts (Inter, Unbounded) from Google Fonts.
 
-Scene, back to front:
+The scene is assembled from separate layers that match a reference composition (2000×1306). Back to front:
 
-1. **Painting.** A night sky with a star, an aurora and snow dunes (`assets/hero-bg.webp`, 2000×1333, ratio 1.5), cover-fitted. CSS adds overlays: a breathing star glow, an aurora shimmer and canvas sparkles.
-2. **Ground robot (НРК) with a lynx, left.** Three DOM layers: `nrk-base.webp`, then the lynx sprite, then `nrk-front.webp`.
-   - The lynx is a 9×7 sprite sheet. The frame changes so its gaze follows the cursor.
-   - A Christmas garland is drawn as SVG on top and throws warm light: onto the robot, onto the lynx, onto a snow pool around it, and onto the drift in front of the wheels.
-3. **Colouring book, right.** WebGL (three.js) in one transparent canvas that covers the hero.
-   - The book is half buried in a procedural snow drift textured with crops of the painting.
-   - On hover, tap or focus it springs fully out of the drift. A slot-shaped hole fades in where it stood, snow puffs up, and an info card opens beside it.
-4. **Info card** (`.book-card`): a frosted square panel with a hand-lettered SVG title, placeholder copy, and the buttons «Спробувати» and «Купити».
-5. **Header** (`.site-header`): a floating glass pill with the logo, three links and a «Купити» button.
+1. **Sky** (`assets/sky.webp`): night sky with an aurora, cover-fitted to the whole hero, plus canvas sparkles.
+2. **Far dunes** (`assets/snow-dunes.webp`, transparent PNG-style WebP).
+3. **Ground robot (НРК) with a lynx, left.** It stands *behind* the left drift.
+   - Three DOM layers: `nrk-base.webp`, then the lynx sprite (9×7 frames, the gaze follows the cursor), then `nrk-front.webp`.
+   - A garland is drawn as SVG and throws warm light onto the robot, the lynx, the dunes and the left drift.
+   - **On hover (or tap) the robot hops up out of the drift** (CSS transform) and settles back when the pointer leaves.
+4. **Left drift** (`assets/drift-left.webp`), in front of the robot.
+5. **Colouring book (WebGL, three.js),** one transparent canvas covering the hero. The book stands *behind* the right drift.
+   - On hover, tap or focus it springs up and fully out of the drift, with a snow puff.
+   - An info card opens beside it.
+6. **Right drift** (`assets/drift-right.webp`), in front of the book.
+7. **Info card** (`.book-card`): a frosted square panel with a hand-lettered SVG title, placeholder copy, and the buttons «Спробувати» and «Купити».
+8. **Header** (`.site-header`): a floating glass pill with the logo, three links and a «Купити» button.
 
 A slow animated SVG displacement ("heat haze", `#warp`) is applied to the whole `.scene` wrapper, but not to the card or the header.
 
@@ -34,7 +38,7 @@ node tools/screenshot.mjs http://localhost:8000 ./shots   # needs `playwright` +
 - the book hovered or tapped, with the card open;
 - several cursor positions so the lynx's gaze can be checked.
 
-**Always look at those shots after a visual change.** Headless Chromium needs `--use-gl=angle --use-angle=swiftshader` for WebGL, and the script already passes those flags.
+**Always look at those shots after a visual change.** To check the robot's hop, hover the robot (§7). Headless Chromium needs `--use-gl=angle --use-angle=swiftshader` for WebGL, and the script already passes those flags.
 
 There are no automated tests. "Done" means the screenshots look right at both sizes, the console has no errors, and the page doesn't scroll sideways.
 
@@ -42,25 +46,23 @@ There are no automated tests. "Done" means the screenshots look right at both si
 
 | File | Responsibility |
 |---|---|
-| `index.html` | DOM structure, import map, SVG filter defs (`#warp`, `#moonlit`), card markup, header |
-| `styles.css` | All styling. Tokens and `--bg-grade` live in `:root`. Responsive rules at 720 px (header) and 768 px (scene) |
-| `book.js` (ES module) | three.js scene: drift, slot, puff, halo, book, lights, colour grading, layout/lens-shift, hover/tap/keyboard interaction, card positioning, animation loop |
-| `nrk.js` (classic script, deferred) | Lynx gaze, garland SVG construction, garland light maps (`paintLight`), painted drift by the wheels (`paint`), `#warp` animation |
-| `main.js` (classic script, deferred) | Canvas sparkles over the painting |
+| `index.html` | DOM structure and layer order, import map, SVG filter defs (`#warp`, `#moonlit`), card markup, header |
+| `styles.css` | All styling. The composition frame and drift/robot placement variables live on `.hero`. The portrait override is `@media (max-aspect-ratio: 4/5)`; the header collapses at 720 px |
+| `book.js` (ES module) | three.js: book, lights, halo, snow puff, colour grading, placement against the right drift, hover/tap/keyboard interaction, card positioning, animation loop |
+| `nrk.js` (classic script, deferred) | Lynx gaze, garland SVG construction, garland light maps (`paintLight`), `#warp` animation, robot hover/tap hop |
+| `main.js` (classic script, deferred) | Canvas sparkles |
 | `tools/screenshot.mjs` | Verification screenshots (Playwright) |
 
 ## 4. Layer and stacking order
 
-Everything visual lives in `.scene`, which is `position:absolute; inset:0; z-index:0; filter:url(#warp)`:
+Everything visual is inside `.scene` (`position:absolute; inset:0; z-index:0; filter:url(#warp)`). Inside it, **stacking is by DOM order**, with no z-indexes:
 
-| z-index | Element | Notes |
-|---|---|---|
-| -3 | `.hero-bg` (`<picture>`) | `filter: var(--bg-grade)` dims the painting |
-| -2 | `.hero-star`, `.hero-aurora`, `.hero-sparkles` | Pinned to the painting (see §5). `mix-blend-mode: screen` |
-| -1 | `.hero-shade` | Bottom gradient |
-| 0 | `.nrk-spill` | Warm light map, `mix-blend-mode: screen`. **Must stay a sibling *before* `.nrk`, not inside it** (see §7) |
-| 0 | `.nrk` | Contains `.nrk-shadow`, `.nrk-body` (base img, back garland SVG, lynx, front img, `.nrk-light` canvas, front garland SVG) and `.nrk-snow` canvas |
-| 1 | `.book-scene` canvas | WebGL. Covers the hero and receives pointer events for picking |
+```
+.sky  →  .hero-sparkles  →  .ground (dunes)
+      →  .ground.ground-left [ .nrk-spill → .nrk → img.drift-left → .drift-left-light ]
+      →  canvas.book-scene
+      →  .ground [ img.drift-right ]
+```
 
 Outside `.scene`, so not distorted:
 - `.book-hit` (z 2): an invisible focus target for keyboard users, repositioned over the book every frame;
@@ -69,75 +71,75 @@ Outside `.scene`, so not distorted:
 
 ## 5. Coordinate systems (most bugs come from mixing these)
 
-1. **Painting space:** fractions (0–1) of the 1344×896 / 2000×1333 image.
-   - The painting is cover-fitted inside a "stage" that is exactly `max(100vw, 100svh·1.5) × max(100svh, 100vw/1.5)`.
-   - The stage is offset horizontally by `--focus-x`: 0.5 on desktop, 0.22 on phones, so the star stays in frame.
-   - The star and aurora overlays are positioned in stage percentages. The star is at `26.4% 20.2%`.
-   - **The book is anchored to a painting point** (`PLACE.wide/narrow.fx/fy` in `book.js`), so it stays on the same snow ridge at any aspect ratio. `layout()` reproduces the cover maths in JS and must stay in sync with the CSS stage (`IMG_RATIO`, `--focus-x`).
-2. **three.js world:**
-   - The book's base pivot is at the origin; Y is up; the drift is a heightfield `driftHeight(x, z)`.
-   - The camera never moves to place the book. `layout()` uses `camera.zoom` for size and a **lens shift** (projection matrix elements `[8]` and `[9]`) to put the world origin on the anchor pixel.
-   - After editing the projection matrix, `projectionMatrixInverse` must be updated, which `layout()` does, or raycasting breaks.
+1. **Composition frame (`.ground`):** the reference composition is 2000×1306 (`--frame-ratio: 1.5314`).
+   - Every `.ground` box is `width: var(--gw)`, with that aspect ratio, bottom-aligned and centred (`left: var(--gx)`).
+   - On landscape screens `--gw = max(100vw, 100svh·ratio)`. The frame covers the screen and only sky gets cropped.
+   - On portrait screens `--gw: 230vw`, and the drifts are pulled towards the centre so both the robot and the book are visible.
+   - Everything inside `.ground` is placed in **% of the frame**. These values were measured by feature-matching the layers against the reference composition:
+     - dunes: `left -10.47%, top 17.15%, width 131.5%`;
+     - left drift: `--dl-x / --dl-y / --dl-w`;
+     - right drift: `--dr-x / --dr-y / --dr-w`.
+2. **Robot box:** `.nrk` is placed *relative to the left drift*: `left = --dl-x + --nrk-dx`, `top = --dl-y + --nrk-dy`, `width = --nrk-w`. Move the drift and the robot follows it.
 3. **Robot space:** 1274×1517 px, the native size of the НРК images.
-   - Garland strands (`STRANDS` in `nrk.js`) and the lamp list used for the light maps are in this space.
+   - Garland strands (`STRANDS` in `nrk.js`) and the lamp list for the light maps are in this space.
    - The lynx box is `left 32.564%, top 9.965%, 32.547% × 50%` of the robot box.
-   - The spill canvas spans −70 %…170 % × −45 %…145 % of the robot box, and `paintLight()` maps lamps into that.
-4. **Drift canvas by the wheels:** `.nrk-snow` is `left:-14%; width:128%; bottom:-2%; height:30%` of the robot box. `paint()` maps lamp x into it with `((x/1274)+0.14)/1.28`.
+   - The spill canvas spans −70 %…170 % × −45 %…145 % of the robot box.
+4. **three.js world:**
+   - The book's pivot is at the origin, which is the book's "snow line"; Y is up.
+   - `layout()` in `book.js` reads the **right drift image's on-screen rect** and puts the origin at `PLACE.fx/fy` (fractions of that image).
+   - It sizes the book with `camera.zoom`, so the visible height is about `PLACE.size × drift width`. It positions it with a **lens shift** (projection matrix elements `[8]` and `[9]`) and then updates `projectionMatrixInverse`, which raycasting needs.
 
 ## 6. Coupled values (change them together)
 
 | If you change… | …also change |
 |---|---|
-| `--bg-grade` (CSS) | `GRADE.backdrop` in `book.js` (the same brightness · saturate · contrast, written in GLSL). Otherwise the book's drift no longer matches the painting. `.nrk-snow` already uses `--bg-grade` |
-| `#moonlit` colour matrix (`index.html`) | `GRADE.book` in `book.js` (the same matrix in GLSL, mixed at 0.82 and brightened ×1.45 because the book texture is more saturated than the painted robot) |
-| Background image composition | Star overlay position (`.hero-star::before/::after` `left/top`), aurora gradient positions, `PLACE.fx/fy`, and the snow crops `snow-body.webp` / `snow-crest.webp` (re-cut them from the new painting) |
-| `BURY`, `LEAN`, `HOP` (`book.js`) | `SLOT_Z` is derived from `LEAN`. `HOP` must exceed `BURY` plus the drift height (~0.3) or the book won't fully clear the snow. Check that the book's top doesn't leave the screen when it is out (`PLACE.height`) |
-| `.nrk` box (`left/bottom/height`) | It is shared with `.nrk-spill` through the same selector. Keep them in one rule |
+| The reference composition or any layer image | Re-measure that layer's box in % of the 2000×1306 frame (feature-match it against the composite, e.g. OpenCV SIFT and `estimateAffinePartial2D`), then update the CSS variables |
+| Left drift box (`--dl-*`) | The robot follows automatically. Check that its wheels are still hidden behind the drift's crest, using `--nrk-dy` |
+| Right drift box or image | Book `PLACE.fx/fy/size` in `book.js`. The book's straight bottom edge (the clip at `SNOW_Y`) must stay hidden behind the drift's top edge, including where the drift slopes down |
+| `BURY`, `HOP` (`book.js`) | `HOP` must lift the book's base above the drift's crest. Check that the book's top doesn't leave the screen when it is out |
+| Robot hop height (`.hero.nrk-up` `translateY`) | The hit area in `nrk.js` (`overRobot`) ignores the part hidden by the drift. Keep it in sync if the robot's position changes a lot |
+| `#moonlit` colour matrix (`index.html`) | `GRADE.book` in `book.js` (the same matrix in GLSL, mixed at 0.82 and brightened ×1.45). That keeps the robot, the lynx and the book in one palette |
 | Lynx sprite sheet | `.nrk-lynx` box percentages, `COLS/ROWS` in `nrk.js`, `background-size`/`mask-size` `900% 700%` (both in `.nrk-lynx` and `.nrk-lynx::before`) |
 | Card markup or size | `positionCard()` in `book.js` measures `offsetWidth/Height`. It places the card right, then left, then above the book |
 
 ## 7. Invariants and gotchas
 
-- **`mix-blend-mode` only blends inside the nearest isolated group.** Any element with `filter`, `opacity < 1`, a `z-index` stacking context, `mask` and so on isolates its children.
-  - That is why `.nrk-spill` is a sibling of `.nrk` and not a child.
-  - That is why the lynx and robot light layers are inside `.nrk-body`, so they blend only with the robot.
-  - Don't add `filter` or `opacity` to wrappers without checking blending still works.
-- **Additive blending does not show on the transparent WebGL canvas.** It composites against nothing. The book halo uses normal alpha blending for that reason.
+- **`mix-blend-mode` only blends inside the nearest isolated group.** `filter`, `opacity < 1`, `transform`, `z-index` stacking contexts and `mask` all isolate.
+  - `.ground` boxes deliberately have **no** z-index, filter or transform, so `.nrk-spill` and `.drift-left-light` (screen-blended) can blend with the dunes behind them.
+  - Don't add `filter`, `opacity` or `transform` to `.ground`.
+- **The robot hop is CSS.** `nrk.js` toggles `.hero.nrk-up`, which translates both `.nrk` and `.nrk-spill`. The robot has `pointer-events:none` because the WebGL canvas is above it, so hover is hit-tested in JS against `.nrk-body`'s rect, ignoring the bottom part hidden by the drift. On touch, a tap makes it hop for about 1.4 s.
+- **The book hides behind an image, not 3D snow.** Book materials are clipped at `y > SNOW_Y`. The drift image in front must cover that cut. The puff starts below the crest, so it rises over it.
+- **Additive blending does not show on the transparent WebGL canvas.** The book halo uses normal alpha blending.
 - **The book's hit area and the card position use `bookHolder`** (the model only), never `pivot`, because `pivot` also contains the large halo plane.
-- **Clipping:** book materials use `clippingPlanes = [y > SNOW_Y]`, so the buried part is invisible even where the drift is semi-transparent. Picking ignores hits below `y = 0.18`.
-- **Drift materials are `MeshBasicMaterial`.** They take no scene lights; shading is baked into vertex colours, and the crest is a second, additive-alpha mesh over the same geometry. They also receive no shadows, so `renderer.shadowMap` is off, and the "cast shadow" is baked too.
-- **Grading is injected** with `onBeforeCompile`, replacing `#include <dithering_fragment>`, which runs after the sRGB conversion. So the maths is in display sRGB, the same as CSS filters. Keep `customProgramCacheKey` unique per grade kind.
-- **Garland light maps are additive canvases** (`globalCompositeOperation='lighter'`) with ~45 lamps. Per-lamp alpha values look tiny (0.04–0.1) on purpose: higher values saturate to yellow-white.
-- **The lynx sprite** was repaired. The original cut-out had holes, so its mask was closed and filled, and the holes inpainted. If you replace the sheet, check frames for holes, because they show as flicker when the head turns.
+- **Grading is injected** with `onBeforeCompile`, replacing `#include <dithering_fragment>`, which runs after the sRGB conversion. So the maths is in display sRGB, the same as CSS filters.
+- **Garland light maps are additive canvases** with ~45 lamps. Per-lamp alphas look tiny (0.02–0.1) on purpose: higher values saturate to yellow-white or paint a large orange halo on the sky.
+- **The lynx sprite** was repaired. The original cut-out had holes, so its mask was closed and filled, and the holes inpainted. Check any replacement sheet for holes, because they show as flicker when the head turns.
 - **Accessibility:**
-  - Respect `prefers-reduced-motion`. The CSS turns off animations and the warp, and the JS skips the hop spring, idle nudges and the warp animation.
+  - Respect `prefers-reduced-motion`. The CSS turns off animations, transitions and the warp; the JS skips the book's spring, idle nudges and the warp animation.
   - Keep the card reachable by keyboard: Tab to `.book-hit` opens it, Esc closes it.
-  - Keep `aria-*` attributes and the `alt` on the title image.
 - **Performance:**
   - `#warp` is a full-screen SVG displacement, the most expensive part.
   - The lynx sheet is 1.6 MB, the heaviest asset.
-  - Lower DPR or disable the warp on small screens if needed.
 
 ## 8. Tuning knobs (quick reference)
 
 | What | Where |
 |---|---|
-| Book position and size | `book.js` → `PLACE.wide` / `PLACE.narrow` (`fx`, `fy` painting fractions, `height` = book size vs viewport height) |
+| Layer boxes (dunes, drifts) | `styles.css` → `.dunes`, `.hero { --dl-*, --dr-* }` |
+| Robot position and size (relative to the left drift) | `styles.css` → `.hero { --nrk-dx, --nrk-dy, --nrk-w }` (plus the portrait override) |
+| Robot hop height and feel | `styles.css` → `.hero.nrk-up .nrk` `translateY(-16%)` and its `transition` curves |
+| Book position and size (relative to the right drift) | `book.js` → `PLACE.wide` / `PLACE.narrow` (`fx`, `fy`, `size`) |
 | Bury depth, hop height, lean | `book.js` → `BURY`, `HOP`, `LEAN` |
-| Hop feel (springiness) | `book.js` → `tick()`, `const k = 140, c = 13` |
-| Idle "nudge" interval | `book.js` → `nudgeAt` (6–9 s) |
+| Book hop feel | `book.js` → `tick()`, `const k = 140, c = 13` |
+| Idle "nudge" of the book | `book.js` → `nudgeAt` (6–9 s) |
 | Card open/close delays | `book.js` → `scheduleClose` (280 ms), hide after close (400 ms) |
-| Book lights | `book.js` → `key` (spot from the star side), `rim`, `bounce`, hemisphere, `glow` (on hover), `backGlow` halo |
-| Drift shape | `book.js` → `driftHeight()`; footprint fade in `buildDrift()` |
-| Drift light and crest | `book.js` → `buildDrift()`: `L` light direction, `shade`, the ridge/crest weights |
-| Background dimming | `styles.css` → `--bg-grade`, plus `GRADE.backdrop` (keep in sync) |
+| Book lights and halo | `book.js` → `key`, `rim`, `bounce`, hemisphere, `glow` (on hover), `backGlow` |
 | Night tint of robot, lynx and book | `index.html` → `#moonlit`, plus `GRADE.book` (keep in sync) |
 | Lynx gaze sensitivity | `nrk.js` → `reach`, the smoothing `k`, idle wander |
 | Garland path | `nrk.js` → `STRANDS` (robot space) |
 | Garland brightness and flicker | `styles.css` → `.nrk-garland .bulb/.halo/.bloom`, `@keyframes twinkle`, `garland-flicker` |
-| Garland light on robot and snow | `nrk.js` → `paintLight()` alphas and radii, plus the drift's warm pass in `paint()` |
+| Garland light on robot, dunes and drift | `nrk.js` → `paintLight()`; `styles.css` → `.drift-left-light` gradients |
 | Haze strength and speed | `index.html` → `#warp feDisplacementMap scale`; `nrk.js` → the `baseFrequency` animation |
-| Robot position and size | `styles.css` → `.nrk, .nrk-spill` (plus the 768 px media query) |
 
 ## 9. Content still to fill in
 
@@ -151,6 +153,6 @@ Outside `.scene`, so not distorted:
 
 - **No build step, no frameworks.** Keep it that way unless the human asks.
 - **Pinned CDN versions** (`three@0.160.0`). Don't use floating versions.
-- **CSS:** tokens in `:root`, section banners (`/* ───────── … ───────── */`), mobile overrides in media queries at the end of the relevant section or the end of the file.
+- **CSS:** placement variables on `.hero`, section banners (`/* ───────── … ───────── */`), overrides in media queries next to the section they change.
 - **JS:** small comment banners per subsystem. Explain *why* in comments, not what.
 - **Visual changes:** verify with `tools/screenshot.mjs` at both sizes before handing back. Describe what you checked.
