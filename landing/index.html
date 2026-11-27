@@ -23,20 +23,20 @@
 <body>
   <header class="site-header">
     <nav class="site-nav" aria-label="Головна навігація">
-      <a class="site-logo" href="#" aria-label="Roboneers × СЕНС — на головну">
+      <a class="site-logo" href="#top" aria-label="Roboneers × СЕНС — на головну">
         <img src="assets/logos-roboneers-sens.png" alt="Roboneers × СЕНС" width="387" height="33" />
       </a>
       <ul class="site-links">
-        <li><a href="#">Про проєкт</a></li>
-        <li><a href="#">Розмальовка</a></li>
-        <li><a href="#">Як допомогти</a></li>
+        <li><a href="#about">Про проєкт</a></li>
+        <li><a href="#book">Розмальовка</a></li>
+        <li><a href="#help">Як допомогти</a></li>
       </ul>
-      <a class="site-cta" href="#">Купити</a>
+      <a class="site-cta" href="#buy">Купити</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero" aria-label="Намалюй мені рись">
+    <section class="hero" id="top" aria-label="Намалюй мені рись">
       <!-- everything visual lives in .scene, which gets the gentle distortion; the card and its focus target stay crisp.
            Back to front: sky → far dunes → [garland spill · robot · left drift] → book (WebGL) → right drift -->
       <div class="scene">
@@ -104,14 +104,168 @@
         <h2 class="book-card-title" id="bookCardTitle">
           <img src="assets/book-card-title.svg" alt="Розмальовка «Намалюй мені рись»" width="688" height="162" />
         </h2>
-        <p class="book-card-text">Текст-заглушка. Тут буде короткий опис розмальовки: про що вона, для кого і куди підуть кошти з кожного примірника.</p>
+        <p class="book-card-text">Історія про те, як наземний робот «Рись+» вивіз із-під обстрілу трьох поранених українських військових. Кошти з кожного примірника йдуть евакуаційному взводу медичної роти 59 ОШБр БпС.</p>
         <div class="book-card-actions">
-          <a class="book-card-btn book-card-btn--ghost" href="#">Спробувати</a>
-          <a class="book-card-btn book-card-btn--solid" href="#">Купити</a>
+          <a class="book-card-btn book-card-btn--ghost" href="#book">Детальніше</a>
+          <a class="book-card-btn book-card-btn--solid" href="#buy">Купити</a>
         </div>
       </aside>
     </section>
+
+    <!-- ───────── Про проєкт ───────── -->
+    <section class="block about" id="about" aria-labelledby="aboutTitle">
+      <div class="wrap">
+        <p class="eyebrow">Про проєкт</p>
+        <h2 class="block-title" id="aboutTitle">Історія, яка сталася насправді</h2>
+        <div class="about-grid">
+          <div class="about-text">
+            <p class="lede">Розмальовка розповідає, як наземний роботизований комплекс «Рись+» допоміг врятувати трьох поранених українських військових.</p>
+            <p>Команда Roboneers створила її на основі реальної історії евакуації, яку розповів фельдшер медичної служби «Ульф» із позивним «Жека». Книжка знайомить дітей і дорослих із роботою військових, які організовують евакуацію та використовують сучасні технології, щоб рятувати життя побратимів.</p>
+            <p class="note">З міркувань безпеки позивні військових і місце подій змінено.</p>
+          </div>
+          <ul class="facts" aria-label="Коротко про видання">
+            <li><b>3</b><span>поранених військових евакуював робот у цій історії</span></li>
+            <li><b>«Рись+»</b><span>наземний роботизований комплекс Roboneers — головний герой книжки</span></li>
+            <li><b>3000</b><span>примірників — тираж першого видання</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── Розмальовка ───────── -->
+    <section class="block book" id="book" aria-labelledby="bookTitle">
+      <div class="wrap book-grid">
+        <div class="book-covers">
+          <figure class="cover cover-back">
+            <img src="assets/book-cover-back.webp" alt="Задня обкладинка розмальовки з описом видання" width="800" height="1142" loading="lazy" />
+          </figure>
+          <figure class="cover cover-front">
+            <img src="assets/book-cover-front.webp" alt="Обкладинка: тато з протезом несе доньку на плечах і тримає за руку сина, позаду робот з риссю" width="800" height="1142" loading="lazy" />
+          </figure>
+        </div>
+        <div class="book-info">
+          <p class="eyebrow">Розмальовка</p>
+          <h2 class="block-title" id="bookTitle">«Намалюй мені рись»</h2>
+          <p class="lede">Благодійна розмальовка для дітей і всієї родини: розфарбовуєш сторінки й дізнаєшся, як працює евакуація з поля бою.</p>
+          <dl class="specs">
+            <div><dt>Авторка тексту</dt><dd>Аліна Шаповал</dd></div>
+            <div><dt>Ілюстрації та дизайн</dt><dd>Анастасія Рудик</dd></div>
+            <div><dt>Видавець</dt><dd>Roboneers, 2026</dd></div>
+            <div><dt>Тираж</dt><dd>3000 примірників</dd></div>
+            <div><dt>Сторінок</dt><dd class="tbd">00</dd></div>
+            <div><dt>Формат</dt><dd class="tbd">А4</dd></div>
+          </dl>
+          <a class="btn btn-solid" href="#buy">Купити розмальовку</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── Як допомогти ───────── -->
+    <section class="block help" id="help" aria-labelledby="helpTitle">
+      <div class="wrap">
+        <p class="eyebrow">Як допомогти</p>
+        <h2 class="block-title" id="helpTitle">Кожен примірник — внесок в евакуацію</h2>
+        <p class="lede narrow">Видання — благодійний проєкт на підтримку першого евакуаційного взводу безпілотних наземних систем медичної роти 59 ОШБр БпС. Саме такі роботи, як «Рись+», вивозять поранених там, куди небезпечно заходити людям.</p>
+        <ol class="ways">
+          <li>
+            <h3>Купи розмальовку</h3>
+            <p>Для своєї дитини, племінників чи друзів. Кошти з продажу йдуть на потреби евакуаційного взводу.</p>
+          </li>
+          <li>
+            <h3>Подаруй комусь</h3>
+            <p>Розмальовка — добрий подарунок до свят: і дитині заняття, і військовим допомога.</p>
+          </li>
+          <li>
+            <h3>Розкажи друзям</h3>
+            <p>Поділися цією сторінкою. Що більше людей знає про проєкт, то швидше розійдеться тираж.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ───────── Купити ───────── -->
+    <section class="block buy" id="buy" aria-labelledby="buyTitle">
+      <div class="wrap buy-card">
+        <div>
+          <p class="eyebrow">Купити</p>
+          <h2 class="block-title" id="buyTitle">Замовити розмальовку</h2>
+          <p class="lede">Ціна, доставка та спосіб оплати з’являться тут найближчим часом.</p>
+        </div>
+        <div class="buy-side">
+          <p class="price"><span class="tbd">000</span> ₴</p>
+          <a class="btn btn-solid" href="#">Замовити</a>
+          <p class="note">Посилання на замовлення — заглушка.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── Хто створив ───────── -->
+    <section class="block team" aria-labelledby="teamTitle">
+      <div class="wrap">
+        <p class="eyebrow">Хто створив</p>
+        <h2 class="block-title" id="teamTitle">Над книжкою працювали</h2>
+        <div class="team-grid">
+          <article>
+            <h3>Roboneers</h3>
+            <p>Українська команда, що створює наземні роботизовані комплекси, зокрема «Рись+». Ініціатори й видавці розмальовки.</p>
+          </article>
+          <article>
+            <h3>СЕНС</h3>
+            <p class="tbd-text">Опис партнера — заглушка. Тут буде кілька речень про СЕНС і його роль у проєкті.</p>
+          </article>
+          <article>
+            <h3>Аліна Шаповал</h3>
+            <p>Авторка тексту.</p>
+          </article>
+          <article>
+            <h3>Анастасія Рудик</h3>
+            <p>Ілюстрації та дизайн.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────── Питання ───────── -->
+    <section class="block faq" aria-labelledby="faqTitle">
+      <div class="wrap narrow-wrap">
+        <p class="eyebrow">Питання</p>
+        <h2 class="block-title" id="faqTitle">Часті питання</h2>
+        <details>
+          <summary>Куди йдуть кошти?</summary>
+          <p>На підтримку першого евакуаційного взводу безпілотних наземних систем медичної роти 59 ОШБр БпС.</p>
+        </details>
+        <details>
+          <summary>Для якого віку розмальовка?</summary>
+          <p class="tbd-text">Відповідь — заглушка. Вкажіть рекомендований вік.</p>
+        </details>
+        <details>
+          <summary>Як отримати розмальовку?</summary>
+          <p class="tbd-text">Відповідь — заглушка. Тут будуть способи доставки або точки, де її можна забрати.</p>
+        </details>
+        <details>
+          <summary>Чи можна замовити кілька примірників?</summary>
+          <p class="tbd-text">Відповідь — заглушка. Наприклад, для школи, садочка чи як подарунки.</p>
+        </details>
+        <details>
+          <summary>Чи справжня ця історія?</summary>
+          <p>Так. Книжку створено на основі реальної евакуації, про яку розповів фельдшер медичної служби «Ульф». З міркувань безпеки позивні та місце подій змінено.</p>
+        </details>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-row">
+      <img src="assets/logos-roboneers-sens.png" alt="Roboneers × СЕНС" width="387" height="33" loading="lazy" />
+      <nav aria-label="Нижня навігація">
+        <a href="#about">Про проєкт</a>
+        <a href="#book">Розмальовка</a>
+        <a href="#help">Як допомогти</a>
+        <a href="#buy">Купити</a>
+      </nav>
+      <p>© Roboneers, 2026</p>
+    </div>
+  </footer>
 
   <script src="main.js" defer></script>
   <script src="nrk.js" defer></script>

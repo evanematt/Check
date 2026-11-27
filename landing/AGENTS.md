@@ -4,7 +4,7 @@ Technical brief for an AI coding agent working on this project. The human-facing
 
 ## 1. What this is
 
-A single-screen hero for a charity colouring-book landing page (Roboneers × СЕНС). It is a static site with no build step and no package manager: plain HTML, CSS and JS. three.js 0.160.0 comes in through an import map from jsDelivr, and the fonts (Inter, Unbounded) from Google Fonts.
+A charity colouring-book landing page: an interactive hero plus static content blocks (Roboneers × СЕНС). It is a static site with no build step and no package manager: plain HTML, CSS and JS. three.js 0.160.0 comes in through an import map from jsDelivr, and the fonts (Inter, Unbounded) from Google Fonts.
 
 The scene is assembled from separate layers that match a reference composition (2000×1306). Back to front:
 
@@ -155,7 +155,7 @@ Outside `.scene`, so not distorted:
 - Card buttons, header links and the header «Купити» all have `href="#"`.
 - The card title is an outlined SVG from the design (`assets/book-card-title.svg`). To change the wording, re-export it from the design file.
 - The logo is a raster PNG, recoloured white from the supplied file. A vector logo would be better.
-- Only the hero exists. When more sections are added, consider a sticky header: it is currently `position:absolute`.
+- Content blocks below the hero (static HTML/CSS, no JS): `#about`, `#book`, `#help`, `#buy`, team, FAQ (`<details>`), footer. The header is `position:fixed` and its links anchor to these blocks. Unknown facts are marked: `.tbd` (dashed underline on a value) and `.tbd-text` (italic placeholder sentence). Search for both before launch. Facts used in the copy come from the book's back cover (`assets/book-cover-back.webp`).
 
 ## 10. Conventions
 
