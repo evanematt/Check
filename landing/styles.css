@@ -160,22 +160,45 @@ a { color: inherit; text-decoration: none; }
 }
 
 .ground img { position: absolute; display: block; height: auto; user-select: none; -webkit-user-drag: none; }
-.dunes { left: -10.47%; top: 17.15%; width: 131.5%; }
+.dunes { position: absolute; left: -10.47%; top: 17.15%; width: 131.5%; aspect-ratio: 2000 / 1121; }
+
+/* ───────── Garland light on the snow ─────────
+   White snow can't be brightened, so the warm light is laid on as a multiply tint (white → warm cream),
+   clipped to each snow image and centred under the robot and the book. Positions follow the layout variables. */
+.dunes-light,
+.drift-left-light,
+.drift-right-light {
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  animation: garland-flicker 2.6s ease-in-out infinite;
+}
+
+.dunes-light {
+  -webkit-mask: url("assets/snow-dunes.webp") 0 0 / 100% 100% no-repeat;
+  mask: url("assets/snow-dunes.webp") 0 0 / 100% 100% no-repeat;
+  background:
+    radial-gradient(16% 15% at calc((var(--dl-x) + var(--nrk-dx) + var(--nrk-w) / 2 + 10.47%) / 1.315) 47%, rgba(255, 196, 130, 0.9), rgba(255, 210, 160, 0.35) 55%, transparent 100%),
+    radial-gradient(13% 13% at calc((var(--dr-x) + var(--dr-w) * 0.66 + 10.47%) / 1.315) 50%, rgba(255, 196, 130, 0.85), rgba(255, 210, 160, 0.3) 55%, transparent 100%);
+}
 
 .drift { position: absolute; }
 .drift-left { left: var(--dl-x); top: var(--dl-y); width: var(--dl-w); aspect-ratio: 1903 / 1196; }
 .drift-right { left: var(--dr-x); top: var(--dr-y); width: var(--dr-w); aspect-ratio: 1660 / 580; }
 
-/* the garland's warm light falling on the left drift, clipped to the drift */
+/* the garland's warm light on the front drifts, clipped to each drift */
 .drift-left-light {
   -webkit-mask: url("assets/drift-left.webp") 0 0 / 100% 100% no-repeat;
   mask: url("assets/drift-left.webp") 0 0 / 100% 100% no-repeat;
-  background:
-    radial-gradient(22% 16% at 37% 20%, rgba(255, 160, 60, 0.45), transparent 70%),
-    radial-gradient(40% 26% at 37% 26%, rgba(255, 150, 50, 0.18), transparent 75%);
-  mix-blend-mode: screen;
-  animation: garland-flicker 2.6s ease-in-out infinite;
+  background: radial-gradient(26% 22% at 38% 22%, rgba(255, 190, 120, 0.95), rgba(255, 210, 160, 0.35) 55%, transparent 100%);
 }
+
+.drift-right-light {
+  -webkit-mask: url("assets/drift-right.webp") 0 0 / 100% 100% no-repeat;
+  mask: url("assets/drift-right.webp") 0 0 / 100% 100% no-repeat;
+  background: radial-gradient(24% 55% at 66% 22%, rgba(255, 190, 120, 0.95), rgba(255, 210, 160, 0.35) 55%, transparent 100%);
+}
+
+.snowfall { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
 /* ───────── Ground robot + lynx ───────── */
 .nrk,

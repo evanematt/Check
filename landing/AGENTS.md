@@ -16,9 +16,12 @@ The scene is assembled from separate layers that match a reference composition (
    - **On hover (or tap) the robot hops up out of the drift** (CSS transform) and settles back when the pointer leaves.
 4. **Left drift** (`assets/drift-left.webp`), in front of the robot.
 5. **Colouring book (WebGL, three.js),** one transparent canvas covering the hero. The book stands *behind* the right drift.
+   - It carries its own 3D garland (wire, bulbs and twinkling glow sprites, plus a warm point light on the cover) that hops with it.
    - On hover, tap or focus it springs up and fully out of the drift, with a snow puff.
    - An info card opens beside it.
 6. **Right drift** (`assets/drift-right.webp`), in front of the book.
+   - **Snowfall** (`canvas.snowfall`, in `main.js`): three depth layers with wind and sway, in front of everything in the scene.
+   - **Warm garland light on the snow:** `.dunes-light`, `.drift-left-light` and `.drift-right-light`, **multiply** tints clipped to each snow image (see §7).
 7. **Info card** (`.book-card`): a frosted square panel with a hand-lettered SVG title, placeholder copy, and the buttons «Спробувати» and «Купити».
 8. **Header** (`.site-header`): a floating glass pill with the logo, three links and a «Купити» button.
 
@@ -58,10 +61,11 @@ There are no automated tests. "Done" means the screenshots look right at both si
 Everything visual is inside `.scene` (`position:absolute; inset:0; z-index:0; filter:url(#warp)`). Inside it, **stacking is by DOM order**, with no z-indexes:
 
 ```
-.sky  →  .hero-sparkles  →  .ground (dunes)
+.sky  →  .hero-sparkles  →  .ground [ img.dunes → .dunes-light ]
       →  .ground.ground-left [ .nrk-spill → .nrk → img.drift-left → .drift-left-light ]
       →  canvas.book-scene
-      →  .ground [ img.drift-right ]
+      →  .ground [ img.drift-right → .drift-right-light ]
+      →  canvas.snowfall
 ```
 
 Outside `.scene`, so not distorted:
@@ -109,8 +113,10 @@ Outside `.scene`, so not distorted:
   - Don't add `filter`, `opacity` or `transform` to `.ground`.
 - **The robot hop is CSS.** `nrk.js` toggles `.hero.nrk-up`, which translates both `.nrk` and `.nrk-spill`. The robot has `pointer-events:none` because the WebGL canvas is above it, so hover is hit-tested in JS against `.nrk-body`'s rect, ignoring the bottom part hidden by the drift. On touch, a tap makes it hop for about 1.4 s.
 - **The book hides behind an image, not 3D snow.** Book materials are clipped at `y > SNOW_Y`. The drift image in front must cover that cut. The puff starts below the crest, so it rises over it.
-- **Additive blending does not show on the transparent WebGL canvas.** The book halo uses normal alpha blending.
-- **The book's hit area and the card position use `bookHolder`** (the model only), never `pivot`, because `pivot` also contains the large halo plane.
+- **Additive blending does not show on the transparent WebGL canvas.** The book's garland glow sprites use normal alpha blending.
+- **The book's hit area and the card position use `bookHolder`** (the model only), never `pivot`, because `pivot` also holds the garland.
+- **The book's garland lives in pivot-local space** (x −0.43…0.43 across the cover, y 0…1.23 from the base, cover face at z ≈ 0.022). Its materials share the book's `clip` planes, so the part below the snow line is hidden too. It is **not** colour-graded, so it glows warm.
+- **Warm light on white snow must be a multiply tint**, not `screen`: screen over white stays white, and over the dark sky it paints an orange halo. The snow-light layers' gradient centres are computed in CSS from the layout variables (`--dl-*`, `--nrk-*`, `--dr-*`), so they follow the robot and the book on every breakpoint. Keep them in sync if you change how the book is placed (`PLACE.fx`).
 - **Grading is injected** with `onBeforeCompile`, replacing `#include <dithering_fragment>`, which runs after the sRGB conversion. So the maths is in display sRGB, the same as CSS filters.
 - **Garland light maps are additive canvases** with ~45 lamps. Per-lamp alphas look tiny (0.02–0.1) on purpose: higher values saturate to yellow-white or paint a large orange halo on the sky.
 - **The lynx sprite** was repaired. The original cut-out had holes, so its mask was closed and filled, and the holes inpainted. Check any replacement sheet for holes, because they show as flicker when the head turns.
@@ -138,7 +144,10 @@ Outside `.scene`, so not distorted:
 | Lynx gaze sensitivity | `nrk.js` → `reach`, the smoothing `k`, idle wander |
 | Garland path | `nrk.js` → `STRANDS` (robot space) |
 | Garland brightness and flicker | `styles.css` → `.nrk-garland .bulb/.halo/.bloom`, `@keyframes twinkle`, `garland-flicker` |
-| Garland light on robot, dunes and drift | `nrk.js` → `paintLight()`; `styles.css` → `.drift-left-light` gradients |
+| Garland light on the robot | `nrk.js` → `paintLight()` |
+| Garland light on the snow (both garlands) | `styles.css` → `.dunes-light`, `.drift-left-light`, `.drift-right-light` |
+| Book garland (shape, bulb spacing, glow, light) | `book.js` → `buildGarland()` swags, `glowTexture()`, the twinkle block in `tick()`, `garlandLight` |
+| Snowfall (density, speeds, sizes, wind) | `main.js` → the snowfall block: `LAYERS`, the density cap in `seed()`, `wind` in `loop()` |
 | Haze strength and speed | `index.html` → `#warp feDisplacementMap scale`; `nrk.js` → the `baseFrequency` animation |
 
 ## 9. Content still to fill in
