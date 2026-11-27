@@ -93,6 +93,33 @@ function driftHeight(x, z) {
   return h;
 }
 
+/* ───────── Colour grading, applied to the final (sRGB) pixel ─────────
+   BOOK: the same moonlit colour matrix the robot and the lynx get (#moonlit in index.html),
+         plus a fine painted grain, so the book reads as part of the same illustration.
+   BACKDROP: the same quieting the background painting gets in CSS (brightness · saturate · contrast),
+         so the drift stays matched to the dimmed painting. */
+const GRADE = {
+  book: `
+    vec3 c = gl_FragColor.rgb;
+    vec3 moon = vec3(dot(c, vec3(0.40, 0.05, 0.03)), dot(c, vec3(0.03, 0.48, 0.08)), dot(c, vec3(0.07, 0.12, 0.80)) + 0.035);
+    c = mix(c, moon * 1.45, 0.82);
+    float n = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+    c *= 0.965 + 0.07 * n;
+    gl_FragColor.rgb = c;`,
+  backdrop: `
+    vec3 c = gl_FragColor.rgb * 0.72;
+    float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+    c = mix(vec3(l), c, 0.7);
+    gl_FragColor.rgb = (c - 0.5) * 0.92 + 0.5;`,
+};
+function grade(material, kind) {
+  material.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', `#include <dithering_fragment>\n{${GRADE[kind]}\n}`);
+  };
+  material.customProgramCacheKey = () => 'grade-' + kind;
+  return material;
+}
+
 // Textures cut from the background painting itself, so the drift shares its brushwork:
 // a dark brushy snow body, and the glittering lavender crest the painted ridges have.
 const texLoader = new THREE.TextureLoader();
@@ -157,9 +184,9 @@ function buildDrift() {
   geo.setAttribute('color', new THREE.BufferAttribute(body, 4));
 
   const group = new THREE.Group();
-  const bodyMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+  const bodyMesh = new THREE.Mesh(geo, grade(new THREE.MeshBasicMaterial({
     map: bodyTex, vertexColors: true, transparent: true, depthWrite: true,
-  }));
+  }), 'backdrop'));
   bodyMesh.renderOrder = 2;
   group.add(bodyMesh);
 
@@ -167,10 +194,10 @@ function buildDrift() {
   crestGeo.setAttribute('color', new THREE.BufferAttribute(crest, 4));
   const cuv = crestGeo.attributes.uv;
   for (let i = 0; i < cuv.count; i++) cuv.setXY(i, pos.getX(i) / 0.35, pos.getZ(i) / 0.2);
-  const crestMesh = new THREE.Mesh(crestGeo, new THREE.MeshBasicMaterial({
+  const crestMesh = new THREE.Mesh(crestGeo, grade(new THREE.MeshBasicMaterial({
     map: crestTex, vertexColors: true, transparent: true, depthWrite: false,
     polygonOffset: true, polygonOffsetFactor: -1,
-  }));
+  }), 'backdrop'));
   crestMesh.renderOrder = 2.5;
   group.add(crestMesh);
   return group;
@@ -331,7 +358,8 @@ new GLTFLoader().load('assets/book.glb', (gltf) => {
     m.side = THREE.DoubleSide;
     m.clippingPlanes = clip;
     m.clipShadows = true;
-    m.roughness = 0.62;
+    m.roughness = 0.9;          // matte, like painted paper — no plastic sheen
+    grade(m, 'book');
     o.castShadow = true;
     bookMeshes.push(o);
   });
